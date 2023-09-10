@@ -14,6 +14,8 @@ import java.io.File
 fun Route.testRoutes() {
     //query arguments
     get("/") {
+        val param1 = call.request.queryParameters["param1"]
+        println(param1)
         println("URI: ${call.request.uri}")
         println("user-agent: ${call.request.userAgent()}")
         println("query-param: ${call.request.queryParameters.names()}")
