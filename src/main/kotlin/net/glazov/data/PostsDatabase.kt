@@ -1,5 +1,6 @@
 package net.glazov.data
 
+import com.mongodb.client.model.InsertOneOptions
 import net.glazov.data.model.PostModel
 import net.glazov.data.response.SimplePostResponse
 import org.litote.kmongo.*
@@ -10,7 +11,7 @@ private val database = client.getDatabase("GlazovNetDatabase")
 private val posts = database.getCollection<PostModel>()
 
 suspend fun getAllPosts(): List<PostModel?> {
-    return posts.find().toList()
+    return posts.find().toList().asReversed()
 }
 
 suspend fun getPostsList(
@@ -19,7 +20,7 @@ suspend fun getPostsList(
 ): List<PostModel?> {
     val _limit = limit?.toIntOrNull() ?: 20
     val _startIndex = startIndex?.toIntOrNull() ?: 0
-    val allPosts = posts.find().toList()
+    val allPosts = posts.find().toList().asReversed()
     return if (_startIndex >= allPosts.size) {
         emptyList()
     } else {
