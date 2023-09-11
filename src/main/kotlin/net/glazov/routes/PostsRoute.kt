@@ -7,38 +7,67 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.*
 import net.glazov.data.model.PostModel
+import net.glazov.data.response.SimplePostResponse
 
 const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
 
 fun Route.postRoutes() {
 
+    get("/allposts") {
+        val posts = getAllPosts()
+        call.respond(
+            SimplePostResponse(
+                status = true,
+                message = "${posts.size} posts retrieved",
+                data = posts
+            )
+        )
+    }
+
     get("/posts") {
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
-        call.respond(getPostsList(limit = postsLimit, startIndex = startIndex))
+        val posts = (getPostsList(limit = postsLimit, startIndex = startIndex))
+        call.respond(
+            SimplePostResponse(
+                status = true,
+                message = "${posts.size} posts retrieved",
+                data = posts
+            )
+        )
     }
 
-    get("/post") {
+    get("/getpost") {
         val id = call.request.queryParameters["post_id"]
         val post = getPostById(id.toString())
-        post?.let {
-            call.respond(it)
-        } ?: call.respondText(text = "No post found!", status = HttpStatusCode.BadRequest)
+        val status = (post !== null)
+        call.respond(
+            SimplePostResponse(
+                status = status,
+                message = if (status) "post retrieved" else "no post with id found",
+                data = listOf(post)
+            )
+        )
     }
 
-    post("/editpost") {
+    put("/editpost") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
                 call.receive<PostModel>()
             } catch (e: ContentTransformationException) {
                 call.respond(HttpStatusCode.BadRequest)
-                return@post
+                return@put
             }
-            val status = updatePostById(newPost)
-            if (status) call.respond(HttpStatusCode.OK)
-            else call.respond(HttpStatusCode.BadRequest)
+            val status = updatePostByRef(newPost)
+            call.respond(
+                SimplePostResponse(
+                    status = status,
+                    message = if (status) "post updated" else "error while updating the post",
+                    data = emptyList()
+                )
+            )
         } else {
             call.respond(HttpStatusCode.Forbidden)
         }
@@ -54,20 +83,30 @@ fun Route.postRoutes() {
                 return@post
             }
             val status = addNewPost(newPost)
-            if (status) call.respond(HttpStatusCode.OK)
-            else call.respond(HttpStatusCode.Conflict)
+            call.respond(
+                SimplePostResponse(
+                    status = status,
+                    message = if (status) "post added" else "error while adding the post",
+                    data = emptyList()
+                )
+            )
         } else {
             call.respond(HttpStatusCode.Forbidden)
         }
     }
 
-    post("/deletepost") {
-        val api = call.request.queryParameters["apikey"]
+    delete("/deletepost") {
+        val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val postId = call.request.queryParameters["post_id"]
             val status = deletePostById(postId.toString())
-            if (status) call.respond(HttpStatusCode.OK)
-            else call.respond(HttpStatusCode.BadRequest)
+            call.respond(
+                SimplePostResponse(
+                    status = status,
+                    message = if (status) "post deleted" else "error while deleting the post",
+                    data = emptyList()
+                )
+            )
         } else {
             call.respond(HttpStatusCode.Forbidden)
         }

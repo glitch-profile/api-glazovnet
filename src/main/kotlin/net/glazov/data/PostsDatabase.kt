@@ -1,25 +1,29 @@
 package net.glazov.data
 
 import net.glazov.data.model.PostModel
+import net.glazov.data.response.SimplePostResponse
 import org.litote.kmongo.*
 
 private val client = KMongo.createClient()
-private val database = client.getDatabase("PostsDatabase")
+private val database = client.getDatabase("GlazovNetDatabase")
 
 private val posts = database.getCollection<PostModel>()
+
+suspend fun getAllPosts(): List<PostModel?> {
+    return posts.find().toList()
+}
 
 suspend fun getPostsList(
     limit: String?,
     startIndex: String?
 ): List<PostModel?> {
-    val _limit = limit?.toIntOrNull() ?: 100
+    val _limit = limit?.toIntOrNull() ?: 20
     val _startIndex = startIndex?.toIntOrNull() ?: 0
     val allPosts = posts.find().toList()
-    val postsCount = allPosts.size
-    return if (_limit >= postsCount) {
+    return if (_startIndex >= allPosts.size) {
         emptyList()
     } else {
-        allPosts.drop(_startIndex).take(_limit)
+        return allPosts.drop(_startIndex).take(_limit)
     }
 }
 
@@ -29,10 +33,12 @@ suspend fun getPostById(
     return posts.findOneById(id)
 }
 
-suspend fun updatePostById(
+suspend fun updatePostByRef(
     newPost: PostModel
 ): Boolean {
-    return posts.updateOneById(newPost.id, newPost).wasAcknowledged()
+    return posts.findOneById(newPost.id)?.let { post ->
+        posts.updateOneById(id = post.id, update = newPost).wasAcknowledged()
+    } ?: false
 }
 
 suspend fun addNewPost(
@@ -44,8 +50,7 @@ suspend fun addNewPost(
 suspend fun deletePostById(
     id: String
 ): Boolean {
-    val post = posts.findOneById(id)
-    return post?.let { foundPost ->
-        posts.deleteOne(foundPost.id).wasAcknowledged()
+    return posts.findOneById(id)?.let { post ->
+        posts.deleteOneById(id = post.id).wasAcknowledged()
     } ?: false
 }

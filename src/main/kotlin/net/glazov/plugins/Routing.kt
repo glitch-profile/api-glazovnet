@@ -12,6 +12,5 @@ fun Application.configureRouting() {
     routing {
         testRoutes() //Включаем нужный routes
         postRoutes()
-        TODO("Проверить работу Api, настроить модели для тарифов")
     }
 }
