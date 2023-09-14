@@ -10,9 +10,9 @@ data class PostModel(
     var id: String = ObjectId().toString(),
     val title: String,
     val creationDate: String,
-    val shortDescription: String,
+    val shortDescription: String? = null,
     val fullDescription: String,
-    val postType: String,
-    val imageUri: String?,
-    val videoUri: String?
+    val postTypeCode: Int,
+    val imageUrl: String? = null,
+    val videoUrl: String? = null
     )

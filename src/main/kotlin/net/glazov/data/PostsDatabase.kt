@@ -1,5 +1,6 @@
 package net.glazov.data
 
+import com.mongodb.client.model.BsonField
 import com.mongodb.client.model.InsertOneOptions
 import net.glazov.data.model.PostModel
 import net.glazov.data.response.SimplePostResponse
@@ -45,7 +46,10 @@ suspend fun updatePostByRef(
 suspend fun addNewPost(
     newPost: PostModel
 ): Boolean {
-    return posts.insertOne(newPost).wasAcknowledged()
+    val post = newPost.copy(
+        id = newId<String>().toString()
+    )
+    return posts.insertOne(post).wasAcknowledged()
 }
 
 suspend fun deletePostById(
