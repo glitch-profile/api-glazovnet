@@ -9,7 +9,7 @@ import org.litote.kmongo.*
 private val client = KMongo.createClient()
 private val database = client.getDatabase("GlazovNetDatabase")
 
-private val posts = database.getCollection<PostModel>()
+private val posts = database.getCollection<PostModel>("Posts")
 
 suspend fun getAllPosts(): List<PostModel?> {
     return posts.find().toList().asReversed()

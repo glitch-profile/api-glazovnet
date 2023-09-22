@@ -13,6 +13,5 @@ data class PostModel(
     val shortDescription: String? = null,
     val fullDescription: String,
     val postTypeCode: Int,
-    val imageUrl: String? = null,
-    val videoUrl: String? = null
+    val image: ImageModel?
     )
