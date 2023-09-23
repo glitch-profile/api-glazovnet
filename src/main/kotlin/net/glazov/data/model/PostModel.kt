@@ -13,5 +13,5 @@ data class PostModel(
     val shortDescription: String? = null,
     val fullDescription: String,
     val postTypeCode: Int,
-    val image: ImageModel?
+    val image: ImageModel? = null
     )
