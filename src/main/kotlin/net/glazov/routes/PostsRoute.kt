@@ -14,7 +14,7 @@ const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
 fun Route.postRoutes() {
 
     get("/posts/getall") {
-        val posts = getAllPostsKMongo()
+        val posts = getAllPosts()
         call.respond(
             SimplePostResponse(
                 status = true,
@@ -28,7 +28,7 @@ fun Route.postRoutes() {
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
-        val posts = (getPostsListKMongo(limit = postsLimit, startIndex = startIndex))
+        val posts = (getPostsList(limit = postsLimit, startIndex = startIndex))
         call.respond(
             SimplePostResponse(
                 status = true,
@@ -40,7 +40,7 @@ fun Route.postRoutes() {
 
     get("/posts/get") {
         val id = call.request.queryParameters["post_id"]
-        val post = getPostByIdKMongo(id.toString())
+        val post = getPostById(id.toString())
         val status = (post !== null)
         call.respond(
             SimplePostResponse(
@@ -60,7 +60,7 @@ fun Route.postRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val status = updatePostByRefKMongo(newPost)
+            val status = updatePostByRef(newPost)
             call.respond(
                 SimplePostResponse(
                     status = status,
@@ -82,7 +82,7 @@ fun Route.postRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val status = addNewPostKmongo(newPost)
+            val status = addNewPost(newPost)
             call.respond(
                 SimplePostResponse(
                     status = status,
@@ -99,7 +99,7 @@ fun Route.postRoutes() {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val postId = call.request.queryParameters["post_id"]
-            val status = deletePostByIdKmongo(postId.toString())
+            val status = deletePostById(postId.toString())
             call.respond(
                 SimplePostResponse(
                     status = status,
