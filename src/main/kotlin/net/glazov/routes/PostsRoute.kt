@@ -13,8 +13,8 @@ const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
 
 fun Route.postRoutes() {
 
-    get("/allposts") {
-        val posts = getAllPosts()
+    get("/posts/getall") {
+        val posts = getAllPostsKMongo()
         call.respond(
             SimplePostResponse(
                 status = true,
@@ -24,11 +24,11 @@ fun Route.postRoutes() {
         )
     }
 
-    get("/posts") {
+    get("/posts/getposts") {
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
-        val posts = (getPostsList(limit = postsLimit, startIndex = startIndex))
+        val posts = (getPostsListKMongo(limit = postsLimit, startIndex = startIndex))
         call.respond(
             SimplePostResponse(
                 status = true,
@@ -38,9 +38,9 @@ fun Route.postRoutes() {
         )
     }
 
-    get("/getpost") {
+    get("/posts/get") {
         val id = call.request.queryParameters["post_id"]
-        val post = getPostById(id.toString())
+        val post = getPostByIdKMongo(id.toString())
         val status = (post !== null)
         call.respond(
             SimplePostResponse(
@@ -51,7 +51,7 @@ fun Route.postRoutes() {
         )
     }
 
-    put("/editpost") {
+    put("/posts/edit") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
@@ -60,7 +60,7 @@ fun Route.postRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val status = updatePostByRef(newPost)
+            val status = updatePostByRefKMongo(newPost)
             call.respond(
                 SimplePostResponse(
                     status = status,
@@ -73,7 +73,7 @@ fun Route.postRoutes() {
         }
     }
 
-    post("/addpost") {
+    post("/posts/add") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
@@ -82,7 +82,7 @@ fun Route.postRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val status = addNewPost(newPost)
+            val status = addNewPostKmongo(newPost)
             call.respond(
                 SimplePostResponse(
                     status = status,
@@ -95,11 +95,11 @@ fun Route.postRoutes() {
         }
     }
 
-    delete("/deletepost") {
+    delete("/posts/delete") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val postId = call.request.queryParameters["post_id"]
-            val status = deletePostById(postId.toString())
+            val status = deletePostByIdKmongo(postId.toString())
             call.respond(
                 SimplePostResponse(
                     status = status,
