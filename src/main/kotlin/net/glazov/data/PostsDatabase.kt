@@ -3,7 +3,7 @@ package net.glazov.data
 import net.glazov.data.model.PostModel
 import org.litote.kmongo.*
 
-private val client = KMongo.createClient("mongodb://localhost:27017")
+private val client = KMongo.createClient()
 private val database = client.getDatabase("GlazovNetDatabase")
 
 private val posts = database.getCollection<PostModel>("Posts")
