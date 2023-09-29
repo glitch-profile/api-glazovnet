@@ -38,4 +38,12 @@ dependencies {
     implementation("org.litote.kmongo:kmongo:4.8.0")
     implementation("org.litote.kmongo:kmongo-coroutine:4.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+
+//    https://mvnrepository.com/artifact/mysql/mysql-connector-java
+//    implementation("mysql:mysql-connector-java:8.0.33")
+//    implementation("org.ktorm:ktorm-core:3.6.0")
+
+
+
+
 }
