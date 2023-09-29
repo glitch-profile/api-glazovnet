@@ -13,7 +13,7 @@ const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
 
 fun Route.postRoutes() {
 
-    get("/posts/getall") {
+    get("/api/posts/getall") {
         val posts = getAllPosts()
         call.respond(
             SimplePostResponse(
@@ -24,7 +24,7 @@ fun Route.postRoutes() {
         )
     }
 
-    get("/posts/getposts") {
+    get("/api/posts/getposts") {
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
@@ -38,7 +38,7 @@ fun Route.postRoutes() {
         )
     }
 
-    get("/posts/get") {
+    get("/api/posts/get") {
         val id = call.request.queryParameters["post_id"]
         val post = getPostById(id.toString())
         val status = (post !== null)
@@ -51,7 +51,7 @@ fun Route.postRoutes() {
         )
     }
 
-    put("/posts/edit") {
+    put("/api/posts/edit") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
@@ -73,7 +73,7 @@ fun Route.postRoutes() {
         }
     }
 
-    post("/posts/add") {
+    post("/api/posts/add") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
@@ -95,7 +95,7 @@ fun Route.postRoutes() {
         }
     }
 
-    delete("/posts/delete") {
+    delete("/api/posts/delete") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val postId = call.request.queryParameters["post_id"]
