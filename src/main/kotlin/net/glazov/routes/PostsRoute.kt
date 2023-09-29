@@ -5,15 +5,17 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.*
 import net.glazov.data.model.PostModel
 import net.glazov.data.response.SimplePostResponse
+import net.glazov.database.*
 
-const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
+private const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
 
 fun Route.postRoutes() {
 
-    get("/api/posts/getall") {
+    val path = "/api/posts"
+
+    get("$path/getall") {
         val posts = getAllPosts()
         call.respond(
             SimplePostResponse(
@@ -24,7 +26,7 @@ fun Route.postRoutes() {
         )
     }
 
-    get("/api/posts/getposts") {
+    get("$path/getposts") {
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
@@ -38,7 +40,7 @@ fun Route.postRoutes() {
         )
     }
 
-    get("/api/posts/get") {
+    get("$path/get") {
         val id = call.request.queryParameters["post_id"]
         val post = getPostById(id.toString())
         val status = (post !== null)
@@ -51,7 +53,7 @@ fun Route.postRoutes() {
         )
     }
 
-    put("/api/posts/edit") {
+    put("$path/edit") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
@@ -73,7 +75,7 @@ fun Route.postRoutes() {
         }
     }
 
-    post("/api/posts/add") {
+    post("$path/add") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
@@ -95,7 +97,7 @@ fun Route.postRoutes() {
         }
     }
 
-    delete("/api/posts/delete") {
+    delete("$path/delete") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val postId = call.request.queryParameters["post_id"]

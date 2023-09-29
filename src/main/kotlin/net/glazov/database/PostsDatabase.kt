@@ -1,15 +1,16 @@
-package net.glazov.data
+package net.glazov.database
 
+import com.mongodb.client.model.Filters
 import net.glazov.data.model.PostModel
 import org.litote.kmongo.*
 
 private val client = KMongo.createClient()
 private val database = client.getDatabase("GlazovNetDatabase")
 
-private val posts = database.getCollection<PostModel>("Posts")
+private val collection = database.getCollection<PostModel>("Posts")
 
 suspend fun getAllPosts(): List<PostModel?> {
-    return posts.find().toList().asReversed()
+    return collection.find().toList().asReversed()
 }
 
 suspend fun getPostsList(
@@ -18,7 +19,7 @@ suspend fun getPostsList(
 ): List<PostModel?> {
     val _limit = limit?.toIntOrNull() ?: 20
     val _startIndex = startIndex?.toIntOrNull() ?: 0
-    val allPosts = posts.find().toList().asReversed()
+    val allPosts = collection.find().toList().asReversed()
     return if (_startIndex >= allPosts.size) {
         emptyList()
     } else {
@@ -29,14 +30,14 @@ suspend fun getPostsList(
 suspend fun getPostById(
     id: String
 ): PostModel? {
-    return posts.findOneById(id)
+    return collection.findOneById(id)
 }
 
 suspend fun updatePostByRef(
     newPost: PostModel
 ): Boolean {
-    return posts.findOneById(newPost.id)?.let { post ->
-        posts.updateOneById(id = post.id, update = newPost).wasAcknowledged()
+    return collection.findOneById(newPost.id)?.let { post ->
+        collection.updateOneById(id = post.id, update = newPost).wasAcknowledged()
     } ?: false
 }
 
@@ -46,13 +47,13 @@ suspend fun addNewPost(
     val post = newPost.copy(
         id = newId<String>().toString()
     )
-    return posts.insertOne(post).wasAcknowledged()
+    return collection.insertOne(post).wasAcknowledged()
 }
 
 suspend fun deletePostById(
     id: String
 ): Boolean {
-    return posts.findOneById(id)?.let { post ->
-        posts.deleteOneById(id = post.id).wasAcknowledged()
-    } ?: false
+    val filter = Filters.eq(PostModel::id.name, id)
+    val post = collection.findOneAndDelete(filter)
+    return post !== null
 }
