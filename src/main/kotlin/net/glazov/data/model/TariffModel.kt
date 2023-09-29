@@ -8,7 +8,7 @@ data class TariffModel(
     val id: String = ObjectId().toString(),
     val name: String,
     val description: String,
-    // val category: String, // помегабайтный или безлимитный тариф. Будет ссылка на другую таблицу
+    val categoryCode: Int,
     val maxSpeed: Int,
     val costPerMonth: Int
 )
