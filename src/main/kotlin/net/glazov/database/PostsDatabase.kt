@@ -53,7 +53,7 @@ suspend fun addNewPost(
 suspend fun deletePostById(
     id: String
 ): Boolean {
-    val filter = Filters.eq(PostModel::id.name, id)
+    val filter = Filters.eq("_id", id)
     val post = collection.findOneAndDelete(filter)
     return post !== null
 }

@@ -32,7 +32,7 @@ suspend fun addTariff(
 suspend fun deleteTariff(
     tariffId: String
 ): Boolean {
-    val filter = Filters.eq(TariffModel::id.name, tariffId)
+    val filter = Filters.eq("_id", tariffId)
     val tariff = collection.findOneAndDelete(filter)
     return tariff !== null
 }

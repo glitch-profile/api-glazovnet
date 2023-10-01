@@ -10,12 +10,11 @@ import net.glazov.data.response.SimplePostResponse
 import net.glazov.database.*
 
 private const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
+private const val PATH = "/api/posts"
 
 fun Route.postRoutes() {
 
-    val path = "/api/posts"
-
-    get("$path/getall") {
+    get("$PATH/getall") {
         val posts = getAllPosts()
         call.respond(
             SimplePostResponse(
@@ -26,7 +25,7 @@ fun Route.postRoutes() {
         )
     }
 
-    get("$path/getposts") {
+    get("$PATH/getposts") {
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
@@ -40,7 +39,7 @@ fun Route.postRoutes() {
         )
     }
 
-    get("$path/get") {
+    get("$PATH/get") {
         val id = call.request.queryParameters["post_id"]
         val post = getPostById(id.toString())
         val status = (post !== null)
@@ -53,7 +52,7 @@ fun Route.postRoutes() {
         )
     }
 
-    put("$path/edit") {
+    put("$PATH/edit") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
@@ -75,7 +74,7 @@ fun Route.postRoutes() {
         }
     }
 
-    post("$path/add") {
+    post("$PATH/add") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val newPost = try {
@@ -97,7 +96,7 @@ fun Route.postRoutes() {
         }
     }
 
-    delete("$path/delete") {
+    delete("$PATH/delete") {
         val api = call.request.queryParameters["api_key"]
         if (api == APIKEY) {
             val postId = call.request.queryParameters["post_id"]
