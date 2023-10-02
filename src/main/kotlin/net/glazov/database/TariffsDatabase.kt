@@ -3,9 +3,7 @@ package net.glazov.database
 import com.mongodb.client.model.Filters
 import net.glazov.data.model.TariffModel
 import org.bson.types.ObjectId
-import org.litote.kmongo.KMongo
-import org.litote.kmongo.deleteOne
-import org.litote.kmongo.getCollection
+import org.litote.kmongo.*
 
 private val client = KMongo.createClient()
 private val database = client.getDatabase("GlazovNetDatabase")
@@ -35,4 +33,12 @@ suspend fun deleteTariff(
     val filter = Filters.eq("_id", tariffId)
     val tariff = collection.findOneAndDelete(filter)
     return tariff !== null
+}
+
+suspend fun updateTariff(
+    newTariff: TariffModel
+): Boolean {
+    return collection.findOneById(newTariff.id)?.let {
+        collection.updateOneById(id = it.id, update = newTariff).wasAcknowledged()
+    } ?: false
 }
