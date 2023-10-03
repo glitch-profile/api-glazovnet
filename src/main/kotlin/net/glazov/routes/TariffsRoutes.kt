@@ -11,6 +11,7 @@ import net.glazov.data.response.SimpleTariffResponse
 import net.glazov.database.addTariff
 import net.glazov.database.deleteTariff
 import net.glazov.database.getAllTariffs
+import net.glazov.database.updateTariff
 
 private const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
 
@@ -68,5 +69,26 @@ fun Route.tariffsRoutes() {
         }
     }
 
+    put("$path/edit") {
+        val apiKey = call.request.queryParameters["api_key"]
+        if (apiKey == APIKEY) {
+            val newTariff = try {
+                call.receive<TariffModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val status = updateTariff(newTariff)
+            call.respond(
+                SimpleTariffResponse(
+                    status = status,
+                    message = if (status) "tariff updated" else "error while updating the tariff",
+                    data = emptyList()
+                )
+            )
+        } else {
+            call.respond(HttpStatusCode.Forbidden)
+        }
+    }
 
 }
