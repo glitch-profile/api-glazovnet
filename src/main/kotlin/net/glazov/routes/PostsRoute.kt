@@ -9,7 +9,7 @@ import net.glazov.data.model.PostModel
 import net.glazov.data.response.SimplePostResponse
 import net.glazov.database.*
 
-private const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
+private const val APIKEY = "test_api_key_123"
 private const val PATH = "/api/posts"
 
 fun Route.postRoutes() {

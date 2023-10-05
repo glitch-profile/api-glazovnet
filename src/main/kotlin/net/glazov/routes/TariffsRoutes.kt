@@ -13,7 +13,7 @@ import net.glazov.database.deleteTariff
 import net.glazov.database.getAllTariffs
 import net.glazov.database.updateTariff
 
-private const val APIKEY = "J3gHkW9iLp7vQzXrE5NtFmAsCfYbDqUo"
+private const val APIKEY = "test_api_key_123"
 
 fun Route.tariffsRoutes() {
 
