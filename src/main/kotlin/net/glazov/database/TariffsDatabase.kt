@@ -9,13 +9,8 @@ private val client = KMongo.createClient()
 private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<TariffModel>("Tariffs")
 
-suspend fun getAllTariffs(status: Boolean? = null): List<TariffModel?> {
-    return if (status !== null) {
-        val filter = Filters.eq(TariffModel::isActive.name, status)
-        collection.find(filter).toList().asReversed()
-    } else {
-        collection.find().toList().asReversed()
-    }
+suspend fun getAllTariffs(): List<TariffModel?> {
+    return collection.find().toList().asReversed()
 }
 
 suspend fun addTariff(

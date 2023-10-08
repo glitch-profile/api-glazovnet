@@ -12,6 +12,5 @@ data class TariffModel(
     val description: String? = null,
     val categoryCode: Int,
     val maxSpeed: Int,
-    val costPerMonth: Int,
-    val isActive: Boolean = true
+    val costPerMonth: Int
 )

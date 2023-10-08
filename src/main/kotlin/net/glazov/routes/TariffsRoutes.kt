@@ -5,7 +5,6 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.SerializationException
 import net.glazov.data.model.TariffModel
 import net.glazov.data.response.SimpleTariffResponse
 import net.glazov.database.addTariff
@@ -20,8 +19,7 @@ fun Route.tariffsRoutes() {
     val path = "/api/tariffs"
 
     get("$path/getall") {
-        val tariffStatus = call.request.queryParameters["tariffStatus"]
-        val tariffs = getAllTariffs(status = tariffStatus.toBoolean())
+        val tariffs = getAllTariffs()
         call.respond(
             SimpleTariffResponse(
                 status = true,
