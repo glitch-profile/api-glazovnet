@@ -10,9 +10,11 @@ import net.glazov.routes.tariffsRoutes
 import net.glazov.routes.testRoutes
 
 fun Application.configureRouting() {
+    val apiKey = environment.config.property("storage.api_key").getString()
+
     routing {
-        testRoutes() //Включаем нужный routes
-        postRoutes()
-        tariffsRoutes()
+        testRoutes()
+        postRoutes(apiKey)
+        tariffsRoutes(apiKey)
     }
 }

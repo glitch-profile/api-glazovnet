@@ -9,10 +9,11 @@ import net.glazov.data.model.PostModel
 import net.glazov.data.response.SimplePostResponse
 import net.glazov.database.*
 
-private const val APIKEY = "test_api_key_123"
 private const val PATH = "/api/posts"
 
-fun Route.postRoutes() {
+fun Route.postRoutes(
+    apiKeyServer: String
+) {
 
     get("$PATH/getall") {
         val posts = getAllPosts()
@@ -54,7 +55,7 @@ fun Route.postRoutes() {
 
     put("$PATH/edit") {
         val api = call.request.queryParameters["api_key"]
-        if (api == APIKEY) {
+        if (api == apiKeyServer) {
             val newPost = try {
                 call.receive<PostModel>()
             } catch (e: ContentTransformationException) {
@@ -76,7 +77,7 @@ fun Route.postRoutes() {
 
     post("$PATH/add") {
         val api = call.request.queryParameters["api_key"]
-        if (api == APIKEY) {
+        if (api == apiKeyServer) {
             val newPost = try {
                 call.receive<PostModel>()
             } catch (e: ContentTransformationException) {
@@ -98,7 +99,7 @@ fun Route.postRoutes() {
 
     delete("$PATH/delete") {
         val api = call.request.queryParameters["api_key"]
-        if (api == APIKEY) {
+        if (api == apiKeyServer) {
             val postId = call.request.queryParameters["post_id"]
             val status = deletePostById(postId.toString())
             call.respond(

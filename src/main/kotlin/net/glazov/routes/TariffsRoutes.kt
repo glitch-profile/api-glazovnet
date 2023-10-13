@@ -12,9 +12,9 @@ import net.glazov.database.deleteTariff
 import net.glazov.database.getAllTariffs
 import net.glazov.database.updateTariff
 
-private const val APIKEY = "test_api_key_123"
-
-fun Route.tariffsRoutes() {
+fun Route.tariffsRoutes(
+    apiKeyServer: String
+) {
 
     val path = "/api/tariffs"
 
@@ -31,7 +31,7 @@ fun Route.tariffsRoutes() {
 
     post("$path/add") {
         val apiKey = call.request.queryParameters["api_key"]
-        if (apiKey == APIKEY) {
+        if (apiKey == apiKeyServer) {
             try {
                 val newTariff = call.receive<TariffModel>()
                 val status = addTariff(newTariff)
@@ -52,7 +52,7 @@ fun Route.tariffsRoutes() {
 
     delete("$path/remove") {
         val apiKey = call.request.queryParameters["api_key"]
-        if (apiKey == APIKEY) {
+        if (apiKey == apiKeyServer) {
             val tariffId = call.request.queryParameters["tariff_id"]
             val status = deleteTariff(tariffId = tariffId.toString())
             call.respond(
@@ -69,7 +69,7 @@ fun Route.tariffsRoutes() {
 
     put("$path/edit") {
         val apiKey = call.request.queryParameters["api_key"]
-        if (apiKey == APIKEY) {
+        if (apiKey == apiKeyServer) {
             val newTariff = try {
                 call.receive<TariffModel>()
             } catch (e: ContentTransformationException) {
