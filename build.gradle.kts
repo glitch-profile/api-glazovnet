@@ -5,15 +5,16 @@ val logback_version: String by project
 
 plugins {
     kotlin("jvm") version "1.9.10"
-    id("io.ktor.plugin") version "2.3.4"
+    id("io.ktor.plugin") version "2.3.5"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "net.glazov"
-version = "0.0.1"
+version = "0.2.4"
 
 application {
-    mainClass.set("io.ktor.server.netty.EngineMain")
+    mainClass.set("net.glazov.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -42,8 +43,5 @@ dependencies {
 //    https://mvnrepository.com/artifact/mysql/mysql-connector-java
 //    implementation("mysql:mysql-connector-java:8.0.33")
 //    implementation("org.ktorm:ktorm-core:3.6.0")
-
-
-
 
 }
