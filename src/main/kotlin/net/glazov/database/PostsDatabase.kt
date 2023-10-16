@@ -1,10 +1,12 @@
 package net.glazov.database
 
 import com.mongodb.client.model.Filters
+import io.ktor.server.application.*
+import io.ktor.server.config.*
 import net.glazov.data.model.PostModel
 import org.litote.kmongo.*
 
-private const val connectionString = "mongodb+srv://korablev2002:ik130702ik@cluster0.macg7bc.mongodb.net/?retryWrites=true&w=majority"
+private val connectionString = ApplicationConfig(null).tryGetString("storage.mongo_db_uri").toString()
 private val client = KMongo.createClient(connectionString)
 private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<PostModel>("Posts")
@@ -12,6 +14,8 @@ private val collection = database.getCollection<PostModel>("Posts")
 suspend fun getAllPosts(): List<PostModel?> {
     return collection.find().toList().asReversed()
 }
+
+fun getKey() = connectionString
 
 suspend fun getPostsList(
     limit: String?,

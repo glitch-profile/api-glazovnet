@@ -1,11 +1,12 @@
 package net.glazov.database
 
 import com.mongodb.client.model.Filters
+import io.ktor.server.config.*
 import net.glazov.data.model.TariffModel
 import org.bson.types.ObjectId
 import org.litote.kmongo.*
 
-private const val connectionString = "mongodb+srv://korablev2002:ik130702ik@cluster0.macg7bc.mongodb.net/?retryWrites=true&w=majority"
+private val connectionString = ApplicationConfig(null).tryGetString("storage.mongo_db_uri").toString()
 private val client = KMongo.createClient(connectionString)
 private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<TariffModel>("Tariffs")
