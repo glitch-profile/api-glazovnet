@@ -5,7 +5,8 @@ import net.glazov.data.model.TariffModel
 import org.bson.types.ObjectId
 import org.litote.kmongo.*
 
-private val client = KMongo.createClient()
+private const val connectionString = "mongodb+srv://korablev2002:ik130702ik@cluster0.macg7bc.mongodb.net/?retryWrites=true&w=majority"
+private val client = KMongo.createClient(connectionString)
 private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<TariffModel>("Tariffs")
 

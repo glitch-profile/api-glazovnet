@@ -4,9 +4,9 @@ import com.mongodb.client.model.Filters
 import net.glazov.data.model.PostModel
 import org.litote.kmongo.*
 
-private val client = KMongo.createClient()
+private const val connectionString = "mongodb+srv://korablev2002:ik130702ik@cluster0.macg7bc.mongodb.net/?retryWrites=true&w=majority"
+private val client = KMongo.createClient(connectionString)
 private val database = client.getDatabase("GlazovNetDatabase")
-
 private val collection = database.getCollection<PostModel>("Posts")
 
 suspend fun getAllPosts(): List<PostModel?> {
