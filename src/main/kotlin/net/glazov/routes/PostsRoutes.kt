@@ -30,7 +30,7 @@ fun Route.postRoutes(
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
-        val posts = (getPostsList(limit = postsLimit, startIndex = startIndex))
+        val posts = (getPostsList(limit = postsLimit, offset = startIndex))
         call.respond(
             SimplePostResponse(
                 status = true,

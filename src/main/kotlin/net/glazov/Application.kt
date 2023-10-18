@@ -1,7 +1,6 @@
 package net.glazov
 
 import io.ktor.server.application.*
-import net.glazov.database.getKey
 import net.glazov.plugins.*
 
 fun main(args: Array<String>) {

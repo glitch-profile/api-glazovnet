@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "net.glazov"
-version = "0.2.4"
+version = "0.3.5"
 
 application {
     mainClass.set("net.glazov.ApplicationKt")
@@ -35,9 +35,8 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 
-    //Kmongo
-    implementation("org.litote.kmongo:kmongo:4.8.0")
-    implementation("org.litote.kmongo:kmongo-coroutine:4.8.0")
+    //Mongo
+    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 
 //    https://mvnrepository.com/artifact/mysql/mysql-connector-java
