@@ -1,7 +1,8 @@
 package net.glazov
 
 import io.ktor.server.application.*
-import net.glazov.plugins.*
+import net.glazov.plugins.configureRouting
+import net.glazov.plugins.configureSerialization
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
