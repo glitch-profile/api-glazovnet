@@ -16,11 +16,13 @@ suspend fun getAllTariffs() = collection.find().toList().asReversed()
 
 suspend fun addTariff(
     newTariff: TariffModel
-): Boolean {
+): TariffModel? {
     val tariff = newTariff.copy(
         id = ObjectId.get().toString()
     )
-    return collection.insertOne(tariff).wasAcknowledged()
+    val status = collection.insertOne(tariff).wasAcknowledged()
+    return if (status)
+        tariff else null
 }
 
 suspend fun deleteTariff(

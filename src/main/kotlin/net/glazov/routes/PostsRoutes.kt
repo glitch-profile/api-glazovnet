@@ -84,12 +84,12 @@ fun Route.postRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val status = addNewPost(newPost)
+            val post = addNewPost(newPost)
             call.respond(
                 SimplePostResponse(
-                    status = status,
-                    message = if (status) "post added" else "error while adding the post",
-                    data = emptyList()
+                    status = post != null,
+                    message = if (post != null) "post added" else "error while adding the post",
+                    data = listOf(post)
                 )
             )
         } else {

@@ -1,10 +1,7 @@
 package net.glazov.database
 
 import com.mongodb.client.model.Filters
-import com.mongodb.client.model.UpdateOptions
-import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoClient
-import io.ktor.server.application.*
 import io.ktor.server.config.*
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.model.PostModel
@@ -45,12 +42,13 @@ suspend fun updatePostByRef(
 
 suspend fun addNewPost(
     newPost: PostModel
-): Boolean {
-    return collection.insertOne(
-        newPost.copy(
-            id = ObjectId.get().toString()
-        )
-    ).wasAcknowledged()
+): PostModel? {
+    val post = newPost.copy(
+        id = ObjectId.get().toString()
+    )
+    val status = collection.insertOne(post).wasAcknowledged()
+    return if (status)
+        post else null
 }
 
 suspend fun deletePostById(
