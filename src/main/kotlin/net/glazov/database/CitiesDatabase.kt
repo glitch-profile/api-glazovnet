@@ -21,6 +21,14 @@ suspend fun getCities(
     return filteredList.sortedBy { it.name }
 }
 
+suspend fun getCityNameFromDatabaseFormatted(
+    cityName: String
+): String? {
+    val filter = Filters.eq(CityModel::name.name, cityName.lowercase())
+    val city = collection.find(filter).toList().firstOrNull()
+    return city?.name ?: addCity(cityName)?.name
+}
+
 suspend fun getCityById(
     id: String
 ): CityModel? {
@@ -41,7 +49,7 @@ suspend fun addCity(
 ): CityModel? {
     val cityModel = CityModel(
         id = ObjectId().toString(),
-        name = cityName
+        name = cityName.lowercase()
     )
     val status = collection.insertOne(cityModel).wasAcknowledged()
     return if (status) cityModel

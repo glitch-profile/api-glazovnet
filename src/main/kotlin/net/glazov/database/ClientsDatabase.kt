@@ -17,21 +17,19 @@ suspend fun getAllClients() = collection.find().toList().sortedBy { it.firstName
 suspend fun createClient(
     clientModel: ClientModel
 ): ClientModel? {
-    val client = clientModel.copy(
-        id = ObjectId().toString()
-    )
-    val cityId = getCityId(client.address.cityId)
-    val streetId = getStreetId(client.address.streetId)
-    return if (cityId != null && streetId != null) {
-        val clientModelToInsert = client.copy(
+    val cityName = getCityNameFromDatabaseFormatted(clientModel.address.cityName)
+    val streetName = getStreetId(clientModel.address.streetName)
+    return if (cityName != null && streetName != null) {
+        val client = clientModel.copy(
+            id = ObjectId().toString(),
             address = AddressModel(
-                cityId = cityId,
-                streetId = streetId,
-                houseNumber = client.address.houseNumber,
-                roomNumber = client.address.roomNumber
+                cityName = cityName,
+                streetName = streetName,
+                houseNumber = clientModel.address.houseNumber,
+                roomNumber = clientModel.address.roomNumber
             )
         )
-        val status = collection.insertOne(clientModelToInsert).wasAcknowledged()
+        val status = collection.insertOne(client).wasAcknowledged()
         if (status) client else null
     } else {
         null

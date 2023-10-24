@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import io.ktor.server.config.*
 import kotlinx.coroutines.flow.toList
+import net.glazov.data.model.CityModel
 import net.glazov.data.model.StreetModel
 import org.bson.types.ObjectId
 
@@ -19,6 +20,14 @@ suspend fun getStreets(
     val allStreets = collection.find().toList()
     val filteredList = allStreets.filter { it.name.contains(name, ignoreCase = true) }
     return filteredList.sortedBy { it.name }
+}
+
+suspend fun getStreetNameFromDatabaseFormatted(
+    streetName: String
+): String? {
+    val filter = Filters.eq(CityModel::name.name, streetName.lowercase())
+    val street = collection.find(filter).toList().firstOrNull()
+    return street?.name ?: addCity(streetName)?.name
 }
 
 suspend fun getStreetById(
@@ -41,7 +50,7 @@ suspend fun addStreet(
 ): StreetModel? {
     val streetModel = StreetModel(
         id = ObjectId().toString(),
-        name = streetName
+        name = streetName.lowercase()
     )
     val status = collection.insertOne(streetModel).wasAcknowledged()
     return if (status) streetModel else null
