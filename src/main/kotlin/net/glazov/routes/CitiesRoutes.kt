@@ -9,10 +9,10 @@ private const val PATH = "/api/cities"
 
 fun Route.citiesRoutes() {
 
-    get("$PATH/get") {
+    get("$PATH/getList") {
         val name = call.request.queryParameters["name"]
         val citiesList = getCities(name)
-        call.respond(citiesList)
+        call.respond(citiesList.map { it.name })
     }
 
 }

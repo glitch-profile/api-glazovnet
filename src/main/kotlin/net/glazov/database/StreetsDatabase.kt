@@ -21,6 +21,13 @@ suspend fun getStreets(
     return filteredList.sortedBy { it.name }
 }
 
+suspend fun getStreetById(
+    id: String
+): StreetModel? {
+    val filter = Filters.eq("_id", id)
+    return collection.find(filter).toList().firstOrNull()
+}
+
 suspend fun getStreetId(
     streetName: String
 ): String? {

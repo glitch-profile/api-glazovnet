@@ -21,6 +21,13 @@ suspend fun getCities(
     return filteredList.sortedBy { it.name }
 }
 
+suspend fun getCityById(
+    id: String
+): CityModel? {
+    val filter = Filters.eq("_id", id)
+    return collection.find(filter).toList().firstOrNull()
+}
+
 suspend fun getCityId(
     cityName: String
 ): String? {
