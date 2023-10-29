@@ -1,5 +1,6 @@
 package net.glazov.database
 
+import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import io.ktor.server.config.*
 import kotlinx.coroutines.flow.toList
@@ -18,13 +19,16 @@ suspend fun createClient(
     clientModel: ClientModel
 ): ClientModel? {
     val cityName = getCityNameFromDatabaseFormatted(clientModel.address.cityName)
-    val streetName = getStreetId(clientModel.address.streetName)
+    val streetName = getStreetNameFromDatabaseFormatted(
+        cityName = clientModel.address.cityName,
+        streetName = clientModel.address.streetName
+    )
     return if (cityName != null && streetName != null) {
         val client = clientModel.copy(
             id = ObjectId().toString(),
             address = AddressModel(
                 cityName = cityName,
-                streetName = streetName,
+                streetName = streetName.name,
                 houseNumber = clientModel.address.houseNumber,
                 roomNumber = clientModel.address.roomNumber
             )
@@ -34,7 +38,17 @@ suspend fun createClient(
     } else {
         null
     }
+}
 
+suspend fun login(
+    login: String?,
+    password: String?
+): String? {
+    val loginFilter = Filters.eq(ClientModel::login.name, login)
+    val passwordFilter = Filters.eq(ClientModel::password.name, password)
+    val filter = Filters.and(loginFilter, passwordFilter)
+    val client = collection.find(filter).toList().firstOrNull()
+    return client?.id
 }
 
 

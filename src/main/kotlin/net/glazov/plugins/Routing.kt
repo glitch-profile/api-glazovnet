@@ -2,10 +2,7 @@ package net.glazov.plugins
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-import net.glazov.routes.citiesRoutes
-import net.glazov.routes.postRoutes
-import net.glazov.routes.streetsRoutes
-import net.glazov.routes.tariffsRoutes
+import net.glazov.routes.*
 
 fun Application.configureRouting() {
     val apiKey = environment.config.property("storage.api_key").getString()
@@ -16,5 +13,6 @@ fun Application.configureRouting() {
         tariffsRoutes(apiKey)
         citiesRoutes()
         streetsRoutes()
+        clientsRoutes(apiKey)
     }
 }

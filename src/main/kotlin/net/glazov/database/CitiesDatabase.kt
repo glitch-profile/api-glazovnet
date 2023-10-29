@@ -29,26 +29,10 @@ suspend fun getCityNameFromDatabaseFormatted(
     return city?.name ?: addCity(cityName)?.name
 }
 
-suspend fun getCityById(
-    id: String
-): CityModel? {
-    val filter = Filters.eq("_id", id)
-    return collection.find(filter).toList().firstOrNull()
-}
-
-suspend fun getCityId(
-    cityName: String
-): String? {
-    val filter = Filters.eq(CityModel::name.name, cityName)
-    val city = collection.find(filter).toList().firstOrNull()
-    return city?.id ?: addCity(cityName)?.id
-}
-
 suspend fun addCity(
     cityName: String
 ): CityModel? {
     val cityModel = CityModel(
-        id = ObjectId().toString(),
         name = cityName.lowercase()
     )
     val status = collection.insertOne(cityModel).wasAcknowledged()

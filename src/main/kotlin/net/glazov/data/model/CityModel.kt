@@ -6,7 +6,5 @@ import org.bson.types.ObjectId
 
 @Serializable
 data class CityModel(
-    @BsonId
-    val id: String = ObjectId().toString(),
     val name: String
 )
