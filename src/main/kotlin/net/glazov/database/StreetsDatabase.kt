@@ -14,42 +14,30 @@ private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<StreetModel>("Streets")
 
 suspend fun getStreets(
-    filterName: String?
+    filterString: String?
 ): List<StreetModel> {
-    val name = filterName ?: ""
+    val filter = filterString ?: ""
     val allStreets = collection.find().toList()
-    val filteredList = allStreets.filter { it.name.contains(name, ignoreCase = true) }
-    return filteredList.sortedBy { it.name }
+    return allStreets.sortedBy { it.doesMatchFilter(filter) }
 }
 
 suspend fun getStreetNameFromDatabaseFormatted(
+    cityName: String,
     streetName: String
-): String? {
-    val filter = Filters.eq(CityModel::name.name, streetName.lowercase())
-    val street = collection.find(filter).toList().firstOrNull()
-    return street?.name ?: addCity(streetName)?.name
-}
-
-suspend fun getStreetById(
-    id: String
 ): StreetModel? {
-    val filter = Filters.eq("_id", id)
-    return collection.find(filter).toList().firstOrNull()
-}
-
-suspend fun getStreetId(
-    streetName: String
-): String? {
-    val filter = Filters.eq(StreetModel::name.name, streetName)
+    val cityFilter = Filters.eq(StreetModel::city.name, cityName.lowercase())
+    val streetFilter = Filters.eq(StreetModel::name.name, streetName.lowercase())
+    val filter = Filters.and(cityFilter, streetFilter)
     val street = collection.find(filter).toList().firstOrNull()
-    return street?.id ?: addStreet(streetName)?.id
+    return street ?: addStreet(cityName, streetName)
 }
 
 suspend fun addStreet(
+    cityName: String,
     streetName: String
 ): StreetModel? {
     val streetModel = StreetModel(
-        id = ObjectId().toString(),
+        city = cityName.lowercase(),
         name = streetName.lowercase()
     )
     val status = collection.insertOne(streetModel).wasAcknowledged()
