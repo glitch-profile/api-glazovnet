@@ -23,6 +23,23 @@ suspend fun getAnnouncementList(
     return announcements.subList(offset, offset + limit)
 }
 
+suspend fun getAnnouncementByClientId(
+    clientId: String
+): List<AnnouncementModel> {
+    val client = getClientById(clientId)
+    if (client != null) {
+        val address = client.address
+        val announcement = getAnnouncementsByAddress(
+            city = address.cityName,
+            street = address.streetName,
+            houseNumber = address.houseNumber
+        )
+        return announcement
+    } else {
+        return emptyList()
+    }
+}
+
 suspend fun getAnnouncementsByAddress(
     city: String,
     street: String,
