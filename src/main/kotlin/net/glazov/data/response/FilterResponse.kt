@@ -1,4 +1,4 @@
-package net.glazov.routes
+package net.glazov.data.response
 
 import kotlinx.serialization.Serializable
 import net.glazov.data.model.FilterModel

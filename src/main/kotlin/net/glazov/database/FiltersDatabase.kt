@@ -26,13 +26,14 @@ suspend fun getAllFilters(
 
 suspend fun addFilter(
     filter: FilterModel
-): FilterModel {
+): FilterModel? {
     val filterToInsert = filter.copy(
         id = ObjectId().toString(),
         addressFilters = filter.addressFilters.map { it.take(3) }
     )
-    collection.insertOne(filterToInsert)
-    return filterToInsert
+    val status = collection.insertOne(filterToInsert).wasAcknowledged()
+    return if (status) filterToInsert
+    else null
 }
 
 suspend fun deleteFilter(
