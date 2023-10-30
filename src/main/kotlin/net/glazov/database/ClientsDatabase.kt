@@ -40,6 +40,13 @@ suspend fun createClient(
     }
 }
 
+suspend fun getClientById(
+    clientId: String
+): ClientModel? {
+    val filter = Filters.eq("_id", clientId)
+    return collection.find(filter).toList().firstOrNull()
+}
+
 suspend fun login(
     login: String?,
     password: String?
@@ -50,5 +57,7 @@ suspend fun login(
     val client = collection.find(filter).toList().firstOrNull()
     return client?.id
 }
+
+
 
 
