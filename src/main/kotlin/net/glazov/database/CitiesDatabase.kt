@@ -5,7 +5,6 @@ import com.mongodb.kotlin.client.coroutine.MongoClient
 import io.ktor.server.config.*
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.model.CityModel
-import org.bson.types.ObjectId
 
 private val mongoUri = ApplicationConfig(null).tryGetString("storage.mongo_db_uri").toString()
 private val client = MongoClient.create(mongoUri)

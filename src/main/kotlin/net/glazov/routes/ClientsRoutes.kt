@@ -7,7 +7,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.model.ClientModel
 import net.glazov.database.createClient
-import net.glazov.database.getAnnouncementsByAddress
 
 private const val PATH = "/api/clients"
 

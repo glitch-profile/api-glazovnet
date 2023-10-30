@@ -14,5 +14,6 @@ fun Application.configureRouting() {
         addressRoutes()
         clientsRoutes(apiKey)
         filtersRoutes(apiKey)
+        announcementsRoutes(apiKey)
     }
 }

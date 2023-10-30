@@ -6,7 +6,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.model.AnnouncementModel
-import net.glazov.data.model.PostModel
 import net.glazov.data.response.AnnouncementResponse
 import net.glazov.database.addAnnouncement
 import net.glazov.database.deleteAnnouncement
