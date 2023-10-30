@@ -14,5 +14,6 @@ fun Application.configureRouting() {
         citiesRoutes()
         streetsRoutes()
         clientsRoutes(apiKey)
+        filtersRoutes(apiKey)
     }
 }
