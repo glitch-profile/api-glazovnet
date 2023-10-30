@@ -11,8 +11,7 @@ fun Application.configureRouting() {
         //testRoutes()
         postRoutes(apiKey)
         tariffsRoutes(apiKey)
-        citiesRoutes()
-        streetsRoutes()
+        addressRoutes()
         clientsRoutes(apiKey)
         filtersRoutes(apiKey)
     }
