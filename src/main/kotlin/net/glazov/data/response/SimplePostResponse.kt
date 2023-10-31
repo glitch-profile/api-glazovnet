@@ -7,5 +7,5 @@ import net.glazov.data.model.PostModel
 data class SimplePostResponse(
     val status: Boolean,
     val message: String,
-    val data: List<PostModel?>
+    val data: List<PostModel>
 )

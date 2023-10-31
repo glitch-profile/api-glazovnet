@@ -48,7 +48,7 @@ fun Route.postRoutes(
             SimplePostResponse(
                 status = status,
                 message = if (status) "post retrieved" else "no post with id found",
-                data = listOf(post)
+                data = if (status) listOf(post!!) else emptyList()
             )
         )
     }
@@ -85,11 +85,12 @@ fun Route.postRoutes(
                 return@post
             }
             val post = addNewPost(newPost)
+            val status = post != null
             call.respond(
                 SimplePostResponse(
-                    status = post != null,
-                    message = if (post != null) "post added" else "error while adding the post",
-                    data = listOf(post)
+                    status = status,
+                    message = if (status) "post added" else "error while adding the post",
+                    data = if (status) listOf(post!!) else emptyList()
                 )
             )
         } else {

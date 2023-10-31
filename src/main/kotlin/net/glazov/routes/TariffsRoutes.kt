@@ -35,11 +35,12 @@ fun Route.tariffsRoutes(
             try {
                 val newTariff = call.receive<TariffModel>()
                 val tariff = addTariff(newTariff)
+                val status = tariff != null
                 call.respond(
                     SimpleTariffResponse(
-                        status = tariff != null,
-                        message = if (tariff != null) "tariff added" else "error while adding the tariff",
-                        data = listOf(tariff)
+                        status = status,
+                        message = if (status) "tariff added" else "error while adding the tariff",
+                        data = if (status) listOf(tariff!!) else emptyList()
                     )
                 )
             } catch (e: ContentTransformationException) {

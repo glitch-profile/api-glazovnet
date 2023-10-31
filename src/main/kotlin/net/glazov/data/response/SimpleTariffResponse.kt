@@ -7,5 +7,5 @@ import net.glazov.data.model.TariffModel
 data class SimpleTariffResponse(
     val status: Boolean,
     val message: String,
-    val data: List<TariffModel?>
+    val data: List<TariffModel>
 )
