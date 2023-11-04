@@ -27,16 +27,16 @@ suspend fun getAnnouncementByClientId(
     clientId: String
 ): List<AnnouncementModel> {
     val client = getClientById(clientId)
-    if (client != null) {
+    return if (client != null) {
         val address = client.address
         val announcement = getAnnouncementsByAddress(
             city = address.cityName,
             street = address.streetName,
             houseNumber = address.houseNumber
         )
-        return announcement
+        announcement
     } else {
-        return emptyList()
+        emptyList()
     }
 }
 

@@ -7,9 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.response.AnnouncementResponse
-import net.glazov.database.addAnnouncement
-import net.glazov.database.deleteAnnouncement
-import net.glazov.database.getAnnouncementsByAddress
+import net.glazov.database.*
 
 private const val PATH = "/api/announcements"
 
@@ -17,17 +15,19 @@ fun Route.announcementsRoutes(
     serverApiKey: String
 ) {
 
-    get("$PATH/filterbyaddress") {
-        val city = call.request.queryParameters["city"] ?: ""
-        val street = call.request.queryParameters["street"] ?: ""
-        val houseNumber = call.request.queryParameters["house_number"]?.toIntOrNull()
-        if (city.isNotBlank() && street.isNotBlank() && houseNumber != null) {
-            val announcements = getAnnouncementsByAddress(
-                city = city,
-                street = street,
-                houseNumber = houseNumber
+    get("$PATH/getforclient") {
+        val clientLogin = call.request.queryParameters["login"]
+        val clientPassword = call.request.queryParameters["password"]
+        val clientId = login(clientLogin, clientPassword)
+        if (clientId != null) {
+            val announcements = getAnnouncementByClientId(clientId)
+            call.respond(
+                AnnouncementResponse(
+                    status = true,
+                    message = "announcements received",
+                    data = announcements
+                )
             )
-            call.respond(announcements)
         } else {
             call.respond(HttpStatusCode.BadRequest)
         }
