@@ -7,16 +7,25 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.response.AnnouncementResponse
-import net.glazov.database.addAnnouncement
-import net.glazov.database.deleteAnnouncement
-import net.glazov.database.getAnnouncementByClientId
-import net.glazov.database.login
+import net.glazov.database.*
 
 private const val PATH = "/api/announcements"
 
 fun Route.announcementsRoutes(
     serverApiKey: String
 ) {
+
+
+    get("$PATH/getall") {
+        val announcement = getAnnouncements()
+        call.respond(
+            AnnouncementResponse(
+                status = true,
+                message = "${announcement.size} announcements retrieved",
+                data = announcement
+            )
+        )
+    } //TODO: Remove after completion of announcements block
 
     get("$PATH/getforclient") {
         val clientLogin = call.request.queryParameters["login"]
