@@ -7,7 +7,10 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.response.AnnouncementResponse
-import net.glazov.database.*
+import net.glazov.database.addAnnouncement
+import net.glazov.database.deleteAnnouncement
+import net.glazov.database.getAnnouncementByClientId
+import net.glazov.database.login
 
 private const val PATH = "/api/announcements"
 
