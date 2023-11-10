@@ -13,7 +13,6 @@ fun Application.configureRouting() {
         tariffsRoutes(apiKey)
         addressRoutes()
         clientsRoutes(apiKey)
-        filtersRoutes(apiKey)
         announcementsRoutes(apiKey)
     }
 }

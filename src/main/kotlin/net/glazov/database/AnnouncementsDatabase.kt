@@ -15,6 +15,10 @@ private val client = MongoClient.create(mongoUri)
 private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<AnnouncementModel>("Announcements")
 
+suspend fun getAnnouncements(): List<AnnouncementModel> {
+    return collection.find().toList().reversed()
+}
+
 suspend fun getAnnouncementList(
     limit: Int = 20,
     offset: Int = 0

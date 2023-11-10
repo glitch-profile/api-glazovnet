@@ -15,6 +15,18 @@ fun Route.announcementsRoutes(
     serverApiKey: String
 ) {
 
+
+    get("$PATH/getall") {
+        val announcement = getAnnouncements()
+        call.respond(
+            AnnouncementResponse(
+                status = true,
+                message = "${announcement.size} announcements retrieved",
+                data = announcement
+            )
+        )
+    } //TODO: Remove after completion of announcements block
+
     get("$PATH/getforclient") {
         val clientLogin = call.request.queryParameters["login"]
         val clientPassword = call.request.queryParameters["password"]
