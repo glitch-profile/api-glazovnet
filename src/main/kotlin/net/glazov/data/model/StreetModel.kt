@@ -22,7 +22,7 @@ data class StreetModel(
             "${name.first()} $city",
         )
         return matchingCombinations.any {
-            it.contains(filterString, ignoreCase = true)
+            it.contains(filterString)
         }
     }
 }

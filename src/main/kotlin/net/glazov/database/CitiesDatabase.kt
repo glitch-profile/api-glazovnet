@@ -14,9 +14,9 @@ private val collection = database.getCollection<CityModel>("Cities")
 suspend fun getCities(
     cityName: String?
 ): List<CityModel> {
-    val name = cityName ?: ""
+    val name = cityName?.lowercase() ?: ""
     val allCities = collection.find().toList()
-    val filteredList = allCities.filter { it.name.contains(name, ignoreCase = true) }
+    val filteredList = allCities.filter { it.name.contains(name) }
     return filteredList.sortedBy { it.name }
 }
 

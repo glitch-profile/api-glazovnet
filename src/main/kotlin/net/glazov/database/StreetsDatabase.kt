@@ -18,8 +18,9 @@ suspend fun getStreets(
     return if (cityName == null) {
         emptyList()
     } else {
-        val street = streetName ?: ""
-        val filter = "$cityName$street"
+        val city = cityName.lowercase()
+        val street = streetName?.lowercase() ?: ""
+        val filter = "$city$street"
         val allStreets = collection.find().toList()
         allStreets.filter {
             it.doesMatchFilter(filter)
