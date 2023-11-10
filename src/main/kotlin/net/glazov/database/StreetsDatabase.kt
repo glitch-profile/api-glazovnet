@@ -12,11 +12,19 @@ private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<StreetModel>("Streets")
 
 suspend fun getStreets(
-    filterString: String?
+    cityName: String?,
+    streetName: String?
 ): List<StreetModel> {
-    val filter = filterString ?: ""
-    val allStreets = collection.find().toList()
-    return allStreets.sortedBy { it.doesMatchFilter(filter) }
+    return if (cityName == null) {
+        emptyList()
+    } else {
+        val street = streetName ?: ""
+        val filter = "$cityName$street"
+        val allStreets = collection.find().toList()
+        allStreets.filter {
+            it.doesMatchFilter(filter)
+        }.sortedBy { it.name }
+    }
 }
 
 suspend fun getStreetNameFromDatabaseFormatted(

@@ -12,9 +12,9 @@ private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<CityModel>("Cities")
 
 suspend fun getCities(
-    filterName: String?
+    cityName: String?
 ): List<CityModel> {
-    val name = filterName ?: ""
+    val name = cityName ?: ""
     val allCities = collection.find().toList()
     val filteredList = allCities.filter { it.name.contains(name, ignoreCase = true) }
     return filteredList.sortedBy { it.name }

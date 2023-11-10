@@ -11,14 +11,15 @@ private const val PATH = "/api/addressinfo"
 fun Route.addressRoutes() {
 
     get("$PATH/getcitieslist") {
-        val name = call.request.queryParameters["name"]
-        val citiesList = getCities(name)
+        val city = call.request.queryParameters["name"]
+        val citiesList = getCities(city)
         call.respond(citiesList.map { it.name })
     }
 
     get("$PATH/getstreetslist") {
-        val filter = call.request.queryParameters["filter"]
-        val streetsList = getStreets(filter)
+        val city = call.request.queryParameters["city"]
+        val street = call.request.queryParameters["name"]
+        val streetsList = getStreets(city, street)
         call.respond(streetsList.map { it.name })
     }
 
