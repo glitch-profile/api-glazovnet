@@ -47,7 +47,7 @@ suspend fun getAnnouncementByClientId(
 suspend fun getAnnouncementsByAddress(
     city: String,
     street: String,
-    houseNumber: Int
+    houseNumber: String
 ): List<AnnouncementModel> {
     val announcements = collection.find().toList().asReversed()
     return announcements.filter { it.isContainingAddress(city, street, houseNumber) }

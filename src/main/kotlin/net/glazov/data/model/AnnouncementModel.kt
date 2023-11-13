@@ -19,7 +19,7 @@ data class AnnouncementModel(
     fun isContainingAddress(
         city: String,
         street: String,
-        houseNumber: Int
+        houseNumber: String
     ): Boolean {
         val filterString = "$city,$street,$houseNumber"
         addressFilters.forEach {

@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
 data class AddressModel(
     val cityName: String,
     val streetName: String,
-    val houseNumber: Int,
+    val houseNumber: String,
     val roomNumber: Int
 )
