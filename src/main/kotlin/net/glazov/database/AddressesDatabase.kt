@@ -30,9 +30,14 @@ suspend fun getCitiesNames(
     val cities = collection.distinct<String>(
         RegisteredAddressesModel::city.name
     ).toList()
-    return cities
-        .filter { it.contains(cityName) }
-        .sortedBy { it }
+    return if (cityName.isNotBlank()) {
+        cities
+            .filter { it.contains(cityName) }
+            .sortedBy { it }
+    } else {
+        cities.sortedBy { it }
+    }
+
 }
 
 suspend fun getStreetsForCity(
@@ -48,7 +53,7 @@ suspend fun getStreetsForCity(
         .sortedBy { "${it.city}${it.street}" }
 }
 
-suspend fun checkIfAddressExist(
+suspend fun getOrAddAddress(
     city: String,
     street: String,
     houseNumber: String
@@ -76,6 +81,15 @@ suspend fun checkIfAddressExist(
     }
 }
 
+suspend fun isAddressExist(
+    city: String,
+    street: String,
+    houseNumber: String
+): Boolean {
+    val address = getAddresses(city, street, true).firstOrNull()
+    return address?.houseNumbers?.any { it == houseNumber } ?: false
+}
+
 private suspend fun addAddress(
     city: String,
     street: String,
@@ -98,7 +112,9 @@ private suspend fun addHouseNumber(
     val newHouseNumbers = address.houseNumbers.toMutableList()
     newHouseNumbers.add(houseNumber)
     val newAddress = address.copy(
-        houseNumbers = newHouseNumbers.sortedBy { it }
+        houseNumbers = newHouseNumbers.sortedBy { numberString ->
+            ( numberString.filter { it.isDigit() }).toInt() / 1000f
+        }
     )
     return collection.findOneAndReplace(filter = filter, replacement = newAddress)
 }
