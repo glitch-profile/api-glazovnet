@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "net.glazov"
-version = "0.3.5"
+version = "0.4.7"
 
 application {
     mainClass.set("net.glazov.ApplicationKt")
