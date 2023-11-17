@@ -32,7 +32,7 @@ suspend fun getCitiesNames(
     ).toList()
     return if (cityName.isNotBlank()) {
         cities
-            .filter { it.contains(cityName) }
+            .filter { it.startsWith(cityName) }
             .sortedBy { it }
     } else {
         cities.sortedBy { it }
@@ -49,7 +49,7 @@ suspend fun getStreetsForCity(
     val filter = Filters.eq(RegisteredAddressesModel::city.name, cityName)
     val streetsList = collection.find(filter).toList()
     return streetsList
-        .filter { it.street.contains(streetName) }
+        .filter { it.street.startsWith(streetName) }
         .sortedBy { "${it.city}${it.street}" }
 }
 

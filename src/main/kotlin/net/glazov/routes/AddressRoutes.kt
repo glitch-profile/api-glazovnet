@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.model.RegisteredAddressesModel
+import net.glazov.data.response.SimpleResponse
 import net.glazov.database.getAddresses
 import net.glazov.database.getCitiesNames
 import net.glazov.database.getStreetsForCity
@@ -20,7 +21,13 @@ fun Route.addressRoutes(
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"] ?: ""
             val citiesList = getCitiesNames(city)
-            call.respond(citiesList)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "streets retrieved",
+                    data = citiesList
+                )
+            )
         } else call.respond(HttpStatusCode.Forbidden)
     }
 
@@ -31,9 +38,15 @@ fun Route.addressRoutes(
             val street = call.request.queryParameters["street"]
             if (city !== null && street !== null) {
                 val streetsList = getStreetsForCity(city, street)
-                call.respond(streetsList.map { it.street })
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "streets retrieved",
+                        data = {streetsList.map { it.street }}
+                    )
+                )
             }
-            call.respond(emptyList<String>())
+            call.respond(HttpStatusCode.BadRequest)
         } else call.respond(HttpStatusCode.Forbidden)
     }
 
@@ -43,8 +56,22 @@ fun Route.addressRoutes(
             val city = call.request.queryParameters["city"]
             val street = call.request.queryParameters["street"]
             if (city != null && street != null) {
-                call.respond(getAddresses(city, street))
-            } else call.respond(emptyList<RegisteredAddressesModel>())
+                val addresses = getAddresses(city, street)
+                call.respond(
+                    message = SimpleResponse(
+                        status = true,
+                        message = "addresses retrieved",
+                        data = addresses
+                    ),
+                    status = HttpStatusCode.OK
+                )
+            } else call.respond(
+                message = SimpleResponse(
+                    status = true,
+                    message = "addresses retrieved",
+                    data = emptyList<List<RegisteredAddressesModel>>()
+                )
+            )
         } else call.respond(HttpStatusCode.Forbidden)
     }
 

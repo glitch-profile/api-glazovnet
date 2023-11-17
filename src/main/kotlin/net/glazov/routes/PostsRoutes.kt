@@ -6,7 +6,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.model.PostModel
-import net.glazov.data.response.SimplePostResponse
+import net.glazov.data.response.SimpleResponse
 import net.glazov.database.*
 
 private const val PATH = "/api/posts"
@@ -18,9 +18,9 @@ fun Route.postRoutes(
     get("$PATH/getall") {
         val posts = getAllPosts()
         call.respond(
-            SimplePostResponse(
+            SimpleResponse(
                 status = true,
-                message = "${posts.size} posts retrieved",
+                message = "posts retrieved",
                 data = posts
             )
         )
@@ -32,9 +32,9 @@ fun Route.postRoutes(
 
         val posts = (getPostsList(limit = postsLimit, offset = startIndex))
         call.respond(
-            SimplePostResponse(
+            SimpleResponse(
                 status = true,
-                message = "${posts.size} posts retrieved",
+                message = "posts retrieved",
                 data = posts
             )
         )
@@ -45,8 +45,8 @@ fun Route.postRoutes(
         val post = getPostById(id.toString())
         val status = (post !== null)
         call.respond(
-            SimplePostResponse(
-                status = status,
+            SimpleResponse(
+                status = true,
                 message = if (status) "post retrieved" else "no post with id found",
                 data = if (status) listOf(post!!) else emptyList()
             )
@@ -64,10 +64,10 @@ fun Route.postRoutes(
             }
             val status = updatePostByRef(newPost)
             call.respond(
-                SimplePostResponse(
+                SimpleResponse(
                     status = status,
                     message = if (status) "post updated" else "error while updating the post",
-                    data = emptyList()
+                    data = emptyList<PostModel>()
                 )
             )
         } else {
@@ -87,7 +87,7 @@ fun Route.postRoutes(
             val post = addNewPost(newPost)
             val status = post != null
             call.respond(
-                SimplePostResponse(
+                SimpleResponse(
                     status = status,
                     message = if (status) "post added" else "error while adding the post",
                     data = if (status) listOf(post!!) else emptyList()
@@ -104,10 +104,10 @@ fun Route.postRoutes(
             val postId = call.request.queryParameters["post_id"]
             val status = deletePostById(postId.toString())
             call.respond(
-                SimplePostResponse(
+                SimpleResponse(
                     status = status,
                     message = if (status) "post deleted" else "error while deleting the post",
-                    data = emptyList()
+                    data = emptyList<PostModel>()
                 )
             )
         } else {
