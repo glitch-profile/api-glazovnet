@@ -37,7 +37,6 @@ suspend fun getCitiesNames(
     } else {
         cities.sortedBy { it }
     }
-
 }
 
 suspend fun getStreetsForCity(
@@ -74,8 +73,8 @@ suspend fun getOrAddAddress(
         }
     } else {
         addAddress(
-            city,
-            street,
+            cityName,
+            streetName,
             houseNumber
         )
     }
