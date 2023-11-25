@@ -13,7 +13,7 @@ private val client = MongoClient.create(mongoUri)
 private val database = client.getDatabase("GlazovNetDatabase")
 private val collection = database.getCollection<ClientModel>("Clients")
 
-suspend fun getAllClients() = collection.find().toList().sortedBy { it.firstName }
+suspend fun getAllClients() = collection.find().toList().sortedBy { it.lastName }
 
 suspend fun createClient(
     clientModel: ClientModel
