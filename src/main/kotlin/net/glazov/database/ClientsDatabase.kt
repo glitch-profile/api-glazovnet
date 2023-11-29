@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.toList
 import net.glazov.data.model.AddressModel
 import net.glazov.data.model.ClientModel
 import org.bson.types.ObjectId
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 private val mongoUri = ApplicationConfig(null).tryGetString("storage.mongo_db_uri").toString()
 private val client = MongoClient.create(mongoUri)
@@ -24,6 +27,7 @@ suspend fun createClient(
         houseNumber = clientModel.address.houseNumber
     )
     return if (address != null) {
+        val creationDate = LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE)
         val client = clientModel.copy(
             id = ObjectId().toString(),
             address = AddressModel(
@@ -31,7 +35,8 @@ suspend fun createClient(
                 streetName = address.street,
                 houseNumber = clientModel.address.houseNumber,
                 roomNumber = clientModel.address.roomNumber
-            )
+            ),
+            debitDate = creationDate
         )
         val status = collection.insertOne(client).wasAcknowledged()
         if (status) client else null

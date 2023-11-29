@@ -3,6 +3,7 @@ package net.glazov.data.model
 import kotlinx.serialization.Serializable
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -20,7 +21,7 @@ data class ClientModel(
     val tariffId: String? = null, //ID подключенного тарифа
     val address: AddressModel,
     val balance: Double = 0.0, //Остаток средств на аккаунте
-    val debitDate: String = OffsetDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE_TIME), //Дата списания средств
+    val debitDate: String = LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE), //Дата списания средств
     val isAccountActive: Boolean = true,
     val connectedServices: List<String> = emptyList()
 )
