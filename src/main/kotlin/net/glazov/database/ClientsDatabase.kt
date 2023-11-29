@@ -36,7 +36,9 @@ suspend fun createClient(
                 houseNumber = clientModel.address.houseNumber,
                 roomNumber = clientModel.address.roomNumber
             ),
+            accountCreationDate = creationDate,
             debitDate = creationDate
+            //TODO:Add debit date calculation
         )
         val status = collection.insertOne(client).wasAcknowledged()
         if (status) client else null

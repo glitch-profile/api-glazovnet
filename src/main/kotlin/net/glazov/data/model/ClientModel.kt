@@ -21,6 +21,7 @@ data class ClientModel(
     val tariffId: String? = null, //ID подключенного тарифа
     val address: AddressModel,
     val balance: Double = 0.0, //Остаток средств на аккаунте
+    val accountCreationDate: String = "",
     val debitDate: String = "", //Дата списания средств
     val isAccountActive: Boolean = true,
     val connectedServices: List<String> = emptyList()
