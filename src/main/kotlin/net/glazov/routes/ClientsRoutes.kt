@@ -41,7 +41,7 @@ fun Route.clientsRoutes(
     }
 
     get("$PATH/getall") {
-        val apiKey = call.request.queryParameters["Api_key"]
+        val apiKey = call.request.queryParameters["api_key"]
         if (apiKey == apiKeyServer) {
             val clients = getAllClients()
             call.respond(
