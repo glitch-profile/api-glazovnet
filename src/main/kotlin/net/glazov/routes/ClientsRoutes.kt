@@ -21,7 +21,6 @@ fun Route.clientsRoutes(
         if (apiKey == apiKeyServer) {
             val clientModel = try {
                 call.receive<ClientModel>()
-
             } catch (e: ContentTransformationException) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
