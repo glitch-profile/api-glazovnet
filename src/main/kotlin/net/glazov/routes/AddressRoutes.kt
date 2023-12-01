@@ -21,11 +21,12 @@ fun Route.addressRoutes(
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"] ?: ""
             val citiesList = getCitiesNames(city)
+            val formattedCitiesList = citiesList.map { it.replaceFirstChar { it.uppercaseChar() } }
             call.respond(
                 SimpleResponse(
                     status = true,
                     message = "streets retrieved",
-                    data = citiesList
+                    data = formattedCitiesList
                 )
             )
         } else call.respond(HttpStatusCode.Forbidden)
@@ -36,17 +37,24 @@ fun Route.addressRoutes(
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"]
             val street = call.request.queryParameters["street"]
+            println("requesting streets for city: $city. Start of streets filter is $street")
             if (city !== null && street !== null) {
                 val streetsList = getStreetsForCity(city, street)
+                val formattedStreetsNames = streetsList.map {
+                    it.street.replaceFirstChar { it.uppercaseChar() }
+                }
+                println("found streets - $formattedStreetsNames")
                 call.respond(
                     SimpleResponse(
                         status = true,
                         message = "streets retrieved",
-                        data = {streetsList.map { it.street }}
+                        data = formattedStreetsNames
                     )
                 )
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
             }
-            call.respond(HttpStatusCode.BadRequest)
+
         } else call.respond(HttpStatusCode.Forbidden)
     }
 
@@ -57,11 +65,17 @@ fun Route.addressRoutes(
             val street = call.request.queryParameters["street"]
             if (city != null && street != null) {
                 val addresses = getAddresses(city, street)
+                val formattedAddresses = addresses.map {
+                    it.copy(
+                        city = it.city.replaceFirstChar { it.uppercaseChar() },
+                        street = it.street.replaceFirstChar { it.uppercaseChar() }
+                    )
+                }
                 call.respond(
                     message = SimpleResponse(
                         status = true,
                         message = "addresses retrieved",
-                        data = addresses
+                        data = formattedAddresses
                     ),
                     status = HttpStatusCode.OK
                 )
