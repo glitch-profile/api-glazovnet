@@ -37,13 +37,11 @@ fun Route.addressRoutes(
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"]
             val street = call.request.queryParameters["street"]
-            println("requesting streets for city: $city. Start of streets filter is $street")
             if (city !== null && street !== null) {
                 val streetsList = getStreetsForCity(city, street)
                 val formattedStreetsNames = streetsList.map {
                     it.street.replaceFirstChar { it.uppercaseChar() }
                 }
-                println("found streets - $formattedStreetsNames")
                 call.respond(
                     SimpleResponse(
                         status = true,
