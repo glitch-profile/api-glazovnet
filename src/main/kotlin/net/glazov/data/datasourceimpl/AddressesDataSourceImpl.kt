@@ -48,7 +48,7 @@ class AddressesDataSourceImpl(
             .sortedBy { "${it.city}${it.street}" }
     }
 
-    suspend fun getOrAddAddress(city: String, street: String, houseNumber: String): RegisteredAddressesModel? {
+    override suspend fun getOrAddAddress(city: String, street: String, houseNumber: String): RegisteredAddressesModel? {
         val cityName = city.lowercase()
         val streetName = street.lowercase()
         val address = getAddresses(
@@ -77,7 +77,7 @@ class AddressesDataSourceImpl(
         return address?.houseNumbers?.any { it == houseNumber } ?: false
     }
 
-    override suspend fun addAddress(city: String, street: String, houseNumber: String): RegisteredAddressesModel? {
+    private suspend fun addAddress(city: String, street: String, houseNumber: String): RegisteredAddressesModel? {
         val newAddress = RegisteredAddressesModel(
             city = city,
             street = street,
@@ -87,7 +87,7 @@ class AddressesDataSourceImpl(
         return if (status) newAddress else null
     }
 
-    override suspend fun addHouseNumber(
+    private suspend fun addHouseNumber(
         address: RegisteredAddressesModel,
         houseNumber: String
     ): RegisteredAddressesModel? {

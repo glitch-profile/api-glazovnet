@@ -19,21 +19,16 @@ interface AddressesDataSource {
         street: String = ""
     ): List<RegisteredAddressesModel>
 
+    suspend fun getOrAddAddress(
+        city: String,
+        street: String,
+        houseNumber: String
+    ): RegisteredAddressesModel?
+
     suspend fun isAddressExist(
         city: String,
         street: String,
         houseNumber: String
     ): Boolean
-
-    suspend fun addAddress(
-        city: String,
-        street: String,
-        houseNumber: String
-    ): RegisteredAddressesModel?
-
-    suspend fun addHouseNumber(
-        address: RegisteredAddressesModel,
-        houseNumber: String
-    ): RegisteredAddressesModel?
 
 }

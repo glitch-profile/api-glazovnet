@@ -3,6 +3,7 @@ package net.glazov.data.datasourceimpl
 import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
+import net.glazov.data.datasource.AddressesDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.AddressModel
 import net.glazov.data.model.ClientModel
@@ -13,7 +14,7 @@ import java.time.format.DateTimeFormatter
 
 class ClientsDataSourceImpl(
     private val db: MongoDatabase,
-    private val addresses: AddressesDataSourceImpl
+    private val addresses: AddressesDataSource
 ): ClientsDataSource {
 
     private val clients = db.getCollection<ClientModel>("Clients")
