@@ -48,7 +48,7 @@ class AddressesDataSourceImpl(
             .sortedBy { "${it.city}${it.street}" }
     }
 
-    override suspend fun getOrAddAddress(city: String, street: String, houseNumber: String): RegisteredAddressesModel? {
+    suspend fun getOrAddAddress(city: String, street: String, houseNumber: String): RegisteredAddressesModel? {
         val cityName = city.lowercase()
         val streetName = street.lowercase()
         val address = getAddresses(
