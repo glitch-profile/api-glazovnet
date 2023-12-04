@@ -2,6 +2,7 @@
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
+val koin_version: String by project
 
 plugins {
     kotlin("jvm") version "1.9.10"
@@ -32,6 +33,11 @@ dependencies {
     implementation("io.ktor:ktor-server-host-common-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logback_version")
+
+    //websockets
+//    implementation("io.ktor:ktor-server-sessions:$ktor_version")
+    implementation("io.ktor:ktor-server-websockets:$ktor_version")
+
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 
@@ -39,8 +45,8 @@ dependencies {
     implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 
-//    https://mvnrepository.com/artifact/mysql/mysql-connector-java
-//    implementation("mysql:mysql-connector-java:8.0.33")
-//    implementation("org.ktorm:ktorm-core:3.6.0")
+    //Koin
+    implementation("io.insert-koin:koin-core:$koin_version")
+    implementation("io.insert-koin:koin-ktor:$koin_version")
 
 }
