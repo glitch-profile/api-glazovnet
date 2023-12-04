@@ -1,4 +1,4 @@
-package net.glazov.data.response
+package net.glazov.data.model.response
 
 import kotlinx.serialization.Serializable
 import net.glazov.data.model.AnnouncementModel
