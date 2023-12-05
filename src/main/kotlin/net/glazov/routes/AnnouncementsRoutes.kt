@@ -8,6 +8,7 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.AnnouncementsDataSource
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.model.response.AnnouncementResponse
+import net.glazov.data.model.response.SimpleResponse
 
 private const val PATH = "/api/announcements"
 
@@ -87,6 +88,28 @@ fun Route.announcementsRoutes(
             } else {
                 call.respond(HttpStatusCode.BadRequest)
             }
+        } else {
+            call.respond(HttpStatusCode.Forbidden)
+        }
+    }
+
+    put("$PATH/edit") {
+        val apiKey = call.request.queryParameters["api_key"]
+        if (serverApiKey == apiKey) {
+            val newAnnouncement = try {
+                call.receive<AnnouncementModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val status = announcements.updateAnnouncement(newAnnouncement)
+            call.respond(
+                SimpleResponse(
+                    status = status,
+                    message = if (status) "announcement updated" else "error while updating announcement",
+                    data = null
+                )
+            )
         } else {
             call.respond(HttpStatusCode.Forbidden)
         }
