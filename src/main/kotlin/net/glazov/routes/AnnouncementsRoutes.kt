@@ -5,39 +5,42 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.AnnouncementsDataSource
 import net.glazov.data.model.AnnouncementModel
-import net.glazov.data.response.AnnouncementResponse
-import net.glazov.database.*
+import net.glazov.data.model.response.AnnouncementResponse
 
 private const val PATH = "/api/announcements"
 
 fun Route.announcementsRoutes(
-    serverApiKey: String
+    serverApiKey: String,
+    announcements: AnnouncementsDataSource
 ) {
 
 
     get("$PATH/getall") {
-        val announcement = getAnnouncements()
+        val announcementsList = announcements.getAnnouncements()
         call.respond(
             AnnouncementResponse(
                 status = true,
-                message = "${announcement.size} announcements retrieved",
-                data = announcement
+                message = "${announcementsList.size} announcements retrieved",
+                data = announcementsList
             )
         )
     } //TODO: Remove after completion of announcements block
 
     get("$PATH/getforclient") {
-        val clientLogin = call.request.queryParameters["login"]
-        val clientPassword = call.request.queryParameters["password"]
-        val clientId = login(clientLogin, clientPassword)
-        if (clientId != null) {
-            val announcements = getAnnouncementByClientId(clientId)
+        val clientLogin = call.request.queryParameters["login"] ?: ""
+        val clientPassword = call.request.queryParameters["password"] ?: ""
+        if (clientLogin.isNotBlank() && clientPassword.isNotBlank()) {
+            val announcementsList = announcements.getAnnouncementForClient(
+                clientLogin,
+                clientPassword
+            )
             call.respond(
                 AnnouncementResponse(
                     status = true,
                     message = "announcements received",
-                    data = announcements
+                    data = announcementsList
                 )
             )
         } else {
@@ -54,7 +57,7 @@ fun Route.announcementsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val announcement = addAnnouncement(newAnnouncement)
+            val announcement = announcements.addAnnouncement(newAnnouncement)
             val status = announcement != null
             call.respond(
                 AnnouncementResponse(
@@ -73,7 +76,7 @@ fun Route.announcementsRoutes(
         if (serverApiKey == apiKey) {
             val announcementId = call.request.queryParameters["id"]
             if (announcementId != null) {
-                val status = deleteAnnouncement(announcementId)
+                val status = announcements.deleteAnnouncement(announcementId)
                 call.respond(
                     AnnouncementResponse(
                         status = status,

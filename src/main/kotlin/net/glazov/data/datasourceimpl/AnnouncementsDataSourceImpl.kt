@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.AnnouncementsDataSource
+import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.AnnouncementModel
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
@@ -12,7 +13,7 @@ import java.time.format.DateTimeFormatter
 
 class AnnouncementsDataSourceImpl(
     private val db: MongoDatabase,
-    private val clients: ClientsDataSourceImpl
+    private val clients: ClientsDataSource
 ): AnnouncementsDataSource {
 
     private val announcements = db.getCollection<AnnouncementModel>("Announcements")
@@ -26,22 +27,25 @@ class AnnouncementsDataSourceImpl(
         return announcements.subList(offset, offset + limit)
     }
 
-    override suspend fun getAnnouncementByClientId(clientId: String): List<AnnouncementModel> {
-        val client = clients.getClientById(clientId)
+    override suspend fun getAnnouncementForClient(
+        login: String,
+        password: String
+    ): List<AnnouncementModel> {
+        val client = clients.login(login, password)
         return if (client != null) {
             val address = client.address
-            val announcement = getAnnouncementsByAddress(
+            val announcementList = getAnnouncementsByAddress(
                 city = address.cityName,
                 street = address.streetName,
                 houseNumber = address.houseNumber
             )
-            announcement
+            announcementList
         } else {
             emptyList()
         }
     }
 
-    override suspend fun getAnnouncementsByAddress(
+    private suspend fun getAnnouncementsByAddress(
         city: String,
         street: String,
         houseNumber: String

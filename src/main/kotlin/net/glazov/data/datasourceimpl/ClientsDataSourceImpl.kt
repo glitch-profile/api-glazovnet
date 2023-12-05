@@ -2,6 +2,7 @@ package net.glazov.data.datasourceimpl
 
 import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
+import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.AddressesDataSource
 import net.glazov.data.datasource.ClientsDataSource
@@ -16,6 +17,8 @@ class ClientsDataSourceImpl(
     private val db: MongoDatabase,
     private val addresses: AddressesDataSource
 ): ClientsDataSource {
+
+
 
     private val clients = db.getCollection<ClientModel>("Clients")
 
@@ -55,11 +58,10 @@ class ClientsDataSourceImpl(
         return clients.find(filter).toList().firstOrNull()
     }
 
-    override suspend fun login(login: String?, password: String?): String? {
+    override suspend fun login(login: String?, password: String?): ClientModel? {
         val loginFilter = Filters.eq(ClientModel::login.name, login)
         val passwordFilter = Filters.eq(ClientModel::password.name, password)
         val filter = Filters.and(loginFilter, passwordFilter)
-        val client = clients.find(filter).toList().firstOrNull()
-        return client?.id
+        return clients.find(filter).singleOrNull()
     }
 }

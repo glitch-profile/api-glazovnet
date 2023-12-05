@@ -11,14 +11,9 @@ interface AnnouncementsDataSource {
         offset: Int = 0
     ): List<AnnouncementModel>
 
-    suspend fun getAnnouncementByClientId(
-        clientId: String
-    ): List<AnnouncementModel>
-
-    suspend fun getAnnouncementsByAddress(
-        city: String,
-        street: String,
-        houseNumber: String
+    suspend fun getAnnouncementForClient(
+        login: String,
+        password: String
     ): List<AnnouncementModel>
 
     suspend fun addAnnouncement(

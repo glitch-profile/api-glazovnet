@@ -4,23 +4,22 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.AddressesDataSource
 import net.glazov.data.model.RegisteredAddressesModel
-import net.glazov.data.response.SimpleResponse
-import net.glazov.database.getAddresses
-import net.glazov.database.getCitiesNames
-import net.glazov.database.getStreetsForCity
+import net.glazov.data.model.response.SimpleResponse
 
 private const val PATH = "/api/addressinfo"
 
 fun Route.addressRoutes(
-    serverApiKey: String
+    serverApiKey: String,
+    addresses: AddressesDataSource
 ) {
 
     get("$PATH/getcitieslist") {
         val apiKey = call.request.queryParameters["api_key"]
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"] ?: ""
-            val citiesList = getCitiesNames(city)
+            val citiesList = addresses.getCitiesNames(city)
             val formattedCitiesList = citiesList.map { it.replaceFirstChar { it.uppercaseChar() } }
             call.respond(
                 SimpleResponse(
@@ -38,7 +37,7 @@ fun Route.addressRoutes(
             val city = call.request.queryParameters["city"]
             val street = call.request.queryParameters["street"]
             if (city !== null && street !== null) {
-                val streetsList = getStreetsForCity(city, street)
+                val streetsList = addresses.getStreetsForCity(city, street)
                 val formattedStreetsNames = streetsList.map {
                     it.street.replaceFirstChar { it.uppercaseChar() }
                 }
@@ -62,8 +61,8 @@ fun Route.addressRoutes(
             val city = call.request.queryParameters["city"]
             val street = call.request.queryParameters["street"]
             if (city != null && street != null) {
-                val addresses = getAddresses(city, street)
-                val formattedAddresses = addresses.map {
+                val addressesList = addresses.getAddresses(city, street)
+                val formattedAddresses = addressesList.map {
                     it.copy(
                         city = it.city.replaceFirstChar { it.uppercaseChar() },
                         street = it.street.replaceFirstChar { it.uppercaseChar() }

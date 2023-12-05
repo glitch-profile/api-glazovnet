@@ -5,6 +5,7 @@ import net.glazov.data.datasourceimpl.*
 import org.koin.dsl.module
 
 val dataSourcesModule = module {
+
     single<AddressesDataSource> {
         AddressesDataSourceImpl(db = get())
     }

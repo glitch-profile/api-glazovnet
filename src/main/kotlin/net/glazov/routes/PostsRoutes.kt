@@ -5,23 +5,24 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.PostModel
-import net.glazov.data.response.SimpleResponse
-import net.glazov.database.*
+import net.glazov.data.model.response.SimpleResponse
 
 private const val PATH = "/api/posts"
 
 fun Route.postRoutes(
-    apiKeyServer: String
+    apiKeyServer: String,
+    posts: PostsDataSource
 ) {
 
     get("$PATH/getall") {
-        val posts = getAllPosts()
+        val postsList = posts.getAllPosts()
         call.respond(
             SimpleResponse(
                 status = true,
                 message = "posts retrieved",
-                data = posts
+                data = postsList
             )
         )
     }
@@ -30,19 +31,19 @@ fun Route.postRoutes(
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
-        val posts = (getPostsList(limit = postsLimit, offset = startIndex))
+        val postsList = (posts.getPostsList(limit = postsLimit, offset = startIndex))
         call.respond(
             SimpleResponse(
                 status = true,
                 message = "posts retrieved",
-                data = posts
+                data = postsList
             )
         )
     }
 
     get("$PATH/get") {
-        val id = call.request.queryParameters["post_id"]
-        val post = getPostById(id.toString())
+        val id = call.request.queryParameters["post_id"] ?: ""
+        val post = posts.getPostById(id)
         val status = (post !== null)
         call.respond(
             SimpleResponse(
@@ -62,7 +63,7 @@ fun Route.postRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val status = updatePostByRef(newPost)
+            val status = posts.updatePost(newPost)
             call.respond(
                 SimpleResponse(
                     status = status,
@@ -84,7 +85,7 @@ fun Route.postRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val post = addNewPost(newPost)
+            val post = posts.addNewPost(newPost)
             val status = post != null
             call.respond(
                 SimpleResponse(
@@ -102,7 +103,7 @@ fun Route.postRoutes(
         val api = call.request.queryParameters["api_key"]
         if (api == apiKeyServer) {
             val postId = call.request.queryParameters["post_id"]
-            val status = deletePostById(postId.toString())
+            val status = posts.deletePost(postId.toString())
             call.respond(
                 SimpleResponse(
                     status = status,

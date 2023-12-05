@@ -5,26 +5,24 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.model.TariffModel
-import net.glazov.data.response.SimpleTariffResponse
-import net.glazov.database.addTariff
-import net.glazov.database.deleteTariff
-import net.glazov.database.getAllTariffs
-import net.glazov.database.updateTariff
+import net.glazov.data.model.response.SimpleTariffResponse
 
 fun Route.tariffsRoutes(
-    apiKeyServer: String
+    apiKeyServer: String,
+    tariffs: TariffsDataSource
 ) {
 
     val path = "/api/tariffs"
 
     get("$path/getall") {
-        val tariffs = getAllTariffs()
+        val tariffsList = tariffs.getAllTariffs()
         call.respond(
             SimpleTariffResponse(
                 status = true,
-                message = "${tariffs.size} tariffs retrieved",
-                data = tariffs
+                message = "${tariffsList.size} tariffs retrieved",
+                data = tariffsList
             )
         )
     }
@@ -34,7 +32,7 @@ fun Route.tariffsRoutes(
         if (apiKey == apiKeyServer) {
             try {
                 val newTariff = call.receive<TariffModel>()
-                val tariff = addTariff(newTariff)
+                val tariff = tariffs.addTariff(newTariff)
                 val status = tariff != null
                 call.respond(
                     SimpleTariffResponse(
@@ -55,7 +53,7 @@ fun Route.tariffsRoutes(
         val apiKey = call.request.queryParameters["api_key"]
         if (apiKey == apiKeyServer) {
             val tariffId = call.request.queryParameters["tariff_id"]
-            val status = deleteTariff(tariffId = tariffId.toString())
+            val status = tariffs.deleteTariff(tariffId = tariffId.toString())
             call.respond(
                 SimpleTariffResponse(
                     status = status,
@@ -77,7 +75,7 @@ fun Route.tariffsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val status = updateTariff(newTariff)
+            val status = tariffs.updateTariff(newTariff)
             call.respond(
                 SimpleTariffResponse(
                     status = status,

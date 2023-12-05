@@ -17,5 +17,5 @@ interface ClientsDataSource {
     suspend fun login(
         login: String?,
         password: String?
-    ): String?
+    ): ClientModel?
 }
