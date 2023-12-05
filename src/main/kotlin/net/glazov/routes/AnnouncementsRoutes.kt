@@ -105,9 +105,9 @@ fun Route.announcementsRoutes(
             val status = announcements.updateAnnouncement(newAnnouncement)
             call.respond(
                 SimpleResponse(
-                    status = status,
+                    status = true,
                     message = if (status) "announcement updated" else "error while updating announcement",
-                    data = null
+                    data = status
                 )
             )
         } else {
