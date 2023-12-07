@@ -41,7 +41,7 @@ fun Route.postRoutes(
         )
     }
 
-    get("$PATH/get/{post_id}") {
+    get("$PATH/{post_id}") {
         val id = call.parameters["post_id"] ?: ""
         val post = posts.getPostById(id)
         val status = (post !== null)

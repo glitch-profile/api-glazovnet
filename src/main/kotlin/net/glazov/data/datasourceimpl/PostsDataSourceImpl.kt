@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.PostModel
 import org.bson.types.ObjectId
+import kotlin.math.min
 
 class PostsDataSourceImpl(
     private val db: MongoDatabase
@@ -22,7 +23,7 @@ class PostsDataSourceImpl(
         val _offset = offset?.toIntOrNull() ?: 0
         val allPosts = posts.find().toList().reversed().toList()
         return if (_offset >= allPosts.size) emptyList()
-        else allPosts.subList(fromIndex = _offset, toIndex = _offset + _limit)
+        else allPosts.subList(fromIndex = _offset, toIndex = min((_offset + _limit), allPosts.lastIndex))
     }
 
     override suspend fun getPostById(postId: String): PostModel? {
