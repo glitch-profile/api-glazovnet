@@ -16,7 +16,7 @@ fun Route.addressRoutes(
 ) {
 
     get("$PATH/getcitieslist") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"] ?: ""
             val citiesList = addresses.getCitiesNames(city)
@@ -32,7 +32,7 @@ fun Route.addressRoutes(
     }
 
     get("$PATH/getstreetslist") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"]
             val street = call.request.queryParameters["street"]
@@ -56,7 +56,7 @@ fun Route.addressRoutes(
     }
 
     get("$PATH/getaddresses") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"]
             val street = call.request.queryParameters["street"]

@@ -28,7 +28,7 @@ fun Route.tariffsRoutes(
     }
 
     post("$path/add") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (apiKey == apiKeyServer) {
             try {
                 val newTariff = call.receive<TariffModel>()
@@ -50,7 +50,7 @@ fun Route.tariffsRoutes(
     }
 
     delete("$path/remove") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (apiKey == apiKeyServer) {
             val tariffId = call.request.queryParameters["tariff_id"]
             val status = tariffs.deleteTariff(tariffId = tariffId.toString())
@@ -67,7 +67,7 @@ fun Route.tariffsRoutes(
     }
 
     put("$path/edit") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (apiKey == apiKeyServer) {
             val newTariff = try {
                 call.receive<TariffModel>()

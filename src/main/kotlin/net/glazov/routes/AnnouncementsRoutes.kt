@@ -30,8 +30,8 @@ fun Route.announcementsRoutes(
     } //TODO: Remove after completion of announcements block
 
     get("$PATH/getforclient") {
-        val clientLogin = call.request.queryParameters["login"] ?: ""
-        val clientPassword = call.request.queryParameters["password"] ?: ""
+        val clientLogin = call.request.headers["login"] ?: ""
+        val clientPassword = call.request.headers["password"] ?: ""
         if (clientLogin.isNotBlank() && clientPassword.isNotBlank()) {
             val announcementsList = announcements.getAnnouncementForClient(
                 clientLogin,
@@ -50,7 +50,7 @@ fun Route.announcementsRoutes(
     }
 
     post("$PATH/create") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (serverApiKey == apiKey) {
             val newAnnouncement = try {
                 call.receive<AnnouncementModel>()
@@ -73,7 +73,7 @@ fun Route.announcementsRoutes(
     }
 
     delete("$PATH/delete") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (serverApiKey == apiKey) {
             val announcementId = call.request.queryParameters["id"]
             if (announcementId != null) {
@@ -94,7 +94,7 @@ fun Route.announcementsRoutes(
     }
 
     put("$PATH/edit") {
-        val apiKey = call.request.queryParameters["api_key"]
+        val apiKey = call.request.headers["api_key"]
         if (serverApiKey == apiKey) {
             val newAnnouncement = try {
                 call.receive<AnnouncementModel>()

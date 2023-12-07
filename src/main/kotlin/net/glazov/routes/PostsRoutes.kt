@@ -41,8 +41,8 @@ fun Route.postRoutes(
         )
     }
 
-    get("$PATH/get") {
-        val id = call.request.queryParameters["post_id"] ?: ""
+    get("$PATH/get/{post_id}") {
+        val id = call.parameters["post_id"] ?: ""
         val post = posts.getPostById(id)
         val status = (post !== null)
         call.respond(
@@ -55,8 +55,8 @@ fun Route.postRoutes(
     }
 
     put("$PATH/edit") {
-        val api = call.request.queryParameters["api_key"]
-        if (api == apiKeyServer) {
+        val apiKey = call.request.headers["api_key"]
+        if (apiKey == apiKeyServer) {
             val newPost = try {
                 call.receive<PostModel>()
             } catch (e: ContentTransformationException) {
@@ -77,8 +77,8 @@ fun Route.postRoutes(
     }
 
     post("$PATH/add") {
-        val api = call.request.queryParameters["api_key"]
-        if (api == apiKeyServer) {
+        val apiKey = call.request.headers["api_key"]
+        if (apiKey == apiKeyServer) {
             val newPost = try {
                 call.receive<PostModel>()
             } catch (e: ContentTransformationException) {
@@ -100,8 +100,8 @@ fun Route.postRoutes(
     }
 
     delete("$PATH/delete") {
-        val api = call.request.queryParameters["api_key"]
-        if (api == apiKeyServer) {
+        val apiKey = call.request.headers["api_key"]
+        if (apiKey == apiKeyServer) {
             val postId = call.request.queryParameters["post_id"]
             val status = posts.deletePost(postId.toString())
             call.respond(
