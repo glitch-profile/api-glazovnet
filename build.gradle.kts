@@ -35,7 +35,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     //websockets
-//    implementation("io.ktor:ktor-server-sessions:$ktor_version")
+    implementation("io.ktor:ktor-server-sessions:$ktor_version")
     implementation("io.ktor:ktor-server-websockets:$ktor_version")
 
     testImplementation("io.ktor:ktor-server-tests-jvm")
