@@ -3,9 +3,11 @@ package net.glazov.data.datasourceimpl
 import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.model.MessageModel
 import net.glazov.data.model.SupportRequestModel
+import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -16,10 +18,23 @@ class ChatDataSourceImpl(
     private val requests = db.getCollection<SupportRequestModel>("SupportRequests")
 
     override suspend fun getAllRequests(showOnlyActiveRequests: Boolean): List<SupportRequestModel> {
-        TODO("Not yet implemented")
+        val requestsList = requests.find().toList()
+        val filteredRequests = if (showOnlyActiveRequests) {
+            requestsList.asSequence()
+                .filter { !it.isSolved }
+                .sortedBy { it.creationDate }
+                .map { it.copy(messages = emptyList()) }
+                .toList()
+        } else {
+            requestsList.asSequence()
+                .sortedBy { it.creationDate }
+                .map { it.copy(messages = emptyList()) }
+                .toList()
+        }
+        return filteredRequests
     }
 
-    override suspend fun getRequestsForClient(login: String, password: String): List<SupportRequestModel> {
+    override suspend fun getRequestsForClient(clientId: String): List<SupportRequestModel> {
         TODO("Not yet implemented")
     }
 
@@ -30,7 +45,13 @@ class ChatDataSourceImpl(
     }
 
     override suspend fun createNewRequest(newRequest: SupportRequestModel): SupportRequestModel? {
-        TODO("Not yet implemented")
+        val requestToInsert = newRequest.copy(
+            id = ObjectId().toString(),
+            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
+            associatedSupportId = null
+        )
+        val status = requests.insertOne(requestToInsert).wasAcknowledged()
+        return if (status) requestToInsert else null
     }
 
     override suspend fun addMessageToRequest(requestId: String, newMessage: MessageModel): MessageModel? {

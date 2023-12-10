@@ -10,8 +10,7 @@ interface ChatDataSource {
     ): List<SupportRequestModel>
 
     suspend fun getRequestsForClient(
-        login: String,
-        password: String
+        clientId: String
     ): List<SupportRequestModel>
 
     suspend fun getAllMessagesForRequest(
