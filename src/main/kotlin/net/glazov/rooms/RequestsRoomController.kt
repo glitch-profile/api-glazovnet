@@ -7,15 +7,12 @@ import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.model.SupportRequestModel
 import java.util.concurrent.ConcurrentHashMap
 
-class RequestsRoomController(
-    private val requestsDataSource: ChatDataSource
-) {
+class RequestsRoomController {
 
     private val members = ConcurrentHashMap<String, Member>()
 
     fun onJoin(
         memberId: String,
-        sessionId: String,
         socket: WebSocketSession
     ) {
         if (members.containsKey(memberId)) {
@@ -23,7 +20,6 @@ class RequestsRoomController(
         } else {
             members[memberId] = Member(
                 memberId = memberId,
-                sessionId = sessionId,
                 socket = socket
             )
         }
