@@ -20,33 +20,54 @@ import net.glazov.sessions.ChatSession
 private const val PATH = "/api/support"
 
 fun Route.requestsRoute(
+    serverApiKey: String,
     requestsRoomController: RequestsRoomController,
     chat: ChatDataSource
 ) {
 
-    webSocket("$PATH/requests") {
-        val session = call.sessions.get<ChatSession>()
-        if (session == null) {
-            close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "no session detected"))
-            return@webSocket
-        }
-        try {
-            requestsRoomController.onJoin(
-                memberId = session.memberId,
-                sessionId = session.sessionId,
-                socket = this
-            )
-            incoming.consumeEach { frame ->
-                if (frame is Frame.Text) {
-
-                }
+    webSocket("$PATH/requests-socket") {
+//        val session = call.sessions.get<ChatSession>()
+//        if (session == null) {
+//            close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "no session detected"))
+//            return@webSocket
+//        }
+        val memberId = call.request.headers["memberId"]
+        if (memberId != null) {
+            try {
+                requestsRoomController.onJoin(
+                    memberId = memberId,
+                    socket = this
+                )
+//                incoming.consumeEach { frame ->
+//                    if (frame is Frame.Text) {
+//
+//                    }
+//                }
+            } catch (e: MemberAlreadyExistException) {
+                call.respond(HttpStatusCode.Conflict)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.ServiceUnavailable)
+            } finally {
+                requestsRoomController.tryDisconnect(memberId)
             }
-        } catch (e: MemberAlreadyExistException) {
-            call.respond(HttpStatusCode.Conflict)
-        } catch (e: Exception) {
-            call.respond(e.printStackTrace())
-        } finally {
-            requestsRoomController.tryDisconnect(session.memberId)
+        } else {
+            call.respond(HttpStatusCode.Unauthorized)
+        }
+    }
+
+    get("$PATH/requests") {
+        val apiKey = call.request.headers["api_key"]
+        if (apiKey == serverApiKey) {
+            val requestsList = chat.getAllRequests(true)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "${requestsList.size} requests",
+                    data = requestsList
+                )
+            )
+        } else {
+            call.respond(HttpStatusCode.Forbidden)
         }
     }
 
@@ -67,6 +88,8 @@ fun Route.requestsRoute(
                     data = request
                 )
             )
+        } else {
+            call.respond(HttpStatusCode.InternalServerError)
         }
     }
 
