@@ -47,7 +47,7 @@ fun Route.requestsRoute(
     get("$PATH/requests") {
         val apiKey = call.request.headers["api_key"]
         if (apiKey == serverApiKey) {
-            val requestsList = chat.getAllRequests(true)
+            val requestsList = chat.getAllRequests(null)
             call.respond(
                 SimpleResponse(
                     status = true,

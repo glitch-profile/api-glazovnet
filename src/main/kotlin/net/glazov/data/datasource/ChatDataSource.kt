@@ -6,7 +6,7 @@ import net.glazov.data.model.SupportRequestModel
 interface ChatDataSource {
 
     suspend fun getAllRequests(
-        showOnlyActiveRequests: Boolean = true
+        status: Int? = null
     ): List<SupportRequestModel>
 
     suspend fun getRequestsForClient(

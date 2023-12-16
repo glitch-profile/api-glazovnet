@@ -17,17 +17,17 @@ class ChatDataSourceImpl(
 
     private val requests = db.getCollection<SupportRequestModel>("SupportRequests")
 
-    override suspend fun getAllRequests(showOnlyActiveRequests: Boolean): List<SupportRequestModel> {
+    override suspend fun getAllRequests(status: Int?): List<SupportRequestModel> {
         val requestsList = requests.find().toList()
-        val filteredRequests = if (showOnlyActiveRequests) {
+        val filteredRequests = if (status != null) {
             requestsList.asSequence()
-                .filter { !it.isSolved }
-                .sortedBy { it.creationDate }
+                .filter { it.status == status }
+                .sortedByDescending { it.creationDate }
                 .map { it.copy(messages = emptyList()) }
                 .toList()
         } else {
             requestsList.asSequence()
-                .sortedBy { it.creationDate }
+                .sortedByDescending { it.creationDate }
                 .map { it.copy(messages = emptyList()) }
                 .toList()
         }
