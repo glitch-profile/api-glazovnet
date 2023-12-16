@@ -7,15 +7,12 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
-import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 import net.glazov.data.datasource.ChatDataSource
-import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.SupportRequestModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.rooms.MemberAlreadyExistException
 import net.glazov.rooms.RequestsRoomController
-import net.glazov.sessions.ChatSession
 
 private const val PATH = "/api/support"
 
@@ -26,11 +23,6 @@ fun Route.requestsRoute(
 ) {
 
     webSocket("$PATH/requests-socket") {
-//        val session = call.sessions.get<ChatSession>()
-//        if (session == null) {
-//            close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "no session detected"))
-//            return@webSocket
-//        }
         val memberId = call.request.headers["memberId"]
         if (memberId != null) {
             try {
@@ -38,17 +30,14 @@ fun Route.requestsRoute(
                     memberId = memberId,
                     socket = this
                 )
-//                incoming.consumeEach { frame ->
-//                    if (frame is Frame.Text) {
-//
-//                    }
-//                }
+                incoming.consumeEach {  }
             } catch (e: MemberAlreadyExistException) {
                 call.respond(HttpStatusCode.Conflict)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.ServiceUnavailable)
             } finally {
                 requestsRoomController.tryDisconnect(memberId)
+                println("connection closed")
             }
         } else {
             call.respond(HttpStatusCode.Unauthorized)
