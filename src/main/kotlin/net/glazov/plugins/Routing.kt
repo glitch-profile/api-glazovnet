@@ -3,6 +3,7 @@ package net.glazov.plugins
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.*
+import net.glazov.rooms.RequestChatRoomController
 import net.glazov.rooms.RequestsRoomController
 import net.glazov.routes.*
 import org.koin.ktor.ext.inject
@@ -16,6 +17,7 @@ fun Application.configureRouting() {
     val announcementsDataSource by inject<AnnouncementsDataSource>()
     val clientsDataSource by inject<ClientsDataSource>()
     val requestsRoomController by inject<RequestsRoomController>()
+    val requestChatRoomController by inject<RequestChatRoomController>()
     val chatDataSource by inject<ChatDataSource>()
 
     routing {
@@ -25,6 +27,6 @@ fun Application.configureRouting() {
         addressRoutes(apiKey, addressesDataSource)
         clientsRoutes(apiKey, clientsDataSource)
         announcementsRoutes(apiKey, announcementsDataSource)
-        requestsRoute(apiKey, requestsRoomController, chatDataSource)
+        requestsRoute(apiKey, requestsRoomController, requestChatRoomController, chatDataSource)
     }
 }
