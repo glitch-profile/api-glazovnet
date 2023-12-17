@@ -13,6 +13,10 @@ interface ChatDataSource {
         clientId: String
     ): List<SupportRequestModel>
 
+    suspend fun getRequestById(
+        requestId: String
+    ): SupportRequestModel?
+
     suspend fun getAllMessagesForRequest(
         requestId: String
     ): List<MessageModel>

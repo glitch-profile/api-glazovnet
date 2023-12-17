@@ -48,10 +48,16 @@ class ChatDataSourceImpl(
         val requestToInsert = newRequest.copy(
             id = ObjectId().toString(),
             creationDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
-            associatedSupportId = null
+            associatedSupportId = null,
+            messages = emptyList()
         )
         val status = requests.insertOne(requestToInsert).wasAcknowledged()
         return if (status) requestToInsert else null
+    }
+
+    override suspend fun getRequestById(requestId: String): SupportRequestModel? {
+        val filter = Filters.eq("_id", requestId)
+        return requests.find(filter).singleOrNull()
     }
 
     override suspend fun addMessageToRequest(requestId: String, newMessage: MessageModel): MessageModel? {
