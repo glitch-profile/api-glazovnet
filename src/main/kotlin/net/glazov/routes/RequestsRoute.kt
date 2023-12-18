@@ -10,6 +10,7 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.serialization.json.Json
 import net.glazov.data.datasource.ChatDataSource
+import net.glazov.data.datasourceimpl.RequestNotFoundException
 import net.glazov.data.model.MessageModel
 import net.glazov.data.model.SupportRequestModel
 import net.glazov.data.model.response.SimpleResponse
@@ -41,7 +42,6 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.ServiceUnavailable)
             } finally {
                 requestsRoomController.tryDisconnect(memberId)
-                println("connection closed")
             }
         } else {
             call.respond(HttpStatusCode.Unauthorized)
@@ -64,7 +64,7 @@ fun Route.requestsRoute(
         }
     }
 
-    webSocket("$PATH/request/{request_id}/chat-socket") {
+    webSocket("$PATH/requests/{request_id}/chat-socket") {
         val requestId = call.parameters["request_id"]
         val memberId = call.request.headers["member_id"]
         if (memberId != null && requestId != null) {
@@ -77,18 +77,20 @@ fun Route.requestsRoute(
                 incoming.consumeEach {frame ->
                     if (frame is Frame.Text) {
                         try {
-                            val decodedMessage = Json.decodeFromString<MessageModel>(frame.readText())
+                            val messageText = frame.readText()
                             val message = chat.addMessageToRequest(
                                 requestId = requestId,
-                                newMessage = decodedMessage
+                                newMessage = MessageModel(
+                                    senderId = memberId,
+                                    text = messageText,
+                                    timestamp = 0
+                                )
                             )
                             if (message != null) {
                                 requestChatRoomController.sendMessage(
                                     requestId = requestId,
                                     messageToSend = message
                                 )
-                            } else {
-                                println("Cant add message to database")
                             }
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -108,20 +110,41 @@ fun Route.requestsRoute(
         } else call.respond(HttpStatusCode.BadRequest)
     }
 
-    get("$PATH/request/{request_id}") {
+    get("$PATH/requests/{request_id}") {
         val requestId = call.parameters["request_id"] ?: ""
         val memberId = call.request.headers["member_id"] //for future authorization
         if (memberId != null) {
             val request = chat.getRequestById(requestId)
             if (request != null) {
+                val requestToRespond = request.copy(messages = emptyList())
+                println(requestToRespond)
                 call.respond(
                     SimpleResponse(
                         status = true,
                         message = "request retrieved",
-                        data = request
+                        data = requestToRespond
                     )
                 )
-            } else call.respond(HttpStatusCode.BadRequest)
+            } else call.respond(HttpStatusCode.NotFound)
+        } else call.respond(HttpStatusCode.Forbidden)
+    }
+
+    get("$PATH/requests/{request_id}/messages") {
+        val requestId = call.parameters["request_id"] ?: ""
+        val memberId = call.request.headers["member_id"] //for future authorization
+        if (memberId != null) {
+            try {
+                val messages = chat.getAllMessagesForRequest(requestId)
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "${messages.size} messages retrieved",
+                        data = messages
+                    )
+                )
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
+            }
         } else call.respond(HttpStatusCode.Forbidden)
     }
 
