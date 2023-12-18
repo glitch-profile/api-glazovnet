@@ -15,13 +15,13 @@ class RequestChatRoomController {
         memberId: String,
         memberSocket: WebSocketSession
     ) {
+        println("new member connecting to chat")
         if (requests[requestId]?.containsKey(memberId) == true) {
             throw MemberAlreadyExistException()
         } else {
             if (requests.containsKey(requestId)) {
                 requests[requestId]!!.put(memberId, Member(memberId, memberSocket))
             } else {
-                val member = memberId to Member(memberId, memberSocket)
                 requests.put(
                     key = requestId,
                     value = ConcurrentHashMap<String, Member>()
@@ -29,6 +29,7 @@ class RequestChatRoomController {
                 requests[requestId]!!.put(memberId, Member(memberId, memberSocket))
             }
         }
+        println("person connected to room $requestId\nRequest rooms - ${requests.keys().toList().joinToString(", ")}\nCurrent room users - ${requests[requestId]?.values?.joinToString(", ")}]")
     }
 
     suspend fun sendMessage(
@@ -36,7 +37,10 @@ class RequestChatRoomController {
         messageToSend: MessageModel
     ) {
         requests[requestId]?.let {request ->
-            val encodedMessage = Json.encodeToString(messageToSend)
+            val json = Json {
+                encodeDefaults = true
+            }
+            val encodedMessage = json.encodeToString(messageToSend)
             request.values.forEach { member ->
                 member.socket.send(Frame.Text(encodedMessage))
             }
@@ -57,6 +61,7 @@ class RequestChatRoomController {
                 requests.remove(requestId)
             }
         }
+        println("user disconnected\ncurrent rooms - ${requests.keys().toList().joinToString(", ")}")
     }
 
 }

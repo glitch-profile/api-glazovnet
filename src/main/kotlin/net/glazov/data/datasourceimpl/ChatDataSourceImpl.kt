@@ -41,7 +41,11 @@ class ChatDataSourceImpl(
     override suspend fun getAllMessagesForRequest(requestId: String): List<MessageModel> {
         val filter = Filters.eq("_id", requestId)
         val request = requests.find(filter).singleOrNull()
-        return request?.messages?.sortedByDescending { it.timestamp } ?: emptyList()
+        if (request != null) {
+            return request.messages.sortedByDescending { it.timestamp }
+        } else {
+            throw RequestNotFoundException()
+        }
     }
 
     override suspend fun createNewRequest(newRequest: SupportRequestModel): SupportRequestModel? {
@@ -66,12 +70,13 @@ class ChatDataSourceImpl(
         val request = requests.find(requestFilter).singleOrNull()
         return if (request != null) {
             val message = newMessage.copy(
+                id = ObjectId().toString(),
                 timestamp = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
             )
             val newMessagesList = request.messages.toMutableList()
             newMessagesList.add(0, message)
             val newRequest = request.copy(messages = newMessagesList)
-            requests.insertOne(newRequest)
+            requests.findOneAndReplace(requestFilter, newRequest)
             message
         } else null
     }
@@ -84,3 +89,7 @@ class ChatDataSourceImpl(
         TODO("Not yet implemented")
     }
 }
+
+class RequestNotFoundException: Exception(
+    "Request with given ID is not found"
+)
