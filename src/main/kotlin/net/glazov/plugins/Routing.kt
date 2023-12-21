@@ -28,5 +28,6 @@ fun Application.configureRouting() {
         clientsRoutes(apiKey, clientsDataSource)
         announcementsRoutes(apiKey, announcementsDataSource)
         requestsRoute(apiKey, requestsRoomController, requestChatRoomController, chatDataSource)
+        utilRoutes(apiKey)
     }
 }
