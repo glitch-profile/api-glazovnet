@@ -1,12 +1,15 @@
 package net.glazov.plugins
 
 import io.ktor.server.application.*
+import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.*
 import net.glazov.rooms.RequestChatRoomController
 import net.glazov.rooms.RequestsRoomController
 import net.glazov.routes.*
 import org.koin.ktor.ext.inject
+import java.io.File
+import java.nio.file.Paths
 
 fun Application.configureRouting() {
     val apiKey = environment.config.property("storage.api_key").getString()
@@ -21,6 +24,10 @@ fun Application.configureRouting() {
     val chatDataSource by inject<ChatDataSource>()
 
     routing {
+        staticFiles(
+            "/images",
+            File("${Paths.get("").toAbsolutePath()}/static")) //http://url:8080/images/filename
+
         //testRoutes()
         postRoutes(apiKey, postsDataSource)
         tariffsRoutes(apiKey, tariffsDataSource)

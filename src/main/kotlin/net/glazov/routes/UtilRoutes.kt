@@ -29,7 +29,7 @@ fun Routing.utilRoutes(
                             val fileBytes = part.streamProvider().readBytes()
                             val path = Paths.get("").toAbsolutePath().toString()
                             //val file = File("src/main/resources/static", fileName)
-                            val file = File("$path/ImageCache", fileName)
+                            val file = File("$path/static", fileName)
                             file.writeBytes(fileBytes)
                             println(file.absoluteFile.path)
                         }
