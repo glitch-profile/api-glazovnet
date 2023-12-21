@@ -15,7 +15,6 @@ class RequestChatRoomController {
         memberId: String,
         memberSocket: WebSocketSession
     ) {
-        println("new member connecting to chat")
         if (requests[requestId]?.containsKey(memberId) == true) {
             throw MemberAlreadyExistException()
         } else {
@@ -29,7 +28,7 @@ class RequestChatRoomController {
                 requests[requestId]!!.put(memberId, Member(memberId, memberSocket))
             }
         }
-        println("person connected to room $requestId\nRequest rooms - ${requests.keys().toList().joinToString(", ")}\nCurrent room users - ${requests[requestId]?.values?.joinToString(", ")}]")
+//        println("person connected to room $requestId\nRequest rooms - ${requests.keys().toList().joinToString(", ")}\nCurrent room users - ${requests[requestId]?.values?.joinToString(", ")}]")
     }
 
     suspend fun sendMessage(

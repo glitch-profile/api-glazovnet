@@ -40,6 +40,7 @@ class RequestsRoomController {
         members[memberId]?.socket?.close()
         if (members.containsKey(memberId)) {
             members.remove(memberId)
+            println("user disconnected from requests room")
         }
     }
 }
