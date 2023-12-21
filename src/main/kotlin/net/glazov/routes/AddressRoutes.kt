@@ -8,14 +8,14 @@ import net.glazov.data.datasource.AddressesDataSource
 import net.glazov.data.model.RegisteredAddressesModel
 import net.glazov.data.model.response.SimpleResponse
 
-private const val PATH = "/api/addressinfo"
+private const val PATH = "/api/address-info"
 
 fun Route.addressRoutes(
     serverApiKey: String,
     addresses: AddressesDataSource
 ) {
 
-    get("$PATH/getcitieslist") {
+    get("$PATH/cities-list") {
         val apiKey = call.request.headers["api_key"]
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"] ?: ""
@@ -31,7 +31,7 @@ fun Route.addressRoutes(
         } else call.respond(HttpStatusCode.Forbidden)
     }
 
-    get("$PATH/getstreetslist") {
+    get("$PATH/streets-list") {
         val apiKey = call.request.headers["api_key"]
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"]
@@ -55,7 +55,7 @@ fun Route.addressRoutes(
         } else call.respond(HttpStatusCode.Forbidden)
     }
 
-    get("$PATH/getaddresses") {
+    get("$PATH/addresses") {
         val apiKey = call.request.headers["api_key"]
         if (apiKey == serverApiKey) {
             val city = call.request.queryParameters["city"]

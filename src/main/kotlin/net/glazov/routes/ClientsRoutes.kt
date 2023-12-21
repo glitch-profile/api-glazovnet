@@ -39,7 +39,7 @@ fun Route.clientsRoutes(
         }
     }
 
-    get("$PATH/getall") {
+    get("$PATH/") {
         val apiKey = call.request.headers["api_key"]
         if (apiKey == apiKeyServer) {
             val clientsList = clients.getAllClients()

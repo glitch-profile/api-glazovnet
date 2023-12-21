@@ -148,7 +148,7 @@ fun Route.requestsRoute(
         } else call.respond(HttpStatusCode.Forbidden)
     }
 
-    post("$PATH/createrequest") {
+    post("$PATH/create-request") {
         val newRequest = try {
             call.receive<SupportRequestModel>()
         } catch (e: ContentTransformationException) {

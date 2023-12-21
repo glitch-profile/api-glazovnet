@@ -16,7 +16,7 @@ fun Route.tariffsRoutes(
 
     val path = "/api/tariffs"
 
-    get("$path/getall") {
+    get("$path/") {
         val tariffsList = tariffs.getAllTariffs()
         call.respond(
             SimpleTariffResponse(

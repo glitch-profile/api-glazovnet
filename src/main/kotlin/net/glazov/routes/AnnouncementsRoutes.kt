@@ -18,7 +18,7 @@ fun Route.announcementsRoutes(
 ) {
 
 
-    get("$PATH/getall") {
+    get("$PATH/") {
         val announcementsList = announcements.getAnnouncements()
         call.respond(
             AnnouncementResponse(
@@ -29,7 +29,7 @@ fun Route.announcementsRoutes(
         )
     } //TODO: Remove after completion of announcements block
 
-    get("$PATH/getforclient") {
+    get("$PATH/for-client") {
         val clientLogin = call.request.headers["login"] ?: ""
         val clientPassword = call.request.headers["password"] ?: ""
         if (clientLogin.isNotBlank() && clientPassword.isNotBlank()) {

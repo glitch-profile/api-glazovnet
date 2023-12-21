@@ -16,7 +16,7 @@ fun Route.postRoutes(
     posts: PostsDataSource
 ) {
 
-    get("$PATH/getall") {
+    get("$PATH/") {
         val postsList = posts.getAllPosts()
         call.respond(
             SimpleResponse(
@@ -27,7 +27,7 @@ fun Route.postRoutes(
         )
     }
 
-    get("$PATH/getposts") {
+    get("$PATH/list") {
         val postsLimit = call.request.queryParameters["limit"]
         val startIndex = call.request.queryParameters["start_index"]
 
