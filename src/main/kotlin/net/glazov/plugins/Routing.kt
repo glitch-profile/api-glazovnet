@@ -26,7 +26,7 @@ fun Application.configureRouting() {
     routing {
         staticFiles(
             "/images",
-            File("${Paths.get("").toAbsolutePath()}/static")) //http://url:8080/images/filename
+            File("${Paths.get("").toAbsolutePath()}/static/images")) //http://url:8080/images/filename
 
         //testRoutes()
         postRoutes(apiKey, postsDataSource)
