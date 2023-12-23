@@ -27,13 +27,16 @@ fun Routing.utilRoutes(
                     when (part) {
                         is PartData.FormItem -> Unit
                         is PartData.FileItem -> {
-                            val fileName = part.originalFileName ?: generateNonce()
+                            val fileNameFormatted = part.originalFileName?.filter {
+                                it.isLetterOrDigit() || it == '.' || it == '_'
+                            }
+                            val fileName = fileNameFormatted ?: generateNonce()
                             val fileBytes = part.streamProvider().readBytes()
-                            val path = Paths.get("/static").toAbsolutePath().toString() //getting local path to static folder
-                            val file = File("$path/images", fileName)
+                            val path = Paths.get("").toAbsolutePath().toString() //getting local path to static folder
+                            val file = File("$path/static/images", fileName)
                             file.writeBytes(fileBytes)
                             println(file.path)
-                            val localFilePath = file.relativeTo(File(path))
+                            val localFilePath = file.relativeTo(File("$path/static"))
                                 .path
                                 .replace("\\", "/")
                             paths.add(BASE_URL + localFilePath)
