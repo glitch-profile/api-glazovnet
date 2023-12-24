@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.*
+import net.glazov.data.utils.FileManager
 import net.glazov.rooms.RequestChatRoomController
 import net.glazov.rooms.RequestsRoomController
 import net.glazov.routes.*
@@ -22,6 +23,7 @@ fun Application.configureRouting() {
     val requestsRoomController by inject<RequestsRoomController>()
     val requestChatRoomController by inject<RequestChatRoomController>()
     val chatDataSource by inject<ChatDataSource>()
+    val fileManager by inject<FileManager>()
 
     routing {
         staticFiles(
@@ -35,6 +37,6 @@ fun Application.configureRouting() {
         clientsRoutes(apiKey, clientsDataSource)
         announcementsRoutes(apiKey, announcementsDataSource)
         requestsRoute(apiKey, requestsRoomController, requestChatRoomController, chatDataSource)
-        utilRoutes(apiKey)
+        utilRoutes(apiKey, fileManager)
     }
 }
