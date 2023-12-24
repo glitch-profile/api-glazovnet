@@ -31,8 +31,6 @@ fun Routing.utilRoutes(
                         when (part) {
                             is PartData.FormItem -> Unit
                             is PartData.FileItem -> {
-                                println("part content length " + part.headers["content-length"])
-
                                 val fileNameFormatted = part.originalFileName?.filter {
                                     it.isLetterOrDigit() || it == '.' || it == '_'
                                 }
@@ -65,5 +63,4 @@ fun Routing.utilRoutes(
             } else call.respond(HttpStatusCode.PayloadTooLarge)
         } else call.respond(HttpStatusCode.Forbidden)
     }
-
 }
