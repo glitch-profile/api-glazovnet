@@ -28,7 +28,6 @@ class RequestChatRoomController {
                 requests[requestId]!!.put(memberId, Member(memberId, memberSocket))
             }
         }
-//        println("person connected to room $requestId\nRequest rooms - ${requests.keys().toList().joinToString(", ")}\nCurrent room users - ${requests[requestId]?.values?.joinToString(", ")}]")
     }
 
     suspend fun sendMessage(
@@ -60,7 +59,7 @@ class RequestChatRoomController {
                 requests.remove(requestId)
             }
         }
-        println("user disconnected\ncurrent rooms - ${requests.keys().toList().joinToString(", ")}")
+        println("user disconnected from chat room")
     }
 
 }

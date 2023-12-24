@@ -117,7 +117,6 @@ fun Route.requestsRoute(
             val request = chat.getRequestById(requestId)
             if (request != null) {
                 val requestToRespond = request.copy(messages = emptyList())
-                println(requestToRespond)
                 call.respond(
                     SimpleResponse(
                         status = true,
