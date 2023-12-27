@@ -10,6 +10,7 @@ import io.ktor.server.config.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.auth.AuthModel
 import java.time.OffsetDateTime
@@ -19,7 +20,8 @@ import java.util.*
 private const val PATH = "/api"
 
 fun Routing.authRoutes(
-    clientsDataSource: ClientsDataSource
+    clientsDataSource: ClientsDataSource,
+    adminDataSource: AdminsDataSource
 ) {
 
     val issuer = ApplicationConfig(null).tryGetString("auth.issuer").toString()
@@ -53,18 +55,18 @@ fun Routing.authRoutes(
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-//        val admin =
-//        if (admin != null) {
-//            val token = JWT.create()
-//                .withIssuer(issuer)
-//                .withClaim("person_id", admin.id)
-//                .withClaim("is_admin", true)
-//                .withExpiresAt(Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
-//                .sign(Algorithm.HMAC256(secret))
-//            call.respond(hashMapOf("token" to token))
-//        } else {
-//            call.respond(HttpStatusCode.NotFound)
-//        }
+        val admin = adminDataSource.login(authData.username, authData.password)
+        if (admin != null) {
+            val token = JWT.create()
+                .withIssuer(issuer)
+                .withClaim("person_id", admin.id)
+                .withClaim("is_admin", true)
+                .withExpiresAt(Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
+                .sign(Algorithm.HMAC256(secret))
+            call.respond(hashMapOf("token" to token))
+        } else {
+            call.respond(HttpStatusCode.NotFound)
+        }
     }
 
     authenticate {
