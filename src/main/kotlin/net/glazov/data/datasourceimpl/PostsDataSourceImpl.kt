@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.PostModel
 import org.bson.types.ObjectId
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.math.min
 
 class PostsDataSourceImpl(
@@ -39,7 +42,8 @@ class PostsDataSourceImpl(
 
     override suspend fun addNewPost(newPost: PostModel): PostModel? {
         val post = newPost.copy(
-            id = ObjectId.get().toString()
+            id = ObjectId.get().toString(),
+            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE_TIME)
         )
         val status = posts.insertOne(post).wasAcknowledged()
         return if (status)
