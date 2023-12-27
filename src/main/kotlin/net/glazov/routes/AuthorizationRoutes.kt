@@ -53,7 +53,7 @@ fun Routing.authRoutes(
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val admin = adminsDataSource.login(authData.username, authData.password)
+        val admin = clientsDataSource.login(authData.username, authData.password)
         if (admin != null) {
             val token = JWT.create()
                 .withIssuer(issuer)
@@ -68,6 +68,7 @@ fun Routing.authRoutes(
     }
 
     authenticate {
+
         get("$PATH/check") {
             val principal = call.principal<JWTPrincipal>()
             val clientId = principal!!.payload.getClaim("user_id").toString()
@@ -75,14 +76,18 @@ fun Routing.authRoutes(
             call.respond("Hello, $clientId. Are you not an admin...")
         }
 
-        get("$PATH/check-adm") {
-            val principal = call.principal<JWTPrincipal>()
-            val isAdmin = principal!!.payload.getClaim("is_admin").asBoolean()
-            if (isAdmin) {
-                val clientId = principal.payload.getClaim("user_id").toString()
-                call.respond("Hello, $clientId. Are you an admin!")
-            } else call.respond(HttpStatusCode.Forbidden)
+        authenticate("admin") {
+
+            get("$PATH/check-adm") {
+                val principal = call.principal<JWTPrincipal>()
+                val isAdmin = principal!!.payload.getClaim("is_admin").asBoolean()
+                if (isAdmin) {
+                    val clientId = principal.payload.getClaim("user_id").toString()
+                    call.respond("Hello, $clientId. Are you an admin!")
+                } else call.respond(HttpStatusCode.Forbidden)
+            }
         }
+
     }
 
 

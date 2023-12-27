@@ -33,5 +33,24 @@ fun Application.configureAuthentication() {
                 call.respond(HttpStatusCode.Unauthorized)
             }
         }
+        jwt("admin") {
+            realm = authRealm
+            verifier(
+                JWT
+                    .require(Algorithm.HMAC256(secret))
+                    .withIssuer(issuer)
+                    .build()
+            )
+            validate { credential ->
+                if (credential.payload.getClaim("is_admin").asBoolean()) {
+                    JWTPrincipal(credential.payload)
+                } else {
+                    null
+                }
+            }
+            challenge { _, _ ->
+                call.respond(HttpStatusCode.Forbidden)
+            }
+        }
     }
 }

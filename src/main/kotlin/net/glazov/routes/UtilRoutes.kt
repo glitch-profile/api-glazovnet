@@ -21,49 +21,53 @@ fun Routing.utilRoutes(
     fileManager: FileManager
 ) {
     authenticate {
-        post("$PATH/upload-files") {
-            val apiKey = call.request.headers["api_key"]
-            if (apiKey == apiKeyServer) {
-                val requestLength = call.request.headers["content-length"]!!.toLong()
-                if ( requestLength <= MAX_CONTENT_LENGTH ) {
-                    val paths = emptyList<String>().toMutableList()
-                    try {
-                        val multipart = call.receiveMultipart()
-                        multipart.forEachPart {part ->
-                            when (part) {
-                                is PartData.FormItem -> Unit
-                                is PartData.FileItem -> {
-                                    val fileNameFormatted = part.originalFileName?.filter {
-                                        it.isLetterOrDigit() || it == '.' || it == '_'
+
+        authenticate("admin") {
+
+            post("$PATH/upload-files") {
+                val apiKey = call.request.headers["api_key"]
+                if (apiKey == apiKeyServer) {
+                    val requestLength = call.request.headers["content-length"]!!.toLong()
+                    if ( requestLength <= MAX_CONTENT_LENGTH ) {
+                        val paths = emptyList<String>().toMutableList()
+                        try {
+                            val multipart = call.receiveMultipart()
+                            multipart.forEachPart {part ->
+                                when (part) {
+                                    is PartData.FormItem -> Unit
+                                    is PartData.FileItem -> {
+                                        val fileNameFormatted = part.originalFileName?.filter {
+                                            it.isLetterOrDigit() || it == '.' || it == '_'
+                                        }
+                                        val fileName = fileNameFormatted ?: generateNonce()
+                                        val fileBytes = part.streamProvider().readBytes()
+                                        val filePath = fileManager.uploadFile(fileName, fileBytes)
+                                        paths.add(filePath)
                                     }
-                                    val fileName = fileNameFormatted ?: generateNonce()
-                                    val fileBytes = part.streamProvider().readBytes()
-                                    val filePath = fileManager.uploadFile(fileName, fileBytes)
-                                    paths.add(filePath)
+                                    else -> Unit
                                 }
-                                else -> Unit
+                                part.dispose()
                             }
-                            part.dispose()
+                            call.respond(
+                                SimpleResponse(
+                                    status = true,
+                                    message = "${paths.size} images uploaded",
+                                    data = paths
+                                )
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(
+                                SimpleResponse(
+                                    status = false,
+                                    message = e.message ?: "server error",
+                                    data = emptyList<String>()
+                                )
+                            )
                         }
-                        call.respond(
-                            SimpleResponse(
-                                status = true,
-                                message = "${paths.size} images uploaded",
-                                data = paths
-                            )
-                        )
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        call.respond(
-                            SimpleResponse(
-                                status = false,
-                                message = e.message ?: "server error",
-                                data = emptyList<String>()
-                            )
-                        )
-                    }
-                } else call.respond(HttpStatusCode.PayloadTooLarge)
-            } else call.respond(HttpStatusCode.Forbidden)
+                    } else call.respond(HttpStatusCode.PayloadTooLarge)
+                } else call.respond(HttpStatusCode.Forbidden)
+            }
         }
     }
 }

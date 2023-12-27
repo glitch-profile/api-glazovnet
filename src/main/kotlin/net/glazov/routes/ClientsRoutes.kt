@@ -18,6 +18,7 @@ fun Route.clientsRoutes(
 ) {
 
     authenticate {
+
         post("$PATH/create") {
             val apiKey = call.request.headers["api_key"]
             if (apiKey == apiKeyServer) {

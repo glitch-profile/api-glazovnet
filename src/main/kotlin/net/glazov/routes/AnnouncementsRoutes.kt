@@ -19,6 +19,7 @@ fun Route.announcementsRoutes(
 ) {
 
     authenticate {
+
         get("$PATH/") {
             val announcementsList = announcements.getAnnouncements()
             call.respond(
@@ -32,7 +33,7 @@ fun Route.announcementsRoutes(
 
         get("$PATH/for-client") {
             val clientLogin = call.request.headers["login"] ?: ""
-            val clientPassword = call.request.headers["password"] ?: ""
+            val clientPassword = call.request.headers["password"] ?: "" //TODO
             if (clientLogin.isNotBlank() && clientPassword.isNotBlank()) {
                 val announcementsList = announcements.getAnnouncementForClient(
                     clientLogin,
@@ -50,69 +51,72 @@ fun Route.announcementsRoutes(
             }
         }
 
-        post("$PATH/create") {
-            val apiKey = call.request.headers["api_key"]
-            if (serverApiKey == apiKey) {
-                val newAnnouncement = try {
-                    call.receive<AnnouncementModel>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@post
-                }
-                val announcement = announcements.addAnnouncement(newAnnouncement)
-                val status = announcement != null
-                call.respond(
-                    AnnouncementResponse(
-                        status = status,
-                        message = if (status) "announcement added" else "error while adding the announcement",
-                        data = if (status) listOf(announcement!!) else emptyList()
-                    )
-                )
-            } else {
-                call.respond(HttpStatusCode.Forbidden)
-            }
-        }
+        authenticate("admin") {
 
-        delete("$PATH/delete") {
-            val apiKey = call.request.headers["api_key"]
-            if (serverApiKey == apiKey) {
-                val announcementId = call.request.queryParameters["id"]
-                if (announcementId != null) {
-                    val status = announcements.deleteAnnouncement(announcementId)
+            post("$PATH/create") {
+                val apiKey = call.request.headers["api_key"]
+                if (serverApiKey == apiKey) {
+                    val newAnnouncement = try {
+                        call.receive<AnnouncementModel>()
+                    } catch (e: ContentTransformationException) {
+                        call.respond(HttpStatusCode.BadRequest)
+                        return@post
+                    }
+                    val announcement = announcements.addAnnouncement(newAnnouncement)
+                    val status = announcement != null
                     call.respond(
                         AnnouncementResponse(
                             status = status,
-                            message = if (status) "announcement deleted" else "error while deleting the announcement",
-                            data = emptyList()
+                            message = if (status) "announcement added" else "error while adding the announcement",
+                            data = if (status) listOf(announcement!!) else emptyList()
                         )
                     )
                 } else {
-                    call.respond(HttpStatusCode.BadRequest)
+                    call.respond(HttpStatusCode.Forbidden)
                 }
-            } else {
-                call.respond(HttpStatusCode.Forbidden)
             }
-        }
 
-        put("$PATH/edit") {
-            val apiKey = call.request.headers["api_key"]
-            if (serverApiKey == apiKey) {
-                val newAnnouncement = try {
-                    call.receive<AnnouncementModel>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@put
+            delete("$PATH/delete") {
+                val apiKey = call.request.headers["api_key"]
+                if (serverApiKey == apiKey) {
+                    val announcementId = call.request.queryParameters["id"]
+                    if (announcementId != null) {
+                        val status = announcements.deleteAnnouncement(announcementId)
+                        call.respond(
+                            AnnouncementResponse(
+                                status = status,
+                                message = if (status) "announcement deleted" else "error while deleting the announcement",
+                                data = emptyList()
+                            )
+                        )
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest)
+                    }
+                } else {
+                    call.respond(HttpStatusCode.Forbidden)
                 }
-                val status = announcements.updateAnnouncement(newAnnouncement)
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = if (status) "announcement updated" else "error while updating announcement",
-                        data = status
+            }
+
+            put("$PATH/edit") {
+                val apiKey = call.request.headers["api_key"]
+                if (serverApiKey == apiKey) {
+                    val newAnnouncement = try {
+                        call.receive<AnnouncementModel>()
+                    } catch (e: ContentTransformationException) {
+                        call.respond(HttpStatusCode.BadRequest)
+                        return@put
+                    }
+                    val status = announcements.updateAnnouncement(newAnnouncement)
+                    call.respond(
+                        SimpleResponse(
+                            status = true,
+                            message = if (status) "announcement updated" else "error while updating announcement",
+                            data = status
+                        )
                     )
-                )
-            } else {
-                call.respond(HttpStatusCode.Forbidden)
+                } else {
+                    call.respond(HttpStatusCode.Forbidden)
+                }
             }
         }
     }

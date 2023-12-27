@@ -50,22 +50,6 @@ fun Route.requestsRoute(
             }
         }
 
-        get("$PATH/requests") {
-            val apiKey = call.request.headers["api_key"]
-            if (apiKey == serverApiKey) {
-                val requestsList = chat.getAllRequests(null)
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "${requestsList.size} requests",
-                        data = requestsList
-                    )
-                )
-            } else {
-                call.respond(HttpStatusCode.Forbidden)
-            }
-        }
-
         webSocket("$PATH/requests/{request_id}/chat-socket") {
             val requestId = call.parameters["request_id"]
             val memberId = call.request.headers["member_id"]
@@ -168,6 +152,25 @@ fun Route.requestsRoute(
                 )
             } else {
                 call.respond(HttpStatusCode.InternalServerError)
+            }
+        }
+
+        authenticate("admin") {
+
+            get("$PATH/requests") {
+                val apiKey = call.request.headers["api_key"]
+                if (apiKey == serverApiKey) {
+                    val requestsList = chat.getAllRequests(null)
+                    call.respond(
+                        SimpleResponse(
+                            status = true,
+                            message = "${requestsList.size} requests",
+                            data = requestsList
+                        )
+                    )
+                } else {
+                    call.respond(HttpStatusCode.Forbidden)
+                }
             }
         }
     }
