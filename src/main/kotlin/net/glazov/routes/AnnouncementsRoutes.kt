@@ -2,6 +2,7 @@ package net.glazov.routes
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -17,101 +18,102 @@ fun Route.announcementsRoutes(
     announcements: AnnouncementsDataSource
 ) {
 
-
-    get("$PATH/") {
-        val announcementsList = announcements.getAnnouncements()
-        call.respond(
-            AnnouncementResponse(
-                status = true,
-                message = "${announcementsList.size} announcements retrieved",
-                data = announcementsList
-            )
-        )
-    } //TODO: Remove after completion of announcements block
-
-    get("$PATH/for-client") {
-        val clientLogin = call.request.headers["login"] ?: ""
-        val clientPassword = call.request.headers["password"] ?: ""
-        if (clientLogin.isNotBlank() && clientPassword.isNotBlank()) {
-            val announcementsList = announcements.getAnnouncementForClient(
-                clientLogin,
-                clientPassword
-            )
+    authenticate {
+        get("$PATH/") {
+            val announcementsList = announcements.getAnnouncements()
             call.respond(
                 AnnouncementResponse(
                     status = true,
-                    message = "announcements received",
+                    message = "${announcementsList.size} announcements retrieved",
                     data = announcementsList
                 )
             )
-        } else {
-            call.respond(HttpStatusCode.BadRequest)
-        }
-    }
+        } //TODO: Remove after completion of announcements block
 
-    post("$PATH/create") {
-        val apiKey = call.request.headers["api_key"]
-        if (serverApiKey == apiKey) {
-            val newAnnouncement = try {
-                call.receive<AnnouncementModel>()
-            } catch (e: ContentTransformationException) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@post
-            }
-            val announcement = announcements.addAnnouncement(newAnnouncement)
-            val status = announcement != null
-            call.respond(
-                AnnouncementResponse(
-                    status = status,
-                    message = if (status) "announcement added" else "error while adding the announcement",
-                    data = if (status) listOf(announcement!!) else emptyList()
+        get("$PATH/for-client") {
+            val clientLogin = call.request.headers["login"] ?: ""
+            val clientPassword = call.request.headers["password"] ?: ""
+            if (clientLogin.isNotBlank() && clientPassword.isNotBlank()) {
+                val announcementsList = announcements.getAnnouncementForClient(
+                    clientLogin,
+                    clientPassword
                 )
-            )
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
-        }
-    }
-
-    delete("$PATH/delete") {
-        val apiKey = call.request.headers["api_key"]
-        if (serverApiKey == apiKey) {
-            val announcementId = call.request.queryParameters["id"]
-            if (announcementId != null) {
-                val status = announcements.deleteAnnouncement(announcementId)
                 call.respond(
                     AnnouncementResponse(
-                        status = status,
-                        message = if (status) "announcement deleted" else "error while deleting the announcement",
-                        data = emptyList()
+                        status = true,
+                        message = "announcements received",
+                        data = announcementsList
                     )
                 )
             } else {
                 call.respond(HttpStatusCode.BadRequest)
             }
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
         }
-    }
 
-    put("$PATH/edit") {
-        val apiKey = call.request.headers["api_key"]
-        if (serverApiKey == apiKey) {
-            val newAnnouncement = try {
-                call.receive<AnnouncementModel>()
-            } catch (e: ContentTransformationException) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            val status = announcements.updateAnnouncement(newAnnouncement)
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = if (status) "announcement updated" else "error while updating announcement",
-                    data = status
+        post("$PATH/create") {
+            val apiKey = call.request.headers["api_key"]
+            if (serverApiKey == apiKey) {
+                val newAnnouncement = try {
+                    call.receive<AnnouncementModel>()
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
+                }
+                val announcement = announcements.addAnnouncement(newAnnouncement)
+                val status = announcement != null
+                call.respond(
+                    AnnouncementResponse(
+                        status = status,
+                        message = if (status) "announcement added" else "error while adding the announcement",
+                        data = if (status) listOf(announcement!!) else emptyList()
+                    )
                 )
-            )
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
+            }
+        }
+
+        delete("$PATH/delete") {
+            val apiKey = call.request.headers["api_key"]
+            if (serverApiKey == apiKey) {
+                val announcementId = call.request.queryParameters["id"]
+                if (announcementId != null) {
+                    val status = announcements.deleteAnnouncement(announcementId)
+                    call.respond(
+                        AnnouncementResponse(
+                            status = status,
+                            message = if (status) "announcement deleted" else "error while deleting the announcement",
+                            data = emptyList()
+                        )
+                    )
+                } else {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
+            }
+        }
+
+        put("$PATH/edit") {
+            val apiKey = call.request.headers["api_key"]
+            if (serverApiKey == apiKey) {
+                val newAnnouncement = try {
+                    call.receive<AnnouncementModel>()
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@put
+                }
+                val status = announcements.updateAnnouncement(newAnnouncement)
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = if (status) "announcement updated" else "error while updating announcement",
+                        data = status
+                    )
+                )
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
+            }
         }
     }
 }

@@ -15,6 +15,11 @@ val dataSourcesModule = module {
             addresses = get()
         )
     }
+    single<AdminsDataSource> {
+        AdminsDataSourceImpl(
+            db = get()
+        )
+    }
     single<AnnouncementsDataSource> {
         AnnouncementsDataSourceImpl(
             db = get(),

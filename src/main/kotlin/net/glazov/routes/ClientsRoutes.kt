@@ -2,6 +2,7 @@ package net.glazov.routes
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -16,42 +17,44 @@ fun Route.clientsRoutes(
     clients: ClientsDataSource
 ) {
 
-    post("$PATH/create") {
-        val apiKey = call.request.headers["api_key"]
-        if (apiKey == apiKeyServer) {
-            val clientModel = try {
-                call.receive<ClientModel>()
-            } catch (e: ContentTransformationException) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@post
+    authenticate {
+        post("$PATH/create") {
+            val apiKey = call.request.headers["api_key"]
+            if (apiKey == apiKeyServer) {
+                val clientModel = try {
+                    call.receive<ClientModel>()
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
+                }
+                val newClient = clients.createClient(clientModel)
+                val status = newClient != null
+                call.respond(
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "client added" else "error while adding the client",
+                        data = newClient
+                    )
+                )
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
             }
-            val newClient = clients.createClient(clientModel)
-            val status = newClient != null
-            call.respond(
-                SimpleResponse(
-                    status = status,
-                    message = if (status) "client added" else "error while adding the client",
-                    data = newClient
-                )
-            )
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
         }
-    }
 
-    get("$PATH/") {
-        val apiKey = call.request.headers["api_key"]
-        if (apiKey == apiKeyServer) {
-            val clientsList = clients.getAllClients()
-            call.respond(
-                SimpleResponse (
-                    status = true,
-                    message = "clients retrieved",
-                    data = clientsList
+        get("$PATH/") {
+            val apiKey = call.request.headers["api_key"]
+            if (apiKey == apiKeyServer) {
+                val clientsList = clients.getAllClients()
+                call.respond(
+                    SimpleResponse (
+                        status = true,
+                        message = "clients retrieved",
+                        data = clientsList
+                    )
                 )
-            )
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
+            }
         }
     }
 }

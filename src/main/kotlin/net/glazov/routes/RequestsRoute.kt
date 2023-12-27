@@ -2,6 +2,7 @@ package net.glazov.routes
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -27,145 +28,147 @@ fun Route.requestsRoute(
     chat: ChatDataSource
 ) {
 
-    webSocket("$PATH/requests-socket") {
-        val memberId = call.request.headers["member_id"]
-        if (memberId != null) {
-            try {
-                requestsRoomController.onJoin(
-                    memberId = memberId,
-                    socket = this
-                )
-                incoming.consumeEach {  }
-            } catch (e: MemberAlreadyExistException) {
-                call.respond(HttpStatusCode.Conflict)
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.ServiceUnavailable)
-            } finally {
-                requestsRoomController.tryDisconnect(memberId)
+    authenticate {
+        webSocket("$PATH/requests-socket") {
+            val memberId = call.request.headers["member_id"]
+            if (memberId != null) {
+                try {
+                    requestsRoomController.onJoin(
+                        memberId = memberId,
+                        socket = this
+                    )
+                    incoming.consumeEach {  }
+                } catch (e: MemberAlreadyExistException) {
+                    call.respond(HttpStatusCode.Conflict)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.ServiceUnavailable)
+                } finally {
+                    requestsRoomController.tryDisconnect(memberId)
+                }
+            } else {
+                call.respond(HttpStatusCode.Unauthorized)
             }
-        } else {
-            call.respond(HttpStatusCode.Unauthorized)
         }
-    }
 
-    get("$PATH/requests") {
-        val apiKey = call.request.headers["api_key"]
-        if (apiKey == serverApiKey) {
-            val requestsList = chat.getAllRequests(null)
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = "${requestsList.size} requests",
-                    data = requestsList
+        get("$PATH/requests") {
+            val apiKey = call.request.headers["api_key"]
+            if (apiKey == serverApiKey) {
+                val requestsList = chat.getAllRequests(null)
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "${requestsList.size} requests",
+                        data = requestsList
+                    )
                 )
-            )
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
+            }
         }
-    }
 
-    webSocket("$PATH/requests/{request_id}/chat-socket") {
-        val requestId = call.parameters["request_id"]
-        val memberId = call.request.headers["member_id"]
-        if (memberId != null && requestId != null) {
-            try {
-                requestChatRoomController.onJoin(
-                    requestId = requestId,
-                    memberId = memberId,
-                    memberSocket = this
-                )
-                incoming.consumeEach {frame ->
-                    if (frame is Frame.Text) {
-                        try {
-                            val messageText = frame.readText()
-                            val message = chat.addMessageToRequest(
-                                requestId = requestId,
-                                newMessage = MessageModel(
-                                    senderId = memberId,
-                                    text = messageText,
-                                    timestamp = 0
-                                )
-                            )
-                            if (message != null) {
-                                requestChatRoomController.sendMessage(
+        webSocket("$PATH/requests/{request_id}/chat-socket") {
+            val requestId = call.parameters["request_id"]
+            val memberId = call.request.headers["member_id"]
+            if (memberId != null && requestId != null) {
+                try {
+                    requestChatRoomController.onJoin(
+                        requestId = requestId,
+                        memberId = memberId,
+                        memberSocket = this
+                    )
+                    incoming.consumeEach {frame ->
+                        if (frame is Frame.Text) {
+                            try {
+                                val messageText = frame.readText()
+                                val message = chat.addMessageToRequest(
                                     requestId = requestId,
-                                    messageToSend = message
+                                    newMessage = MessageModel(
+                                        senderId = memberId,
+                                        text = messageText,
+                                        timestamp = 0
+                                    )
                                 )
+                                if (message != null) {
+                                    requestChatRoomController.sendMessage(
+                                        requestId = requestId,
+                                        messageToSend = message
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
                         }
                     }
+                } catch (e: MemberAlreadyExistException) {
+                    call.respond(HttpStatusCode.Conflict)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    requestChatRoomController.tryDisconnect(
+                        requestId = requestId,
+                        memberId = memberId
+                    )
                 }
-            } catch (e: MemberAlreadyExistException) {
-                call.respond(HttpStatusCode.Conflict)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                requestChatRoomController.tryDisconnect(
-                    requestId = requestId,
-                    memberId = memberId
-                )
-            }
-        } else call.respond(HttpStatusCode.BadRequest)
-    }
-
-    get("$PATH/requests/{request_id}") {
-        val requestId = call.parameters["request_id"] ?: ""
-        val memberId = call.request.headers["member_id"] //for future authorization
-        if (memberId != null) {
-            val request = chat.getRequestById(requestId)
-            if (request != null) {
-                val requestToRespond = request.copy(messages = emptyList())
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "request retrieved",
-                        data = requestToRespond
-                    )
-                )
-            } else call.respond(HttpStatusCode.NotFound)
-        } else call.respond(HttpStatusCode.Forbidden)
-    }
-
-    get("$PATH/requests/{request_id}/messages") {
-        val requestId = call.parameters["request_id"] ?: ""
-        val memberId = call.request.headers["member_id"] //for future authorization
-        if (memberId != null) {
-            try {
-                val messages = chat.getAllMessagesForRequest(requestId)
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "${messages.size} messages retrieved",
-                        data = messages
-                    )
-                )
-            } catch (e: RequestNotFoundException) {
-                call.respond(HttpStatusCode.NotFound)
-            }
-        } else call.respond(HttpStatusCode.Forbidden)
-    }
-
-    post("$PATH/create-request") {
-        val newRequest = try {
-            call.receive<SupportRequestModel>()
-        } catch (e: ContentTransformationException) {
-            call.respond(HttpStatusCode.BadRequest)
-            return@post
+            } else call.respond(HttpStatusCode.BadRequest)
         }
-        val request = chat.createNewRequest(newRequest)
-        if (request != null) {
-            requestsRoomController.addRequest(request)
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = "request added",
-                    data = request
+
+        get("$PATH/requests/{request_id}") {
+            val requestId = call.parameters["request_id"] ?: ""
+            val memberId = call.request.headers["member_id"] //for future authorization
+            if (memberId != null) {
+                val request = chat.getRequestById(requestId)
+                if (request != null) {
+                    val requestToRespond = request.copy(messages = emptyList())
+                    call.respond(
+                        SimpleResponse(
+                            status = true,
+                            message = "request retrieved",
+                            data = requestToRespond
+                        )
+                    )
+                } else call.respond(HttpStatusCode.NotFound)
+            } else call.respond(HttpStatusCode.Forbidden)
+        }
+
+        get("$PATH/requests/{request_id}/messages") {
+            val requestId = call.parameters["request_id"] ?: ""
+            val memberId = call.request.headers["member_id"] //for future authorization
+            if (memberId != null) {
+                try {
+                    val messages = chat.getAllMessagesForRequest(requestId)
+                    call.respond(
+                        SimpleResponse(
+                            status = true,
+                            message = "${messages.size} messages retrieved",
+                            data = messages
+                        )
+                    )
+                } catch (e: RequestNotFoundException) {
+                    call.respond(HttpStatusCode.NotFound)
+                }
+            } else call.respond(HttpStatusCode.Forbidden)
+        }
+
+        post("$PATH/create-request") {
+            val newRequest = try {
+                call.receive<SupportRequestModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val request = chat.createNewRequest(newRequest)
+            if (request != null) {
+                requestsRoomController.addRequest(request)
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "request added",
+                        data = request
+                    )
                 )
-            )
-        } else {
-            call.respond(HttpStatusCode.InternalServerError)
+            } else {
+                call.respond(HttpStatusCode.InternalServerError)
+            }
         }
     }
 

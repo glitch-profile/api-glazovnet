@@ -2,6 +2,7 @@ package net.glazov.routes
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -16,103 +17,105 @@ fun Route.postRoutes(
     posts: PostsDataSource
 ) {
 
-    get("$PATH/") {
-        val postsList = posts.getAllPosts()
-        call.respond(
-            SimpleResponse(
-                status = true,
-                message = "posts retrieved",
-                data = postsList
-            )
-        )
-    }
-
-    get("$PATH/list") {
-        val postsLimit = call.request.queryParameters["limit"]
-        val startIndex = call.request.queryParameters["start_index"]
-
-        val postsList = (posts.getPostsList(limit = postsLimit, offset = startIndex))
-        call.respond(
-            SimpleResponse(
-                status = true,
-                message = "posts retrieved",
-                data = postsList
-            )
-        )
-    }
-
-    get("$PATH/{post_id}") {
-        val id = call.parameters["post_id"] ?: ""
-        val post = posts.getPostById(id)
-        val status = (post !== null)
-        call.respond(
-            SimpleResponse(
-                status = true,
-                message = if (status) "post retrieved" else "no post with id found",
-                data = if (status) listOf(post!!) else emptyList()
-            )
-        )
-    }
-
-    put("$PATH/edit") {
-        val apiKey = call.request.headers["api_key"]
-        if (apiKey == apiKeyServer) {
-            val newPost = try {
-                call.receive<PostModel>()
-            } catch (e: ContentTransformationException) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            val status = posts.updatePost(newPost)
+    authenticate {
+        get("$PATH/") {
+            val postsList = posts.getAllPosts()
             call.respond(
                 SimpleResponse(
-                    status = status,
-                    message = if (status) "post updated" else "error while updating the post",
-                    data = emptyList<PostModel>()
+                    status = true,
+                    message = "posts retrieved",
+                    data = postsList
                 )
             )
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
         }
-    }
 
-    post("$PATH/add") {
-        val apiKey = call.request.headers["api_key"]
-        if (apiKey == apiKeyServer) {
-            val newPost = try {
-                call.receive<PostModel>()
-            } catch (e: ContentTransformationException) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@post
-            }
-            val post = posts.addNewPost(newPost)
-            val status = post != null
+        get("$PATH/list") {
+            val postsLimit = call.request.queryParameters["limit"]
+            val startIndex = call.request.queryParameters["start_index"]
+
+            val postsList = (posts.getPostsList(limit = postsLimit, offset = startIndex))
             call.respond(
                 SimpleResponse(
-                    status = status,
-                    message = if (status) "post added" else "error while adding the post",
+                    status = true,
+                    message = "posts retrieved",
+                    data = postsList
+                )
+            )
+        }
+
+        get("$PATH/{post_id}") {
+            val id = call.parameters["post_id"] ?: ""
+            val post = posts.getPostById(id)
+            val status = (post !== null)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = if (status) "post retrieved" else "no post with id found",
                     data = if (status) listOf(post!!) else emptyList()
                 )
             )
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
         }
-    }
 
-    delete("$PATH/delete") {
-        val apiKey = call.request.headers["api_key"]
-        if (apiKey == apiKeyServer) {
-            val postId = call.request.queryParameters["post_id"]
-            val status = posts.deletePost(postId.toString())
-            call.respond(
-                SimpleResponse(
-                    status = status,
-                    message = if (status) "post deleted" else "error while deleting the post",
-                    data = emptyList<PostModel>()
+        put("$PATH/edit") {
+            val apiKey = call.request.headers["api_key"]
+            if (apiKey == apiKeyServer) {
+                val newPost = try {
+                    call.receive<PostModel>()
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@put
+                }
+                val status = posts.updatePost(newPost)
+                call.respond(
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "post updated" else "error while updating the post",
+                        data = emptyList<PostModel>()
+                    )
                 )
-            )
-        } else {
-            call.respond(HttpStatusCode.Forbidden)
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
+            }
+        }
+
+        post("$PATH/add") {
+            val apiKey = call.request.headers["api_key"]
+            if (apiKey == apiKeyServer) {
+                val newPost = try {
+                    call.receive<PostModel>()
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
+                }
+                val post = posts.addNewPost(newPost)
+                val status = post != null
+                call.respond(
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "post added" else "error while adding the post",
+                        data = if (status) listOf(post!!) else emptyList()
+                    )
+                )
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
+            }
+        }
+
+        delete("$PATH/delete") {
+            val apiKey = call.request.headers["api_key"]
+            if (apiKey == apiKeyServer) {
+                val postId = call.request.queryParameters["post_id"]
+                val status = posts.deletePost(postId.toString())
+                call.respond(
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "post deleted" else "error while deleting the post",
+                        data = emptyList<PostModel>()
+                    )
+                )
+            } else {
+                call.respond(HttpStatusCode.Forbidden)
+            }
         }
     }
 }
