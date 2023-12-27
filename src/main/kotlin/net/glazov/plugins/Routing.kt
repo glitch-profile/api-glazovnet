@@ -30,7 +30,7 @@ fun Application.configureRouting() {
             "/images",
             File("${Paths.get("").toAbsolutePath()}/static/images")) //http://url:8080/images/filename
 
-        //testRoutes()
+        authRoutes(clientsDataSource)
         postRoutes(apiKey, postsDataSource)
         tariffsRoutes(apiKey, tariffsDataSource)
         addressRoutes(apiKey, addressesDataSource)
@@ -38,5 +38,6 @@ fun Application.configureRouting() {
         announcementsRoutes(apiKey, announcementsDataSource)
         requestsRoute(apiKey, requestsRoomController, requestChatRoomController, chatDataSource)
         utilRoutes(apiKey, fileManager)
+        //testRoutes()
     }
 }

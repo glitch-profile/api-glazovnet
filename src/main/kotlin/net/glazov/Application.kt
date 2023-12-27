@@ -10,6 +10,7 @@ fun main(args: Array<String>) {
 fun Application.module() {
 
     configureKoin()
+    configureAuthentication()
     configureSerialization()
     //configureMonitoring()
     configureSessions()
