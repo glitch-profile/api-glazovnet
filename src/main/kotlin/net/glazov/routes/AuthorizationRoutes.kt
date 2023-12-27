@@ -13,15 +13,13 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.auth.AuthModel
-import java.time.OffsetDateTime
-import java.time.ZoneId
 import java.util.*
 
 private const val PATH = "/api"
 
 fun Routing.authRoutes(
     clientsDataSource: ClientsDataSource,
-    adminDataSource: AdminsDataSource
+    adminsDataSource: AdminsDataSource
 ) {
 
     val issuer = ApplicationConfig(null).tryGetString("auth.issuer").toString()
@@ -38,7 +36,7 @@ fun Routing.authRoutes(
         if (client != null) {
             val token = JWT.create()
                 .withIssuer(issuer)
-                .withClaim("person_id", client.id)
+                .withClaim("user_id", client.id)
                 .withClaim("is_admin", false)
                 .withExpiresAt(Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
                 .sign(Algorithm.HMAC256(secret))
@@ -55,11 +53,11 @@ fun Routing.authRoutes(
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val admin = adminDataSource.login(authData.username, authData.password)
+        val admin = adminsDataSource.login(authData.username, authData.password)
         if (admin != null) {
             val token = JWT.create()
                 .withIssuer(issuer)
-                .withClaim("person_id", admin.id)
+                .withClaim("user_id", admin.id)
                 .withClaim("is_admin", true)
                 .withExpiresAt(Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
                 .sign(Algorithm.HMAC256(secret))
@@ -72,10 +70,20 @@ fun Routing.authRoutes(
     authenticate {
         get("$PATH/check") {
             val principal = call.principal<JWTPrincipal>()
-            val clientId = principal!!.payload.getClaim("person_id").toString()
+            val clientId = principal!!.payload.getClaim("user_id").toString()
             val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
-            call.respond("Hello, $clientId. Are you an admin: $isAdmin")
+            call.respond("Hello, $clientId. Are you not an admin...")
+        }
+
+        get("$PATH/check-adm") {
+            val principal = call.principal<JWTPrincipal>()
+            val isAdmin = principal!!.payload.getClaim("is_admin").asBoolean()
+            if (isAdmin) {
+                val clientId = principal.payload.getClaim("user_id").toString()
+                call.respond("Hello, $clientId. Are you an admin!")
+            } else call.respond(HttpStatusCode.Forbidden)
         }
     }
+
 
 }

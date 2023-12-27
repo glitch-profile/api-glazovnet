@@ -20,6 +20,7 @@ fun Application.configureRouting() {
     val addressesDataSource by inject<AddressesDataSource>()
     val announcementsDataSource by inject<AnnouncementsDataSource>()
     val clientsDataSource by inject<ClientsDataSource>()
+    val adminsDataSource by inject<AdminsDataSource>()
     val requestsRoomController by inject<RequestsRoomController>()
     val requestChatRoomController by inject<RequestChatRoomController>()
     val chatDataSource by inject<ChatDataSource>()
@@ -30,7 +31,7 @@ fun Application.configureRouting() {
             "/images",
             File("${Paths.get("").toAbsolutePath()}/static/images")) //http://url:8080/images/filename
 
-        authRoutes(clientsDataSource)
+        authRoutes(clientsDataSource, adminsDataSource)
         postRoutes(apiKey, postsDataSource)
         tariffsRoutes(apiKey, tariffsDataSource)
         addressRoutes(apiKey, addressesDataSource)
