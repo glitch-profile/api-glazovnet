@@ -59,7 +59,6 @@ class RequestChatRoomController {
                 requests.remove(requestId)
             }
         }
-        println("user disconnected from chat room")
     }
 
 }
