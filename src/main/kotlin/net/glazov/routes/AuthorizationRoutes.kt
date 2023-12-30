@@ -13,7 +13,8 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.auth.AuthModel
-import java.util.*
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 private const val PATH = "/api"
 
@@ -32,38 +33,32 @@ fun Routing.authRoutes(
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val client = clientsDataSource.login(authData.username, authData.password)
-        if (client != null) {
-            val token = JWT.create()
-                .withIssuer(issuer)
-                .withClaim("user_id", client.id)
-                .withClaim("is_admin", false)
-                .withExpiresAt(Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
-                .sign(Algorithm.HMAC256(secret))
-            call.respond(hashMapOf("token" to token))
+        if (authData.asAdmin) {
+            val admin = adminsDataSource.login(authData.username, authData.password)
+            if (admin != null) {
+                val expireDateInstant = OffsetDateTime.now(ZoneId.systemDefault()).plusMonths(6).toInstant()
+                val token = JWT.create()
+                    .withIssuer(issuer)
+                    .withClaim("user_id", admin.id)
+                    .withClaim("is_admin", true)
+                    .withExpiresAt(expireDateInstant)
+                    .sign(Algorithm.HMAC256(secret))
+                call.respond(hashMapOf("token" to token))
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
         } else {
-            call.respond(HttpStatusCode.NotFound)
-        }
-    }
-
-    post("$PATH/login-admin") {
-        val authData = try {
-            call.receive<AuthModel>()
-        } catch (e: ContentTransformationException) {
-            call.respond(HttpStatusCode.BadRequest)
-            return@post
-        }
-        val admin = clientsDataSource.login(authData.username, authData.password)
-        if (admin != null) {
-            val token = JWT.create()
-                .withIssuer(issuer)
-                .withClaim("user_id", admin.id)
-                .withClaim("is_admin", true)
-                .withExpiresAt(Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
-                .sign(Algorithm.HMAC256(secret))
-            call.respond(hashMapOf("token" to token))
-        } else {
-            call.respond(HttpStatusCode.NotFound)
+            val client = clientsDataSource.login(authData.username, authData.password)
+            if (client != null) {
+                val token = JWT.create()
+                    .withIssuer(issuer)
+                    .withClaim("user_id", client.id)
+                    .withClaim("is_admin", false)
+                    .sign(Algorithm.HMAC256(secret))
+                call.respond(hashMapOf("token" to token))
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
     }
 
@@ -71,7 +66,7 @@ fun Routing.authRoutes(
 
         get("$PATH/check") {
             val principal = call.principal<JWTPrincipal>()
-            val clientId = principal!!.payload.getClaim("user_id").toString()
+            val clientId = principal!!.payload.getClaim("user_id").asString()
             val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
             call.respond("Hello, $clientId. Are you not an admin...")
         }

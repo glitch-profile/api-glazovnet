@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AuthModel(
     val username: String,
-    val password: String
+    val password: String,
+    val asAdmin: Boolean
 )
