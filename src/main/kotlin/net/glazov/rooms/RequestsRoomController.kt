@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class RequestsRoomController {
 
-    private val members = ConcurrentHashMap<String, Member>()
+    private val members = ConcurrentHashMap<String, RequestsMember>()
 
     fun onJoin(
         memberId: String,
@@ -17,7 +17,7 @@ class RequestsRoomController {
         if (members.containsKey(memberId)) {
             throw MemberAlreadyExistException()
         } else {
-            members[memberId] = Member(
+            members[memberId] = RequestsMember(
                 memberId = memberId,
                 socket = socket
             )

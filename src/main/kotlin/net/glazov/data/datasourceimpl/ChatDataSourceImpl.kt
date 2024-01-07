@@ -38,16 +38,6 @@ class ChatDataSourceImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAllMessagesForRequest(requestId: String): List<MessageModel> {
-        val filter = Filters.eq("_id", requestId)
-        val request = requests.find(filter).singleOrNull()
-        if (request != null) {
-            return request.messages.sortedByDescending { it.timestamp }
-        } else {
-            throw RequestNotFoundException()
-        }
-    }
-
     override suspend fun createNewRequest(newRequest: SupportRequestModel): SupportRequestModel? {
         val requestToInsert = newRequest.copy(
             id = ObjectId().toString(),

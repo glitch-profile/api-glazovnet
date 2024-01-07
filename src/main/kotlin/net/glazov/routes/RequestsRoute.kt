@@ -3,6 +3,7 @@ package net.glazov.routes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -30,7 +31,8 @@ fun Route.requestsRoute(
 
     authenticate {
         webSocket("$PATH/requests-socket") {
-            val memberId = call.request.headers["member_id"]
+            val principal = call.principal<JWTPrincipal>()
+            val memberId = principal!!.payload.getClaim("user_id").asString()
             if (memberId != null) {
                 try {
                     requestsRoomController.onJoin(
@@ -52,32 +54,26 @@ fun Route.requestsRoute(
 
         webSocket("$PATH/requests/{request_id}/chat-socket") {
             val requestId = call.parameters["request_id"]
-            val memberId = call.request.headers["member_id"]
+            val principal = call.principal<JWTPrincipal>()
+            val memberId = principal!!.payload.getClaim("user_id").asString()
+            val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
             if (memberId != null && requestId != null) {
                 try {
                     requestChatRoomController.onJoin(
                         requestId = requestId,
                         memberId = memberId,
+                        isAdmin = isAdmin,
                         memberSocket = this
                     )
                     incoming.consumeEach {frame ->
                         if (frame is Frame.Text) {
                             try {
                                 val messageText = frame.readText()
-                                val message = chat.addMessageToRequest(
+                                requestChatRoomController.sendMessage(
                                     requestId = requestId,
-                                    newMessage = MessageModel(
-                                        senderId = memberId,
-                                        text = messageText,
-                                        timestamp = 0
-                                    )
+                                    senderId = memberId,
+                                    message = messageText
                                 )
-                                if (message != null) {
-                                    requestChatRoomController.sendMessage(
-                                        requestId = requestId,
-                                        messageToSend = message
-                                    )
-                                }
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
@@ -98,10 +94,12 @@ fun Route.requestsRoute(
 
         get("$PATH/requests/{request_id}") {
             val requestId = call.parameters["request_id"] ?: ""
-            val memberId = call.request.headers["member_id"] //for future authorization
-            if (memberId != null) {
-                val request = chat.getRequestById(requestId)
-                if (request != null) {
+            val principal = call.principal<JWTPrincipal>()
+            val clientId = principal!!.payload.getClaim("user_id").asString()
+            val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
+            val request = chat.getRequestById(requestId)
+            if (request != null) {
+                if (isAdmin || clientId == request.creatorId) {
                     val requestToRespond = request.copy(messages = emptyList())
                     call.respond(
                         SimpleResponse(
@@ -110,27 +108,28 @@ fun Route.requestsRoute(
                             data = requestToRespond
                         )
                     )
-                } else call.respond(HttpStatusCode.NotFound)
-            } else call.respond(HttpStatusCode.Forbidden)
+                } else call.respond(HttpStatusCode.Forbidden)
+            } else call.respond(HttpStatusCode.NotFound)
         }
 
         get("$PATH/requests/{request_id}/messages") {
             val requestId = call.parameters["request_id"] ?: ""
-            val memberId = call.request.headers["member_id"] //for future authorization
-            if (memberId != null) {
-                try {
-                    val messages = chat.getAllMessagesForRequest(requestId)
+            val principal = call.principal<JWTPrincipal>()
+            val clientId = principal!!.payload.getClaim("user_id").asString()
+            val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
+            val request = chat.getRequestById(requestId)
+            if (request != null) {
+                if (isAdmin || clientId == request.creatorId) {
+                    val messages = request.messages.sortedByDescending { it.timestamp }
                     call.respond(
                         SimpleResponse(
                             status = true,
-                            message = "${messages.size} messages retrieved",
+                            message = "request retrieved",
                             data = messages
                         )
                     )
-                } catch (e: RequestNotFoundException) {
-                    call.respond(HttpStatusCode.NotFound)
-                }
-            } else call.respond(HttpStatusCode.Forbidden)
+                } else call.respond(HttpStatusCode.Forbidden)
+            } else call.respond(HttpStatusCode.NotFound)
         }
 
         post("$PATH/create-request") {
@@ -158,19 +157,14 @@ fun Route.requestsRoute(
         authenticate("admin") {
 
             get("$PATH/requests") {
-                val apiKey = call.request.headers["api_key"]
-                if (apiKey == serverApiKey) {
-                    val requestsList = chat.getAllRequests(null)
-                    call.respond(
-                        SimpleResponse(
-                            status = true,
-                            message = "${requestsList.size} requests",
-                            data = requestsList
-                        )
+                val requestsList = chat.getAllRequests(null)
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "${requestsList.size} requests",
+                        data = requestsList
                     )
-                } else {
-                    call.respond(HttpStatusCode.Forbidden)
-                }
+                )
             }
         }
     }

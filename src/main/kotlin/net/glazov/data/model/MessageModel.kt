@@ -9,6 +9,8 @@ data class MessageModel(
     @BsonId
     val id: String = ObjectId().toString(),
     val senderId: String,
+    val isAdmin: Boolean,
+    val senderName: String,
     val text: String,
     val timestamp: Long
 )

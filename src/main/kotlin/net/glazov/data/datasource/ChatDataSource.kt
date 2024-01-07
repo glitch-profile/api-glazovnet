@@ -17,10 +17,6 @@ interface ChatDataSource {
         requestId: String
     ): SupportRequestModel?
 
-    suspend fun getAllMessagesForRequest(
-        requestId: String
-    ): List<MessageModel>
-
     suspend fun createNewRequest(
         newRequest: SupportRequestModel
     ): SupportRequestModel?

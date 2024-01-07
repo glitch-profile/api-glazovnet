@@ -3,47 +3,77 @@ package net.glazov.rooms
 import io.ktor.websocket.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import net.glazov.data.datasource.AdminsDataSource
+import net.glazov.data.datasource.ChatDataSource
+import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.MessageModel
 import java.util.concurrent.ConcurrentHashMap
 
-class RequestChatRoomController {
+class RequestChatRoomController(
+    private val chat: ChatDataSource,
+    private val clients: ClientsDataSource,
+    private val admins: AdminsDataSource
+) {
 
-    private val requests = ConcurrentHashMap<String, ConcurrentHashMap<String, Member>>()
+    private val requests = ConcurrentHashMap<String, ConcurrentHashMap<String, ChatMember>>()
 
-    fun onJoin(
+    suspend fun onJoin(
         requestId: String,
         memberId: String,
+        isAdmin: Boolean,
         memberSocket: WebSocketSession
     ) {
         if (requests[requestId]?.containsKey(memberId) == true) {
             throw MemberAlreadyExistException()
         } else {
-            if (requests.containsKey(requestId)) {
-                requests[requestId]!!.put(memberId, Member(memberId, memberSocket))
-            } else {
+            if (!requests.containsKey(requestId)) {
                 requests.put(
                     key = requestId,
-                    value = ConcurrentHashMap<String, Member>()
+                    value = ConcurrentHashMap<String, ChatMember>()
                 )
-                requests[requestId]!!.put(memberId, Member(memberId, memberSocket))
             }
+            val memberName = if (isAdmin) admins.getAdminNameById(memberId, true)
+            else clients.getClientNameById(memberId, true)
+            requests[requestId]!!.put(
+                memberId,
+                ChatMember(
+                    memberId = memberId,
+                    memberName = memberName,
+                    isAdmin = isAdmin,
+                    socket = memberSocket
+                )
+            )
         }
     }
 
     suspend fun sendMessage(
         requestId: String,
-        messageToSend: MessageModel
+        senderId: String,
+        message: String
     ) {
         requests[requestId]?.let {request ->
-            val json = Json {
-                encodeDefaults = true
-            }
-            val encodedMessage = json.encodeToString(messageToSend)
-            request.values.forEach { member ->
-                member.socket.send(Frame.Text(encodedMessage))
+            request[senderId]?.let { sender ->
+                val messageToSend = chat.addMessageToRequest(
+                    requestId = requestId,
+                    MessageModel(
+                        senderId = senderId,
+                        isAdmin = sender.isAdmin,
+                        senderName = sender.memberName,
+                        text = message,
+                        timestamp = 0L
+                    )
+                )
+                if (messageToSend != null) {
+                    val json = Json {
+                        encodeDefaults = true
+                    }
+                    val encodedMessage = json.encodeToString(messageToSend)
+                    request.values.forEach { member ->
+                        member.socket.send(Frame.Text(encodedMessage))
+                    }
+                }
             }
         }
-
     }
 
     suspend fun tryDisconnect(

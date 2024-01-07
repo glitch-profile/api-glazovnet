@@ -11,6 +11,10 @@ val roomControllersModule = module {
     }
 
     single<RequestChatRoomController> {
-        RequestChatRoomController()
+        RequestChatRoomController(
+            chat = get(),
+            clients = get(),
+            admins = get()
+        )
     }
 }
