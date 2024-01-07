@@ -14,6 +14,11 @@ interface ClientsDataSource {
         clientId: String
     ): ClientModel?
 
+    suspend fun getClientNameById(
+        clientId: String,
+        useShortForm: Boolean = false
+    ): String
+
     suspend fun login(
         login: String?,
         password: String?

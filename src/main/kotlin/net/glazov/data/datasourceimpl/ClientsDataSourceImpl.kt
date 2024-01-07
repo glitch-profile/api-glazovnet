@@ -58,6 +58,14 @@ class ClientsDataSourceImpl(
         return clients.find(filter).toList().firstOrNull()
     }
 
+    override suspend fun getClientNameById(clientId: String, useShortForm: Boolean): String {
+        val client = getClientById(clientId)
+        return if (client != null) {
+            if (useShortForm) "${client.firstName} ${client.middleName}"
+            else "${client.lastName} ${client.firstName} ${client.middleName}"
+        } else "Unknown client"
+    }
+
     override suspend fun login(login: String?, password: String?): ClientModel? {
         val loginFilter = Filters.eq(ClientModel::login.name, login)
         val passwordFilter = Filters.eq(ClientModel::password.name, password)

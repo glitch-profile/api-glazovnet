@@ -34,6 +34,15 @@ class AdminsDataSourceImpl(
         return admins.find(filter).toList().singleOrNull()
     }
 
+    override suspend fun getAdminNameById(adminId: String, useShortForm: Boolean): String {
+        val admin = getAdminById(adminId)
+        return if (admin != null) {
+            if (useShortForm) "${admin.firstName} ${admin.middleName}"
+            else "${admin.lastName} ${admin.firstName} ${admin.middleName}"
+        }
+        else "Unknown administrator"
+    }
+
     override suspend fun login(login: String?, password: String?): AdminModel? {
         val loginFilter = Filters.eq(AdminModel::login.name, login)
         val passwordFilter = Filters.eq(AdminModel::password.name, password)
