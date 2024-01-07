@@ -13,7 +13,6 @@ import net.glazov.data.model.response.SimpleTariffResponse
 private const val PATH = "/api/tariffs"
 
 fun Route.tariffsRoutes(
-    apiKeyServer: String,
     tariffs: TariffsDataSource
 ) {
 
@@ -32,64 +31,49 @@ fun Route.tariffsRoutes(
         authenticate("admin") {
 
             post("$PATH/add") {
-                val apiKey = call.request.headers["api_key"]
-                if (apiKey == apiKeyServer) {
-                    try {
-                        val newTariff = call.receive<TariffModel>()
-                        val tariff = tariffs.addTariff(newTariff)
-                        val status = tariff != null
-                        call.respond(
-                            SimpleTariffResponse(
-                                status = status,
-                                message = if (status) "tariff added" else "error while adding the tariff",
-                                data = if (status) listOf(tariff!!) else emptyList()
-                            )
+                try {
+                    val newTariff = call.receive<TariffModel>()
+                    val tariff = tariffs.addTariff(newTariff)
+                    val status = tariff != null
+                    call.respond(
+                        SimpleTariffResponse(
+                            status = status,
+                            message = if (status) "tariff added" else "error while adding the tariff",
+                            data = if (status) listOf(tariff!!) else emptyList()
                         )
-                    } catch (e: ContentTransformationException) {
-                        call.respond(HttpStatusCode.BadRequest)
-                    }
-                } else {
-                    call.respond(HttpStatusCode.Forbidden)
+                    )
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest)
                 }
             }
 
             delete("$PATH/remove") {
-                val apiKey = call.request.headers["api_key"]
-                if (apiKey == apiKeyServer) {
-                    val tariffId = call.request.queryParameters["tariff_id"]
-                    val status = tariffs.deleteTariff(tariffId = tariffId.toString())
-                    call.respond(
-                        SimpleTariffResponse(
-                            status = status,
-                            message = if (status) "tariff deleted" else "no tariff found",
-                            data = emptyList()
-                        )
+                val tariffId = call.request.queryParameters["tariff_id"]
+                val status = tariffs.deleteTariff(tariffId = tariffId.toString())
+                call.respond(
+                    SimpleTariffResponse(
+                        status = status,
+                        message = if (status) "tariff deleted" else "no tariff found",
+                        data = emptyList()
                     )
-                } else {
-                    call.respond(HttpStatusCode.Forbidden)
-                }
+                )
             }
 
             put("$PATH/edit") {
-                val apiKey = call.request.headers["api_key"]
-                if (apiKey == apiKeyServer) {
-                    val newTariff = try {
-                        call.receive<TariffModel>()
-                    } catch (e: ContentTransformationException) {
-                        call.respond(HttpStatusCode.BadRequest)
-                        return@put
-                    }
-                    val status = tariffs.updateTariff(newTariff)
-                    call.respond(
-                        SimpleTariffResponse(
-                            status = status,
-                            message = if (status) "tariff updated" else "error while updating the tariff",
-                            data = emptyList()
-                        )
-                    )
-                } else {
-                    call.respond(HttpStatusCode.Forbidden)
+                val newTariff = try {
+                    call.receive<TariffModel>()
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@put
                 }
+                val status = tariffs.updateTariff(newTariff)
+                call.respond(
+                    SimpleTariffResponse(
+                        status = status,
+                        message = if (status) "tariff updated" else "error while updating the tariff",
+                        data = emptyList()
+                    )
+                )
             }
         }
     }

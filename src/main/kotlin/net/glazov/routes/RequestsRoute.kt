@@ -124,7 +124,7 @@ fun Route.requestsRoute(
                     call.respond(
                         SimpleResponse(
                             status = true,
-                            message = "request retrieved",
+                            message = "${messages.size} messages retrieved",
                             data = messages
                         )
                     )

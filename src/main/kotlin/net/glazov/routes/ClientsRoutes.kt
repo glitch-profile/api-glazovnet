@@ -13,49 +13,38 @@ import net.glazov.data.model.response.SimpleResponse
 private const val PATH = "/api/clients"
 
 fun Route.clientsRoutes(
-    apiKeyServer: String,
     clients: ClientsDataSource
 ) {
 
-    authenticate {
+    authenticate("admin") {
 
         post("$PATH/create") {
-            val apiKey = call.request.headers["api_key"]
-            if (apiKey == apiKeyServer) {
-                val clientModel = try {
-                    call.receive<ClientModel>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@post
-                }
-                val newClient = clients.createClient(clientModel)
-                val status = newClient != null
-                call.respond(
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "client added" else "error while adding the client",
-                        data = newClient
-                    )
-                )
-            } else {
-                call.respond(HttpStatusCode.Forbidden)
+            val clientModel = try {
+                call.receive<ClientModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
             }
+            val newClient = clients.createClient(clientModel)
+            val status = newClient != null
+            call.respond(
+                SimpleResponse(
+                    status = status,
+                    message = if (status) "client added" else "error while adding the client",
+                    data = newClient
+                )
+            )
         }
 
         get("$PATH/") {
-            val apiKey = call.request.headers["api_key"]
-            if (apiKey == apiKeyServer) {
-                val clientsList = clients.getAllClients()
-                call.respond(
-                    SimpleResponse (
-                        status = true,
-                        message = "clients retrieved",
-                        data = clientsList
-                    )
+            val clientsList = clients.getAllClients()
+            call.respond(
+                SimpleResponse (
+                    status = true,
+                    message = "clients retrieved",
+                    data = clientsList
                 )
-            } else {
-                call.respond(HttpStatusCode.Forbidden)
-            }
+            )
         }
     }
 }
