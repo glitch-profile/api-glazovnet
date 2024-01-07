@@ -28,21 +28,21 @@ class AnnouncementsDataSourceImpl(
     }
 
     override suspend fun getAnnouncementForClient(
-        login: String,
-        password: String
+        clientId: String,
+        isAdmin: Boolean
     ): List<AnnouncementModel> {
-        val client = clients.login(login, password)
-        return if (client != null) {
-            val address = client.address
-            val announcementList = getAnnouncementsByAddress(
-                city = address.cityName,
-                street = address.streetName,
-                houseNumber = address.houseNumber
-            )
-            announcementList
-        } else {
-            emptyList()
-        }
+        return if (!isAdmin) {
+            val client = clients.getClientById(clientId)
+            if (client != null) {
+                val address = client.address
+                val announcementList = getAnnouncementsByAddress(
+                    city = address.cityName,
+                    street = address.streetName,
+                    houseNumber = address.houseNumber
+                )
+                announcementList
+            } else emptyList()
+        } else emptyList()
     }
 
     private suspend fun getAnnouncementsByAddress(

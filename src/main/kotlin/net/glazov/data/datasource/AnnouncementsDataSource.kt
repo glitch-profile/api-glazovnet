@@ -12,8 +12,8 @@ interface AnnouncementsDataSource {
     ): List<AnnouncementModel>
 
     suspend fun getAnnouncementForClient(
-        login: String,
-        password: String
+        clientId: String,
+        isAdmin: Boolean
     ): List<AnnouncementModel>
 
     suspend fun addAnnouncement(
