@@ -29,6 +29,7 @@ fun Route.requestsRoute(
 ) {
 
     authenticate {
+
         webSocket("$PATH/requests-socket") {
             val principal = call.principal<JWTPrincipal>()
             val memberId = principal!!.payload.getClaim("user_id").asString()
@@ -152,19 +153,22 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.InternalServerError)
             }
         }
+    }
 
-        authenticate("admin") {
+    authenticate("admin") {
 
-            get("$PATH/requests") {
-                val requestsList = chat.getAllRequests(null)
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "${requestsList.size} requests",
-                        data = requestsList
-                    )
+        get("$PATH/requests") {
+            val principal = call.principal<JWTPrincipal>()
+            println(principal!!.payload.getClaim("user_id").asString())
+            println(principal.payload.getClaim("is_admin").asBoolean())
+            val requestsList = chat.getAllRequests(null)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "${requestsList.size} requests",
+                    data = requestsList
                 )
-            }
+            )
         }
     }
 

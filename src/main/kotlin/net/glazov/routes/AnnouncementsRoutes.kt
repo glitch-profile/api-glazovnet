@@ -33,70 +33,70 @@ fun Route.announcementsRoutes(
                 )
             )
         }
+    }
 
-        authenticate("admin") {
+    authenticate("admin") {
 
-            get("$PATH/") {
-                val announcementsList = announcements.getAnnouncements()
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "${announcementsList.size} announcements retrieved",
-                        data = announcementsList
-                    )
+        get("$PATH/") {
+            val announcementsList = announcements.getAnnouncements()
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "${announcementsList.size} announcements retrieved",
+                    data = announcementsList
                 )
-            } //TODO: Remove after completion of announcements block
+            )
+        } //TODO: Remove after completion of announcements block
 
-            post("$PATH/create") {
-                val newAnnouncement = try {
-                    call.receive<AnnouncementModel>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@post
-                }
-                val announcement = announcements.addAnnouncement(newAnnouncement)
-                val status = announcement != null
+        post("$PATH/create") {
+            val newAnnouncement = try {
+                call.receive<AnnouncementModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val announcement = announcements.addAnnouncement(newAnnouncement)
+            val status = announcement != null
+            call.respond(
+                SimpleResponse(
+                    status = status,
+                    message = if (status) "announcement added" else "error while adding the announcement",
+                    data = if (status) listOf(announcement!!) else emptyList()
+                )
+            )
+        }
+
+        delete("$PATH/delete") {
+            val announcementId = call.request.queryParameters["id"]
+            if (announcementId != null) {
+                val status = announcements.deleteAnnouncement(announcementId)
                 call.respond(
                     SimpleResponse(
                         status = status,
-                        message = if (status) "announcement added" else "error while adding the announcement",
-                        data = if (status) listOf(announcement!!) else emptyList()
+                        message = if (status) "announcement deleted" else "error while deleting the announcement",
+                        data = Unit
                     )
                 )
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
             }
+        }
 
-            delete("$PATH/delete") {
-                val announcementId = call.request.queryParameters["id"]
-                if (announcementId != null) {
-                    val status = announcements.deleteAnnouncement(announcementId)
-                    call.respond(
-                        SimpleResponse(
-                            status = status,
-                            message = if (status) "announcement deleted" else "error while deleting the announcement",
-                            data = Unit
-                        )
-                    )
-                } else {
-                    call.respond(HttpStatusCode.BadRequest)
-                }
+        put("$PATH/edit") {
+            val newAnnouncement = try {
+                call.receive<AnnouncementModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
             }
-
-            put("$PATH/edit") {
-                val newAnnouncement = try {
-                    call.receive<AnnouncementModel>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@put
-                }
-                val status = announcements.updateAnnouncement(newAnnouncement)
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = if (status) "announcement updated" else "error while updating announcement",
-                        data = status
-                    )
+            val status = announcements.updateAnnouncement(newAnnouncement)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = if (status) "announcement updated" else "error while updating announcement",
+                    data = status
                 )
-            }
+            )
         }
     }
 }

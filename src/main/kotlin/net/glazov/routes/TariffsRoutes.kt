@@ -27,54 +27,54 @@ fun Route.tariffsRoutes(
                 )
             )
         }
+    }
 
-        authenticate("admin") {
+    authenticate("admin") {
 
-            post("$PATH/add") {
-                try {
-                    val newTariff = call.receive<TariffModel>()
-                    val tariff = tariffs.addTariff(newTariff)
-                    val status = tariff != null
-                    call.respond(
-                        SimpleTariffResponse(
-                            status = status,
-                            message = if (status) "tariff added" else "error while adding the tariff",
-                            data = if (status) listOf(tariff!!) else emptyList()
-                        )
-                    )
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                }
-            }
-
-            delete("$PATH/remove") {
-                val tariffId = call.request.queryParameters["tariff_id"]
-                val status = tariffs.deleteTariff(tariffId = tariffId.toString())
+        post("$PATH/add") {
+            try {
+                val newTariff = call.receive<TariffModel>()
+                val tariff = tariffs.addTariff(newTariff)
+                val status = tariff != null
                 call.respond(
                     SimpleTariffResponse(
                         status = status,
-                        message = if (status) "tariff deleted" else "no tariff found",
-                        data = emptyList()
+                        message = if (status) "tariff added" else "error while adding the tariff",
+                        data = if (status) listOf(tariff!!) else emptyList()
                     )
                 )
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
             }
+        }
 
-            put("$PATH/edit") {
-                val newTariff = try {
-                    call.receive<TariffModel>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@put
-                }
-                val status = tariffs.updateTariff(newTariff)
-                call.respond(
-                    SimpleTariffResponse(
-                        status = status,
-                        message = if (status) "tariff updated" else "error while updating the tariff",
-                        data = emptyList()
-                    )
+        delete("$PATH/remove") {
+            val tariffId = call.request.queryParameters["tariff_id"]
+            val status = tariffs.deleteTariff(tariffId = tariffId.toString())
+            call.respond(
+                SimpleTariffResponse(
+                    status = status,
+                    message = if (status) "tariff deleted" else "no tariff found",
+                    data = emptyList()
                 )
+            )
+        }
+
+        put("$PATH/edit") {
+            val newTariff = try {
+                call.receive<TariffModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
             }
+            val status = tariffs.updateTariff(newTariff)
+            call.respond(
+                SimpleTariffResponse(
+                    status = status,
+                    message = if (status) "tariff updated" else "error while updating the tariff",
+                    data = emptyList()
+                )
+            )
         }
     }
 }

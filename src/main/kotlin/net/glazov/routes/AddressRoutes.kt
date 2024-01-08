@@ -14,70 +14,67 @@ private const val PATH = "/api/address-info"
 fun Route.addressRoutes(
     addresses: AddressesDataSource
 ) {
-    authenticate {
+    authenticate("admin") {
 
-        authenticate("admin") {
+        get("$PATH/cities-list") {
+            val city = call.request.queryParameters["city"] ?: ""
+            val citiesList = addresses.getCitiesNames(city)
+            val formattedCitiesList = citiesList.map { it.replaceFirstChar { it.uppercaseChar() } }
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "streets retrieved",
+                    data = formattedCitiesList
+                )
+            )
+        }
 
-            get("$PATH/cities-list") {
-                val city = call.request.queryParameters["city"] ?: ""
-                val citiesList = addresses.getCitiesNames(city)
-                val formattedCitiesList = citiesList.map { it.replaceFirstChar { it.uppercaseChar() } }
+        get("$PATH/streets-list") {
+            val city = call.request.queryParameters["city"]
+            val street = call.request.queryParameters["street"]
+            if (city !== null && street !== null) {
+                val streetsList = addresses.getStreetsForCity(city, street)
+                val formattedStreetsNames = streetsList.map {
+                    it.street.replaceFirstChar { it.uppercaseChar() }
+                }
                 call.respond(
                     SimpleResponse(
                         status = true,
                         message = "streets retrieved",
-                        data = formattedCitiesList
+                        data = formattedStreetsNames
                     )
                 )
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
             }
+        }
 
-            get("$PATH/streets-list") {
-                val city = call.request.queryParameters["city"]
-                val street = call.request.queryParameters["street"]
-                if (city !== null && street !== null) {
-                    val streetsList = addresses.getStreetsForCity(city, street)
-                    val formattedStreetsNames = streetsList.map {
-                        it.street.replaceFirstChar { it.uppercaseChar() }
-                    }
-                    call.respond(
-                        SimpleResponse(
-                            status = true,
-                            message = "streets retrieved",
-                            data = formattedStreetsNames
-                        )
+        get("$PATH/addresses") {
+            val city = call.request.queryParameters["city"]
+            val street = call.request.queryParameters["street"]
+            if (city != null && street != null) {
+                val addressesList = addresses.getAddresses(city, street)
+                val formattedAddresses = addressesList.map {
+                    it.copy(
+                        city = it.city.replaceFirstChar { it.uppercaseChar() },
+                        street = it.street.replaceFirstChar { it.uppercaseChar() }
                     )
-                } else {
-                    call.respond(HttpStatusCode.BadRequest)
                 }
-            }
-
-            get("$PATH/addresses") {
-                val city = call.request.queryParameters["city"]
-                val street = call.request.queryParameters["street"]
-                if (city != null && street != null) {
-                    val addressesList = addresses.getAddresses(city, street)
-                    val formattedAddresses = addressesList.map {
-                        it.copy(
-                            city = it.city.replaceFirstChar { it.uppercaseChar() },
-                            street = it.street.replaceFirstChar { it.uppercaseChar() }
-                        )
-                    }
-                    call.respond(
-                        message = SimpleResponse(
-                            status = true,
-                            message = "addresses retrieved",
-                            data = formattedAddresses
-                        ),
-                        status = HttpStatusCode.OK
-                    )
-                } else call.respond(
+                call.respond(
                     message = SimpleResponse(
                         status = true,
                         message = "addresses retrieved",
-                        data = emptyList<List<RegisteredAddressesModel>>()
-                    )
+                        data = formattedAddresses
+                    ),
+                    status = HttpStatusCode.OK
                 )
-            }
+            } else call.respond(
+                message = SimpleResponse(
+                    status = true,
+                    message = "addresses retrieved",
+                    data = emptyList<List<RegisteredAddressesModel>>()
+                )
+            )
         }
     }
 }

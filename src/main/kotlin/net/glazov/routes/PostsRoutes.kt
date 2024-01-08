@@ -55,55 +55,55 @@ fun Route.postRoutes(
                 )
             )
         }
+    }
 
-        authenticate("admin") {
+    authenticate("admin") {
 
-            put("$PATH/edit") {
-                val newPost = try {
-                    call.receive<PostModel>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@put
-                }
-                val status = posts.updatePost(newPost)
-                call.respond(
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "post updated" else "error while updating the post",
-                        data = emptyList<PostModel>()
-                    )
-                )
+        put("$PATH/edit") {
+            val newPost = try {
+                call.receive<PostModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
             }
-
-            post("$PATH/add") {
-                val newPost = try {
-                    call.receive<PostModel>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@post
-                }
-                val post = posts.addNewPost(newPost)
-                val status = post != null
-                call.respond(
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "post added" else "error while adding the post",
-                        data = if (status) listOf(post!!) else emptyList()
-                    )
+            val status = posts.updatePost(newPost)
+            call.respond(
+                SimpleResponse(
+                    status = status,
+                    message = if (status) "post updated" else "error while updating the post",
+                    data = emptyList<PostModel>()
                 )
-            }
+            )
+        }
 
-            delete("$PATH/delete") {
-                val postId = call.request.queryParameters["post_id"]
-                val status = posts.deletePost(postId.toString())
-                call.respond(
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "post deleted" else "error while deleting the post",
-                        data = emptyList<PostModel>()
-                    )
-                )
+        post("$PATH/add") {
+            val newPost = try {
+                call.receive<PostModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
             }
+            val post = posts.addNewPost(newPost)
+            val status = post != null
+            call.respond(
+                SimpleResponse(
+                    status = status,
+                    message = if (status) "post added" else "error while adding the post",
+                    data = if (status) listOf(post!!) else emptyList()
+                )
+            )
+        }
+
+        delete("$PATH/delete") {
+            val postId = call.request.queryParameters["post_id"]
+            val status = posts.deletePost(postId.toString())
+            call.respond(
+                SimpleResponse(
+                    status = status,
+                    message = if (status) "post deleted" else "error while deleting the post",
+                    data = emptyList<PostModel>()
+                )
+            )
         }
     }
 }

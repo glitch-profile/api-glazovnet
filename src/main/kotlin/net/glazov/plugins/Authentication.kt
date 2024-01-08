@@ -42,7 +42,7 @@ fun Application.configureAuthentication() {
                     .build()
             )
             validate { credential ->
-                if (credential.payload.getClaim("is_admin").asBoolean()) {
+                if (credential.payload.getClaim("is_admin").asBoolean() == true) {
                     JWTPrincipal(credential.payload)
                 } else {
                     null
