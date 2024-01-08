@@ -14,6 +14,7 @@ import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.AdminModel
 import net.glazov.data.model.auth.AuthModel
+import net.glazov.data.model.auth.AuthResponseModel
 import net.glazov.data.model.response.SimpleResponse
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -36,9 +37,14 @@ fun Routing.authRoutes(
             return@post
         }
         var generatedToken: String? = null
+        var userId: String? = null
+        var isAdmin: Boolean? = null
+
         if (authData.asAdmin) {
             val admin = adminsDataSource.login(authData.username, authData.password)
             if (admin != null) {
+                userId = admin.id
+                isAdmin = true
                 val expireDateInstant = OffsetDateTime.now(ZoneId.systemDefault()).plusMonths(6).toInstant()
                 val token = JWT.create()
                     .withIssuer(issuer)
@@ -51,6 +57,8 @@ fun Routing.authRoutes(
         } else {
             val client = clientsDataSource.login(authData.username, authData.password)
             if (client != null) {
+                userId = client.id
+                isAdmin = false
                 val token = JWT.create()
                     .withIssuer(issuer)
                     .withClaim("user_id", client.id)
@@ -60,11 +68,16 @@ fun Routing.authRoutes(
             }
         }
         if (generatedToken != null) {
+            val authResponse = AuthResponseModel(
+                token = generatedToken,
+                userId = userId!!,
+                isAdmin = isAdmin!!
+            )
             call.respond(
                 SimpleResponse(
                     status = true,
                     message = "user logged in",
-                    data = generatedToken
+                    data = authResponse
                 )
             )
         } else call.respond(HttpStatusCode.NotFound)
