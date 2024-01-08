@@ -23,7 +23,6 @@ import net.glazov.rooms.RequestsRoomController
 private const val PATH = "/api/support"
 
 fun Route.requestsRoute(
-    serverApiKey: String,
     requestsRoomController: RequestsRoomController,
     requestChatRoomController: RequestChatRoomController,
     chat: ChatDataSource

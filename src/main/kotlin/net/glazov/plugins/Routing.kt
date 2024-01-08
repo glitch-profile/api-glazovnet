@@ -13,7 +13,6 @@ import java.io.File
 import java.nio.file.Paths
 
 fun Application.configureRouting() {
-    val apiKey = environment.config.property("storage.api_key").getString()
 
     val postsDataSource by inject<PostsDataSource>()
     val tariffsDataSource by inject<TariffsDataSource>()
@@ -32,13 +31,13 @@ fun Application.configureRouting() {
             File("${Paths.get("").toAbsolutePath()}/static/images")) //http://url:8080/images/filename
 
         authRoutes(clientsDataSource, adminsDataSource)
-        postRoutes(apiKey, postsDataSource)
-        tariffsRoutes(apiKey, tariffsDataSource)
-        addressRoutes(apiKey, addressesDataSource)
-        clientsRoutes(apiKey, clientsDataSource)
-        announcementsRoutes(apiKey, announcementsDataSource)
-        requestsRoute(apiKey, requestsRoomController, requestChatRoomController, chatDataSource)
-        utilRoutes(apiKey, fileManager)
+        postRoutes(postsDataSource)
+        tariffsRoutes(tariffsDataSource)
+        addressRoutes(addressesDataSource)
+        clientsRoutes(clientsDataSource)
+        announcementsRoutes(announcementsDataSource)
+        requestsRoute(requestsRoomController, requestChatRoomController, chatDataSource)
+        utilRoutes(fileManager)
         //testRoutes()
     }
 }
