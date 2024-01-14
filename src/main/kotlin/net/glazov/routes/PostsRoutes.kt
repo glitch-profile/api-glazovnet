@@ -71,7 +71,7 @@ fun Route.postRoutes(
                 SimpleResponse(
                     status = status,
                     message = if (status) "post updated" else "error while updating the post",
-                    data = emptyList<PostModel>()
+                    data = Unit
                 )
             )
         }
@@ -101,7 +101,7 @@ fun Route.postRoutes(
                 SimpleResponse(
                     status = status,
                     message = if (status) "post deleted" else "error while deleting the post",
-                    data = emptyList<PostModel>()
+                    data = Unit
                 )
             )
         }
