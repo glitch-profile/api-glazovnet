@@ -158,9 +158,6 @@ fun Route.requestsRoute(
     authenticate("admin") {
 
         get("$PATH/requests") {
-            val principal = call.principal<JWTPrincipal>()
-            println(principal!!.payload.getClaim("user_id").asString())
-            println(principal.payload.getClaim("is_admin").asBoolean())
             val requestsList = chat.getAllRequests(null)
             call.respond(
                 SimpleResponse(

@@ -80,7 +80,13 @@ fun Routing.authRoutes(
                     data = authResponse
                 )
             )
-        } else call.respond(HttpStatusCode.NotFound)
+        } else call.respond(
+            SimpleResponse(
+                status = false,
+                message = "user not found",
+                data = null
+            )
+        )
     }
 
     post("$PATH/add-admin") {
@@ -112,7 +118,6 @@ fun Routing.authRoutes(
         get("$PATH/check") {
             val principal = call.principal<JWTPrincipal>()
             val clientId = principal!!.payload.getClaim("user_id").asString()
-            val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
             call.respond("Hello, $clientId. Are you not an admin...")
         }
 
