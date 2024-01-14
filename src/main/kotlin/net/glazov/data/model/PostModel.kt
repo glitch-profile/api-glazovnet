@@ -9,7 +9,7 @@ data class PostModel(
     @BsonId
     var id: String? = ObjectId().toString(),
     val title: String,
-    val creationDate: String,
+    val creationDate: Long,
     val text: String,
     val image: ImageModel? = null
     )

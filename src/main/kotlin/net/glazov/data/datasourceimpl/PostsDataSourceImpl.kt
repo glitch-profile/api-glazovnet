@@ -43,7 +43,7 @@ class PostsDataSourceImpl(
     override suspend fun addNewPost(newPost: PostModel): PostModel? {
         val post = newPost.copy(
             id = ObjectId.get().toString(),
-            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE_TIME)
+            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
         )
         val status = posts.insertOne(post).wasAcknowledged()
         return if (status)
