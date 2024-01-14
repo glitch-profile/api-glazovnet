@@ -11,7 +11,7 @@ import io.ktor.util.*
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.FileManager
 import java.io.File
-import java.nio.file.Paths
+import kotlin.io.path.Path
 
 private const val PATH = "/api/utils"
 private const val MAX_CONTENT_LENGTH = 10_485_760 //10Mb in bytes
@@ -62,5 +62,15 @@ fun Routing.utilRoutes(
                 }
             } else call.respond(HttpStatusCode.PayloadTooLarge)
         }
+    }
+
+    get("$PATH/get-intro-image-url") {
+        val imagesDirectoryPath = Path("").toAbsolutePath().toString() + "\\static\\images\\intro"
+        val directory = File(imagesDirectoryPath)
+        val imagesList = directory.listFiles()
+        if (imagesList?.isNotEmpty() == true) {
+            val image = imagesList.random().absolutePath
+            call.respond(fileManager.getLocalPath(image))
+        } else call.respond("")
     }
 }
