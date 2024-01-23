@@ -39,7 +39,6 @@ class RequestChatRoomController(
                 ChatMember(
                     memberId = memberId,
                     memberName = memberName,
-                    isAdmin = isAdmin,
                     socket = memberSocket
                 )
             )
@@ -57,7 +56,6 @@ class RequestChatRoomController(
                     requestId = requestId,
                     MessageModel(
                         senderId = senderId,
-                        isAdmin = sender.isAdmin,
                         senderName = sender.memberName,
                         text = message,
                         timestamp = 0L
