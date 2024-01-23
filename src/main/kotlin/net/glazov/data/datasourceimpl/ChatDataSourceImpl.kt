@@ -5,8 +5,10 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.ChatDataSource
-import net.glazov.data.model.MessageModel
-import net.glazov.data.model.SupportRequestModel
+import net.glazov.data.model.requests.MessageModel
+import net.glazov.data.model.requests.RequestsStatus
+import net.glazov.data.model.requests.RequestsStatus.Companion.convertToIntCode
+import net.glazov.data.model.requests.SupportRequestModel
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -17,11 +19,14 @@ class ChatDataSourceImpl(
 
     private val requests = db.getCollection<SupportRequestModel>("SupportRequests")
 
-    override suspend fun getAllRequests(status: Int?): List<SupportRequestModel> {
+    override suspend fun getAllRequests(statuses: List<RequestsStatus>?): List<SupportRequestModel> {
         val requestsList = requests.find().toList()
-        val filteredRequests = if (status != null) {
+        val convertedStatus = statuses?.map { it.convertToIntCode() }
+        val filteredRequests = if (convertedStatus != null) {
             requestsList.asSequence()
-                .filter { it.status == status }
+                .filter { request ->
+                    convertedStatus.any { request.status == it }
+                }
                 .sortedByDescending { it.creationDate }
                 .map { it.copy(messages = emptyList()) }
                 .toList()
@@ -35,7 +40,8 @@ class ChatDataSourceImpl(
     }
 
     override suspend fun getRequestsForClient(clientId: String): List<SupportRequestModel> {
-        TODO("Not yet implemented")
+        val filter = Filters.eq(SupportRequestModel::creatorId.name, clientId)
+        return requests.find(filter).toList()
     }
 
     override suspend fun createNewRequest(newRequest: SupportRequestModel): SupportRequestModel? {
@@ -71,8 +77,14 @@ class ChatDataSourceImpl(
         } else null
     }
 
-    override suspend fun markRequestAsSolved(requestId: String): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun changeRequestStatus(requestId: String, newStatus: Int): Boolean {
+        val filter = Filters.eq("_id", requestId)
+        val request = requests.find(filter).singleOrNull()
+        if (request != null) {
+            val requestToInsert = request.copy(status = newStatus)
+            val status = requests.findOneAndReplace(filter, requestToInsert)
+            return status != null
+        } else throw RequestNotFoundException()
     }
 
     override suspend fun deleteRequest(requestId: String): Boolean {

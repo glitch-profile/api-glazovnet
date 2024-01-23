@@ -1,12 +1,13 @@
 package net.glazov.data.datasource
 
-import net.glazov.data.model.MessageModel
-import net.glazov.data.model.SupportRequestModel
+import net.glazov.data.model.requests.MessageModel
+import net.glazov.data.model.requests.RequestsStatus
+import net.glazov.data.model.requests.SupportRequestModel
 
 interface ChatDataSource {
 
     suspend fun getAllRequests(
-        status: Int? = null
+        statuses: List<RequestsStatus>? = null
     ): List<SupportRequestModel>
 
     suspend fun getRequestsForClient(
@@ -26,8 +27,9 @@ interface ChatDataSource {
         newMessage: MessageModel
     ): MessageModel?
 
-    suspend fun markRequestAsSolved(
-        requestId: String
+    suspend fun changeRequestStatus(
+        requestId: String,
+        newStatus: Int
     ): Boolean
 
     suspend fun deleteRequest(
