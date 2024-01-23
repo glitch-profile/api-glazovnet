@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.datasource.ClientsDataSource
-import net.glazov.data.model.MessageModel
+import net.glazov.data.model.requests.MessageModel
 import java.util.concurrent.ConcurrentHashMap
 
 class RequestChatRoomController(

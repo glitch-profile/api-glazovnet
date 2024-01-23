@@ -3,7 +3,7 @@ package net.glazov.rooms
 import io.ktor.websocket.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.glazov.data.model.SupportRequestModel
+import net.glazov.data.model.requests.SupportRequestModel
 import java.util.concurrent.ConcurrentHashMap
 
 class RequestsRoomController {

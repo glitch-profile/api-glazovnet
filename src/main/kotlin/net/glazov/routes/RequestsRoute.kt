@@ -10,11 +10,8 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.serialization.json.Json
 import net.glazov.data.datasource.ChatDataSource
-import net.glazov.data.datasourceimpl.RequestNotFoundException
-import net.glazov.data.model.MessageModel
-import net.glazov.data.model.SupportRequestModel
+import net.glazov.data.model.requests.SupportRequestModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.rooms.MemberAlreadyExistException
 import net.glazov.rooms.RequestChatRoomController
