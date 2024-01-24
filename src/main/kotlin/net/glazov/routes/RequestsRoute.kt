@@ -89,6 +89,19 @@ fun Route.requestsRoute(
             } else call.respond(HttpStatusCode.BadRequest)
         }
 
+        get("$PATH/requests") {
+            val principal = call.principal<JWTPrincipal>()
+            val clientId = principal!!.payload.getClaim("user_id").asString()
+            val requests = chat.getRequestsForClient(clientId)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "requests retrieved",
+                    data = requests
+                )
+            )
+        }
+
         get("$PATH/requests/{request_id}") {
             val requestId = call.parameters["request_id"] ?: ""
             val principal = call.principal<JWTPrincipal>()
@@ -154,7 +167,7 @@ fun Route.requestsRoute(
 
     authenticate("admin") {
 
-        get("$PATH/requests") {
+        get("$PATH/all-requests") {
             val requestsList = chat.getAllRequests(null)
             call.respond(
                 SimpleResponse(
