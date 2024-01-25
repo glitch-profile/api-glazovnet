@@ -10,6 +10,7 @@ data class SupportRequestModel(
     @BsonId
     val id: String = ObjectId().toString(),
     val creatorId: String,
+    val creatorName: String,
     val associatedSupportId: String?,
     val title: String,
     val description: String,

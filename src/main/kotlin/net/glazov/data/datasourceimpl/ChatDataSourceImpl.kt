@@ -5,6 +5,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.ChatDataSource
+import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.requests.MessageModel
 import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.requests.RequestsStatus.Companion.convertToIntCode
@@ -14,7 +15,8 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 
 class ChatDataSourceImpl(
-    private val db: MongoDatabase
+    private val db: MongoDatabase,
+    private val clientsDataSource: ClientsDataSource
 ): ChatDataSource {
 
     private val requests = db.getCollection<SupportRequestModel>("SupportRequests")
@@ -47,6 +49,7 @@ class ChatDataSourceImpl(
     override suspend fun createNewRequest(newRequest: SupportRequestModel): SupportRequestModel? {
         val requestToInsert = newRequest.copy(
             id = ObjectId().toString(),
+            creatorName = clientsDataSource.getClientNameById(newRequest.creatorId),
             creationDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
             associatedSupportId = null,
             messages = emptyList()
