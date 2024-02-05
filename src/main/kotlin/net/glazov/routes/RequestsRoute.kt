@@ -11,6 +11,7 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 import net.glazov.data.datasource.ChatDataSource
+import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.requests.SupportRequestModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.rooms.MemberAlreadyExistException
@@ -163,12 +164,32 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.InternalServerError)
             }
         }
+
+        put("$PATH/requests/edit") {
+            val newRequest = try {
+                call.receive<SupportRequestModel>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val status = chat.editRequest(newRequest)
+            if (status) {
+                requestsRoomController.addRequest(newRequest)
+            }
+            call.respond(
+                SimpleResponse(
+                    status = status,
+                    message = if (status) "request inserted" else "failed to update request",
+                    data = Unit
+                )
+            )
+        }
     }
 
     authenticate("admin") {
 
         get("$PATH/all-requests") {
-            val requestsList = chat.getAllRequests(null)
+            val requestsList = chat.getAllRequests(listOf(RequestsStatus.Active, RequestsStatus.InProgress))
             call.respond(
                 SimpleResponse(
                     status = true,

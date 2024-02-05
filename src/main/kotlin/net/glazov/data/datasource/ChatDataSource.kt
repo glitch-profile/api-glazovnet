@@ -22,6 +22,10 @@ interface ChatDataSource {
         newRequest: SupportRequestModel
     ): SupportRequestModel?
 
+    suspend fun editRequest(
+        newRequest: SupportRequestModel
+    ): Boolean
+
     suspend fun addMessageToRequest(
         requestId: String,
         newMessage: MessageModel

@@ -58,6 +58,15 @@ class ChatDataSourceImpl(
         return if (status) requestToInsert else null
     }
 
+    override suspend fun editRequest(newRequest: SupportRequestModel): Boolean {
+        val filter = Filters.eq("_id", newRequest.id)
+        val result = requests.findOneAndReplace(
+            filter = filter,
+            replacement = newRequest
+        )
+        return result !== null
+    }
+
     override suspend fun getRequestById(requestId: String): SupportRequestModel? {
         val filter = Filters.eq("_id", requestId)
         return requests.find(filter).singleOrNull()
