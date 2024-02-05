@@ -1,7 +1,6 @@
 package net.glazov.data.model.requests
 
 import kotlinx.serialization.Serializable
-import net.glazov.data.model.requests.MessageModel
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
 

@@ -9,7 +9,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.AnnouncementsDataSource
 import net.glazov.data.model.AnnouncementModel
-import net.glazov.data.model.response.AnnouncementResponse
 import net.glazov.data.model.response.SimpleResponse
 
 private const val PATH = "/api/announcements"
