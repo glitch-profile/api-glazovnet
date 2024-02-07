@@ -1,7 +1,6 @@
 
 val ktor_version: String by project
 val kotlin_version: String by project
-val logback_version: String by project
 val koin_version: String by project
 
 plugins {
@@ -32,7 +31,7 @@ dependencies {
     implementation("io.ktor:ktor-server-call-logging-jvm")
     implementation("io.ktor:ktor-server-host-common-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation("ch.qos.logback:logback-classic:1.4.12")
 
     //websockets
     implementation("io.ktor:ktor-server-sessions:$ktor_version")
