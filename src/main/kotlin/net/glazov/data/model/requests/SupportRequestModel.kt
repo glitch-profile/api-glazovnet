@@ -15,5 +15,6 @@ data class SupportRequestModel(
     val description: String,
     val messages: List<MessageModel> = emptyList(),
     val creationDate: Long = 0,
+    val isNotificationsEnabled: Boolean,
     val status: Int = 0
 )
