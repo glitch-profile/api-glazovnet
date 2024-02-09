@@ -22,10 +22,6 @@ interface ChatDataSource {
         newRequest: SupportRequestModel
     ): SupportRequestModel?
 
-    suspend fun editRequest(
-        newRequest: SupportRequestModel
-    ): Boolean
-
     suspend fun addMessageToRequest(
         requestId: String,
         newMessage: MessageModel
@@ -34,6 +30,11 @@ interface ChatDataSource {
     suspend fun changeRequestStatus(
         requestId: String,
         newStatus: Int
+    ): Boolean
+
+    suspend fun changeRequestHelper(
+        requestId: String,
+        newSupportId: String?
     ): Boolean
 
     suspend fun deleteRequest(

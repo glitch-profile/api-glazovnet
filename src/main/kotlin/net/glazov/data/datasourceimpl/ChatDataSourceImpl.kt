@@ -1,6 +1,8 @@
 package net.glazov.data.datasourceimpl
 
+import com.mongodb.MongoException
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
@@ -58,15 +60,6 @@ class ChatDataSourceImpl(
         return if (status) requestToInsert else null
     }
 
-    override suspend fun editRequest(newRequest: SupportRequestModel): Boolean {
-        val filter = Filters.eq("_id", newRequest.id)
-        val result = requests.findOneAndReplace(
-            filter = filter,
-            replacement = newRequest
-        )
-        return result !== null
-    }
-
     override suspend fun getRequestById(requestId: String): SupportRequestModel? {
         val filter = Filters.eq("_id", requestId)
         return requests.find(filter).singleOrNull()
@@ -91,16 +84,34 @@ class ChatDataSourceImpl(
 
     override suspend fun changeRequestStatus(requestId: String, newStatus: Int): Boolean {
         val filter = Filters.eq("_id", requestId)
-        val request = requests.find(filter).singleOrNull()
-        if (request != null) {
-            val requestToInsert = request.copy(status = newStatus)
-            val status = requests.findOneAndReplace(filter, requestToInsert)
-            return status != null
-        } else throw RequestNotFoundException()
+        val update = Updates.set(SupportRequestModel::status.name, newStatus)
+        return try {
+            val status = requests.updateOne(filter, update)
+            if (status.matchedCount != 0L) {
+                status.wasAcknowledged()
+            } else throw RequestNotFoundException()
+        } catch (e: MongoException) {
+            false
+        }
+    }
+
+    override suspend fun changeRequestHelper(requestId: String, newSupportId: String?): Boolean {
+        val filter = Filters.eq("_id", requestId)
+        val update = Updates.set(SupportRequestModel::creatorId.name, newSupportId)
+        return try {
+            val status = requests.updateOne(filter, update)
+            if (status.matchedCount != 0L) {
+                status.wasAcknowledged()
+            } else throw RequestNotFoundException()
+        } catch (e: MongoException) {
+            e.printStackTrace()
+            false
+        }
     }
 
     override suspend fun deleteRequest(requestId: String): Boolean {
-        TODO("Not yet implemented")
+        val filter = Filters.eq("_id", requestId)
+        return requests.deleteOne(filter).wasAcknowledged()
     }
 }
 

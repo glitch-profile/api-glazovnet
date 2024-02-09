@@ -11,6 +11,7 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 import net.glazov.data.datasource.ChatDataSource
+import net.glazov.data.datasourceimpl.RequestNotFoundException
 import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.requests.SupportRequestModel
 import net.glazov.data.model.response.SimpleResponse
@@ -165,24 +166,46 @@ fun Route.requestsRoute(
             }
         }
 
-        put("$PATH/requests/edit") {
-            val newRequest = try {
-                call.receive<SupportRequestModel>()
-            } catch (e: ContentTransformationException) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
+        put("$PATH/requests/{request_id}/set-status") {
+            val requestId = call.parameters["request_id"]
+            val newStatusCode = call.request.headers["new_status"]
+            try {
+                if (requestId != null && newStatusCode != null) {
+                    val status = chat.changeRequestStatus(requestId, newStatusCode.toInt())
+                    if (status) {
+                        val request = chat.getRequestById(requestId)
+                        requestsRoomController.addRequest(request!!)
+                    }
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "request updated" else "failed to update request",
+                        data = Unit
+                    )
+                } else call.respond(HttpStatusCode.BadRequest)
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
             }
-            val status = chat.editRequest(newRequest)
-            if (status) {
-                requestsRoomController.addRequest(newRequest)
+        }
+
+        put("$PATH/requests/{request_id}/set-helper") {
+            val requestId = call.parameters["request_id"]
+            val newHelperId = call.request.headers["new_helper_id"]
+            try {
+                if (requestId != null) {
+                    val status = chat.changeRequestHelper(requestId, newHelperId)
+                    if (status) {
+                        val request = chat.getRequestById(requestId)
+                        requestsRoomController.addRequest(request!!)
+                    }
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "request updated" else "failed to update request",
+                        data = Unit
+                    )
+                } else call.respond(HttpStatusCode.BadRequest)
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
             }
-            call.respond(
-                SimpleResponse(
-                    status = status,
-                    message = if (status) "request inserted" else "failed to update request",
-                    data = Unit
-                )
-            )
         }
     }
 
