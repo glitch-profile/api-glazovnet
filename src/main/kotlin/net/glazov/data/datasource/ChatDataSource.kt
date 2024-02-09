@@ -34,7 +34,7 @@ interface ChatDataSource {
 
     suspend fun changeRequestHelper(
         requestId: String,
-        newSupportId: String?
+        newSupportId: String
     ): Boolean
 
     suspend fun deleteRequest(

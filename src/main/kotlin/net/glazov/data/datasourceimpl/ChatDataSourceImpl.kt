@@ -95,7 +95,7 @@ class ChatDataSourceImpl(
         }
     }
 
-    override suspend fun changeRequestHelper(requestId: String, newSupportId: String?): Boolean {
+    override suspend fun changeRequestHelper(requestId: String, newSupportId: String): Boolean {
         val filter = Filters.eq("_id", requestId)
         val update = Updates.set(SupportRequestModel::creatorId.name, newSupportId)
         return try {

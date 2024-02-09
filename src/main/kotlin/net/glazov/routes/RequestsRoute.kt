@@ -191,7 +191,7 @@ fun Route.requestsRoute(
             val requestId = call.parameters["request_id"]
             val newHelperId = call.request.headers["new_helper_id"]
             try {
-                if (requestId != null) {
+                if (requestId != null && newHelperId != null) {
                     val status = chat.changeRequestHelper(requestId, newHelperId)
                     if (status) {
                         val request = chat.getRequestById(requestId)
