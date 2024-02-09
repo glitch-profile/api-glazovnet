@@ -186,6 +186,20 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.NotFound)
             }
         }
+    }
+
+    authenticate("admin") {
+
+        get("$PATH/all-requests") {
+            val requestsList = chat.getAllRequests(listOf(RequestsStatus.Active, RequestsStatus.InProgress))
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "${requestsList.size} requests",
+                    data = requestsList
+                )
+            )
+        }
 
         put("$PATH/requests/{request_id}/set-helper") {
             val requestId = call.parameters["request_id"]
@@ -204,22 +218,9 @@ fun Route.requestsRoute(
                     )
                 } else call.respond(HttpStatusCode.BadRequest)
             } catch (e: RequestNotFoundException) {
+                println("not_found")
                 call.respond(HttpStatusCode.NotFound)
             }
-        }
-    }
-
-    authenticate("admin") {
-
-        get("$PATH/all-requests") {
-            val requestsList = chat.getAllRequests(listOf(RequestsStatus.Active, RequestsStatus.InProgress))
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = "${requestsList.size} requests",
-                    data = requestsList
-                )
-            )
         }
     }
 

@@ -99,10 +99,12 @@ class ChatDataSourceImpl(
         val filter = Filters.eq("_id", requestId)
         val update = Updates.set(SupportRequestModel::creatorId.name, newSupportId)
         return try {
-            val status = requests.updateOne(filter, update)
+            val status = requests.updateOne(filter = filter, update = update)
             if (status.matchedCount != 0L) {
                 status.wasAcknowledged()
-            } else throw RequestNotFoundException()
+            } else {
+                throw RequestNotFoundException()
+            }
         } catch (e: MongoException) {
             e.printStackTrace()
             false
