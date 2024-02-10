@@ -45,7 +45,8 @@ class ChatDataSourceImpl(
 
     override suspend fun getRequestsForClient(clientId: String): List<SupportRequestModel> {
         val filter = Filters.eq(SupportRequestModel::creatorId.name, clientId)
-        return requests.find(filter).toList()
+        val requestsList = requests.find(filter).toList().sortedByDescending { it.creationDate }
+        return requestsList
     }
 
     override suspend fun createNewRequest(newRequest: SupportRequestModel): SupportRequestModel? {
