@@ -99,7 +99,7 @@ class ChatDataSourceImpl(
         val filter = Filters.eq("_id", requestId)
         val update = Updates.combine(
             listOf(
-                Updates.set(SupportRequestModel::creatorId.name, newSupportId),
+                Updates.set(SupportRequestModel::associatedSupportId.name, newSupportId),
                 Updates.set(SupportRequestModel::status.name, 1)
             )
         )
