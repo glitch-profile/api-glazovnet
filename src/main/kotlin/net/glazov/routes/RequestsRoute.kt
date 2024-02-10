@@ -176,10 +176,12 @@ fun Route.requestsRoute(
                         val request = chat.getRequestById(requestId)
                         requestsRoomController.addRequest(request!!)
                     }
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "request updated" else "failed to update request",
-                        data = Unit
+                    call.respond(
+                        SimpleResponse(
+                            status = status,
+                            message = if (status) "request updated" else "failed to update request",
+                            data = Unit
+                        )
                     )
                 } else call.respond(HttpStatusCode.BadRequest)
             } catch (e: RequestNotFoundException) {
@@ -211,14 +213,15 @@ fun Route.requestsRoute(
                         val request = chat.getRequestById(requestId)
                         requestsRoomController.addRequest(request!!)
                     }
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "request updated" else "failed to update request",
-                        data = Unit
+                    call.respond(
+                        SimpleResponse(
+                            status = status,
+                            message = if (status) "request updated" else "failed to update request",
+                            data = Unit
+                        )
                     )
                 } else call.respond(HttpStatusCode.BadRequest)
             } catch (e: RequestNotFoundException) {
-                println("not_found")
                 call.respond(HttpStatusCode.NotFound)
             }
         }

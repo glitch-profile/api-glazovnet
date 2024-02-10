@@ -97,7 +97,12 @@ class ChatDataSourceImpl(
 
     override suspend fun changeRequestHelper(requestId: String, newSupportId: String): Boolean {
         val filter = Filters.eq("_id", requestId)
-        val update = Updates.set(SupportRequestModel::creatorId.name, newSupportId)
+        val update = Updates.combine(
+            listOf(
+                Updates.set(SupportRequestModel::creatorId.name, newSupportId),
+                Updates.set(SupportRequestModel::status.name, 1)
+            )
+        )
         return try {
             val status = requests.updateOne(filter = filter, update = update)
             if (status.matchedCount != 0L) {
@@ -106,7 +111,6 @@ class ChatDataSourceImpl(
                 throw RequestNotFoundException()
             }
         } catch (e: MongoException) {
-            e.printStackTrace()
             false
         }
     }
