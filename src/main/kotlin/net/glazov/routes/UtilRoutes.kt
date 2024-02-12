@@ -19,6 +19,19 @@ private const val MAX_CONTENT_LENGTH = 10_485_760 //10Mb in bytes
 fun Routing.utilRoutes(
     fileManager: FileManager
 ) {
+    authenticate {
+
+        get("$PATH/get-file") {
+            val filePath = call.request.queryParameters["path"]
+            if (filePath != null) {
+                val file = fileManager.getFile(localStaticPath = filePath)
+                if (file != null) {
+                    call.respondFile(file)
+                } else call.respond(HttpStatusCode.NotFound)
+            } else call.respond(HttpStatusCode.BadRequest)
+        }
+    }
+
     authenticate("admin") {
 
         post("$PATH/upload-files") {

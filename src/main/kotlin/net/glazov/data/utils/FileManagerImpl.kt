@@ -18,8 +18,12 @@ class FileManagerImpl(
         return getLocalPath(file.absolutePath)
     }
 
-    override fun getFile(localPath: String): File? {
-        TODO("Not yet implemented")
+    override fun getFile(localStaticPath: String): File? {
+        val absolutePath = "${Paths.get("").toAbsolutePath()}\\static\\$localStaticPath"
+        val file = File(absolutePath)
+        return if (file.exists() && file.canRead()) {
+            file
+        } else null
     }
 
     override fun getAbsolutePath(localPath: String): String {
@@ -34,8 +38,8 @@ class FileManagerImpl(
         val absolutePathBase = "${Paths.get("").toAbsolutePath()}\\static"
         return absolutePath.replace(
             absolutePathBase,
-            baseUrl //TODO
-//            secondaryUrl
+//            baseUrl //TODO
+            secondaryUrl
         ).replace("\\", "/")
     }
 }

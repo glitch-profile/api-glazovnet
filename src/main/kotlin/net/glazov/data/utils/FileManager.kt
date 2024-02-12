@@ -6,7 +6,7 @@ interface FileManager {
 
     fun uploadFile(fileName: String, fileBytes: ByteArray): String
 
-    fun getFile(localPath: String): File?
+    fun getFile(localStaticPath: String): File?
 
     fun getAbsolutePath(localPath: String): String
 
