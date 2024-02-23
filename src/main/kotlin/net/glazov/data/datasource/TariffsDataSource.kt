@@ -6,6 +6,8 @@ interface TariffsDataSource {
 
     suspend fun getAllTariffs(): List<TariffModel>
 
+    suspend fun getTariffById(tariffId: String): TariffModel?
+
     suspend fun addTariff(newTariff: TariffModel): TariffModel?
 
     suspend fun deleteTariff(tariffId: String): Boolean

@@ -17,6 +17,11 @@ class TariffsDataSourceImpl(
         return tariffs.find().toList().asReversed()
     }
 
+    override suspend fun getTariffById(tariffId: String): TariffModel? {
+        val filter = Filters.eq("_id", tariffId)
+        return tariffs.find(filter).toList().singleOrNull()
+    }
+
     override suspend fun addTariff(newTariff: TariffModel): TariffModel? {
         val tariff = newTariff.copy(
             id = ObjectId().toString()

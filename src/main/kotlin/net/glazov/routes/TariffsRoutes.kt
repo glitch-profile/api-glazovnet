@@ -8,6 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.model.TariffModel
+import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.response.SimpleTariffResponse
 
 private const val PATH = "/api/tariffs"
@@ -26,6 +27,20 @@ fun Route.tariffsRoutes(
                     data = tariffsList
                 )
             )
+        }
+
+        get("$PATH/{tariff_id}") {
+            val tariffId = call.parameters["tariff_id"]
+            if (tariffId !== null) {
+                val result = tariffs.getTariffById(tariffId)
+                call.respond(
+                    SimpleResponse(
+                        status = result !== null,
+                        message = if (result !== null) "tariff found" else "tariff not found",
+                        data = result
+                    )
+                )
+            } else call.respond(HttpStatusCode.BadRequest)
         }
     }
 
