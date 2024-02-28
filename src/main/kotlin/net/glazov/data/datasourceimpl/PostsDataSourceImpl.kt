@@ -38,7 +38,7 @@ class PostsDataSourceImpl(
             lastEditDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
         )
         val filter = Filters.eq("_id", newPost.id)
-        val post = posts.findOneAndReplace(filter, newPost)
+        val post = posts.findOneAndReplace(filter, editedPost)
         return post != null
     }
 
