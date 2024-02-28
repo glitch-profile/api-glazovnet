@@ -10,6 +10,7 @@ data class PostModel(
     var id: String? = ObjectId().toString(),
     val title: String,
     val creationDate: Long,
+    val lastEditDate: Long? = null,
     val text: String,
     val image: ImageModel? = null
     )

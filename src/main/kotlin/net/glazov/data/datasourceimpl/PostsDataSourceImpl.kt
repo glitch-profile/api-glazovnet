@@ -34,6 +34,9 @@ class PostsDataSourceImpl(
     }
 
     override suspend fun updatePost(newPost: PostModel): Boolean {
+        val editedPost = newPost.copy(
+            lastEditDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
+        )
         val filter = Filters.eq("_id", newPost.id)
         val post = posts.findOneAndReplace(filter, newPost)
         return post != null
