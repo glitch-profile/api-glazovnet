@@ -45,7 +45,7 @@ fun Route.announcementsRoutes(
                     data = announcementsList
                 )
             )
-        } //TODO: Remove after completion of announcements block
+        }
 
         post("$PATH/create") {
             val newAnnouncement = try {
@@ -60,7 +60,7 @@ fun Route.announcementsRoutes(
                 SimpleResponse(
                     status = status,
                     message = if (status) "announcement added" else "error while adding the announcement",
-                    data = if (status) listOf(announcement!!) else emptyList()
+                    data = announcement
                 )
             )
         }
