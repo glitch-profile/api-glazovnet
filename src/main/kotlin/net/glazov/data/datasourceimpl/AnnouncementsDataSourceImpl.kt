@@ -51,7 +51,7 @@ class AnnouncementsDataSourceImpl(
         houseNumber: String
     ): List<AnnouncementModel> {
         val announcements = announcements.find().toList().asReversed()
-        return announcements.filter { it.isContainingAddress(city, street, houseNumber) }
+        return announcements.filter { it.isContainingAddress(city, street, houseNumber) || it.addressFilters.isEmpty() }
     }
 
     override suspend fun addAnnouncement(announcement: AnnouncementModel): AnnouncementModel? {
