@@ -21,4 +21,10 @@ interface AdminsDataSource {
         login: String?,
         password: String?
     ): AdminModel?
+
+    suspend fun changeAccountPassword(
+        userId: String,
+        oldPassword: String,
+        newPassword: String
+    ): Boolean
 }

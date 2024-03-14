@@ -23,4 +23,27 @@ interface ClientsDataSource {
         login: String?,
         password: String?
     ): ClientModel?
+
+    suspend fun changeAccountPassword(
+        userId: String,
+        oldPassword: String,
+        newPassword: String
+    ): Boolean
+
+    suspend fun changeTariff(
+        userId: String,
+        newTariffId: String
+    ): Boolean
+
+    suspend fun addPositiveTransaction(
+        userId: String,
+        amount: Double,
+        note: String? = null
+    )
+
+    suspend fun addNegativeTransaction(
+        userId: String,
+        amount: Double,
+        note: String? = null
+    )
 }

@@ -1,6 +1,7 @@
 package net.glazov.data.datasourceimpl
 
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
@@ -46,5 +47,15 @@ class AdminsDataSourceImpl(
         val passwordFilter = Filters.eq(AdminModel::password.name, password)
         val filter = Filters.and(loginFilter, passwordFilter)
         return admins.find(filter).singleOrNull()
+    }
+
+    override suspend fun changeAccountPassword(userId: String, oldPassword: String, newPassword: String): Boolean {
+        val filter = Filters.and(
+            Filters.eq("_id", userId),
+            Filters.eq(AdminModel::password.name, oldPassword)
+        )
+        val update = Updates.set(AdminModel::password.name, newPassword)
+        val result = admins.updateOne(filter,update)
+        return result.upsertedId != null
     }
 }
