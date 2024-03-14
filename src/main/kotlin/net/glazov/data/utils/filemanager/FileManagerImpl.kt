@@ -1,9 +1,9 @@
-package net.glazov.data.utils
+package net.glazov.data.utils.filemanager
 
 import java.io.File
 import java.nio.file.Paths
 
-private const val secondaryUrl = "http://82.179.120.14:8080"
+private const val secondaryUrl = "http://82.179.120.84:8080"
 
 class FileManagerImpl(
     private val baseUrl: String

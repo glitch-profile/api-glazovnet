@@ -1,4 +1,4 @@
-package net.glazov.data.utils
+package net.glazov.data.utils.filemanager
 
 import java.io.File
 
