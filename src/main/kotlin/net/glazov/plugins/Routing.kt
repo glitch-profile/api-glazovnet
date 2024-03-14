@@ -4,7 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.*
-import net.glazov.data.utils.FileManager
+import net.glazov.data.utils.filemanager.FileManager
 import net.glazov.rooms.RequestChatRoomController
 import net.glazov.rooms.RequestsRoomController
 import net.glazov.routes.*

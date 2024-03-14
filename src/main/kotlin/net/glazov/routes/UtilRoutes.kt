@@ -9,7 +9,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import net.glazov.data.model.response.SimpleResponse
-import net.glazov.data.utils.FileManager
+import net.glazov.data.utils.filemanager.FileManager
 import java.io.File
 import kotlin.io.path.Path
 

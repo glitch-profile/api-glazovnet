@@ -12,7 +12,9 @@ val dataSourcesModule = module {
     single<ClientsDataSource> {
         ClientsDataSourceImpl(
             db = get(),
-            addresses = get()
+            addresses = get(),
+            transactions = get(),
+            transactionManager = get()
         )
     }
     single<AdminsDataSource> {
@@ -34,5 +36,8 @@ val dataSourcesModule = module {
     }
     single<PostsDataSource> {
         PostsDataSourceImpl(db = get())
+    }
+    single<TransactionsDataSource> {
+        TransactionsDataSourceImpl(db = get())
     }
 }
