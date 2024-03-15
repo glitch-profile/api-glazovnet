@@ -10,11 +10,14 @@ import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.model.TariffModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.response.SimpleTariffResponse
+import net.glazov.data.utils.notificationsmanager.NotificationsManager
+import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 
 private const val PATH = "/api/tariffs"
 
 fun Route.tariffsRoutes(
-    tariffs: TariffsDataSource
+    tariffs: TariffsDataSource,
+    notificationsManager: NotificationsManager
 ) {
 
     authenticate {
@@ -47,19 +50,25 @@ fun Route.tariffsRoutes(
     authenticate("admin") {
 
         post("$PATH/add") {
-            try {
-                val newTariff = call.receive<TariffModel>()
-                val tariff = tariffs.addTariff(newTariff)
-                val status = tariff != null
-                call.respond(
-                    SimpleTariffResponse(
-                        status = status,
-                        message = if (status) "tariff added" else "error while adding the tariff",
-                        data = if (status) listOf(tariff!!) else emptyList()
-                    )
-                )
-            } catch (e: ContentTransformationException) {
+            val newTariff = call.receiveNullable<TariffModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val tariff = tariffs.addTariff(newTariff)
+            val status = tariff != null
+            call.respond(
+                SimpleTariffResponse(
+                    status = status,
+                    message = if (status) "tariff added" else "error while adding the tariff",
+                    data = if (status) listOf(tariff!!) else emptyList()
+                )
+            )
+            if (tariff !== null) {
+                notificationsManager.sendNotificationToTopic(
+                    topic = NotificationsTopics.TARIFFS,
+                    title = "New tariff: ${tariff.name}",
+                    body = "Maybe, it was created just for you?"
+                ) //TODO()
             }
         }
 

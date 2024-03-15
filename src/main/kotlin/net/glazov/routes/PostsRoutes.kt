@@ -9,11 +9,14 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.PostModel
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.notificationsmanager.NotificationsManager
+import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 
 private const val PATH = "/api/posts"
 
 fun Route.postRoutes(
-    posts: PostsDataSource
+    posts: PostsDataSource,
+    notificationsManager: NotificationsManager
 ) {
 
     authenticate {
@@ -77,9 +80,7 @@ fun Route.postRoutes(
         }
 
         post("$PATH/add") {
-            val newPost = try {
-                call.receive<PostModel>()
-            } catch (e: ContentTransformationException) {
+            val newPost = call.receiveNullable<PostModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
@@ -92,6 +93,14 @@ fun Route.postRoutes(
                     data = if (status) listOf(post!!) else emptyList()
                 )
             )
+            if (post != null) {
+                notificationsManager.sendNotificationToTopic(
+                    topic = NotificationsTopics.NEWS,
+                    title = post.title,
+                    body = post.text,
+                    imageUrl = post.image?.imageUrl
+                )
+            }
         }
 
         delete("$PATH/delete") {

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.AnnouncementsDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.AnnouncementModel
+import net.glazov.data.model.ClientModel
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -52,6 +53,17 @@ class AnnouncementsDataSourceImpl(
     ): List<AnnouncementModel> {
         val announcements = announcements.find().toList().asReversed()
         return announcements.filter { it.isContainingAddress(city, street, houseNumber) || it.addressFilters.isEmpty() }
+    }
+
+    override suspend fun getClientsForAnnouncement(announcement: AnnouncementModel): List<ClientModel> {
+        val clients = clients.getAllClients()
+        return clients.filter { client ->
+            announcement.isContainingAddress(
+                city = client.address.cityName,
+                street = client.address.streetName,
+                houseNumber = client.address.houseNumber
+            )
+        }
     }
 
     override suspend fun addAnnouncement(announcement: AnnouncementModel): AnnouncementModel? {

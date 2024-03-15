@@ -5,6 +5,7 @@ import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.*
 import net.glazov.data.utils.filemanager.FileManager
+import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.rooms.RequestChatRoomController
 import net.glazov.rooms.RequestsRoomController
 import net.glazov.routes.*
@@ -24,6 +25,7 @@ fun Application.configureRouting() {
     val requestChatRoomController by inject<RequestChatRoomController>()
     val chatDataSource by inject<ChatDataSource>()
     val fileManager by inject<FileManager>()
+    val notificationManager by inject<NotificationsManager>()
 
     routing {
         staticFiles(
@@ -31,11 +33,11 @@ fun Application.configureRouting() {
             File("${Paths.get("").toAbsolutePath()}/static/images")) //http://url:8080/images/filename
 
         authRoutes(clientsDataSource, adminsDataSource)
-        postRoutes(postsDataSource)
-        tariffsRoutes(tariffsDataSource)
+        postRoutes(postsDataSource, notificationManager)
+        tariffsRoutes(tariffsDataSource, notificationManager)
         addressRoutes(addressesDataSource)
         clientsRoutes(clientsDataSource)
-        announcementsRoutes(announcementsDataSource)
+        announcementsRoutes(announcementsDataSource, notificationManager)
         requestsRoute(requestsRoomController, requestChatRoomController, chatDataSource)
         utilRoutes(fileManager)
         //testRoutes()

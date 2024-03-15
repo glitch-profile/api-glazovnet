@@ -8,13 +8,17 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.AnnouncementsDataSource
+import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.notificationsmanager.NotificationsManager
+import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 
 private const val PATH = "/api/announcements"
 
 fun Route.announcementsRoutes(
-    announcements: AnnouncementsDataSource
+    announcements: AnnouncementsDataSource,
+    notificationsManager: NotificationsManager
 ) {
 
     authenticate {
@@ -48,9 +52,7 @@ fun Route.announcementsRoutes(
         }
 
         post("$PATH/create") {
-            val newAnnouncement = try {
-                call.receive<AnnouncementModel>()
-            } catch (e: ContentTransformationException) {
+            val newAnnouncement = call.receiveNullable<AnnouncementModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
@@ -63,6 +65,23 @@ fun Route.announcementsRoutes(
                     data = announcement
                 )
             )
+            if (announcement !== null) {
+                if (announcement.addressFilters.isEmpty()) {
+                    notificationsManager.sendNotificationToTopic(
+                        topic = NotificationsTopics.ANNOUNCEMENTS,
+                        title = announcement.title,
+                        body = announcement.text
+                    )
+                } else {
+                    val affectedClientsTokens = announcements.getClientsForAnnouncement(announcement)
+                        .mapNotNull { it.fcmToken }
+                    notificationsManager.sendNotificationToMultipleClients(
+                        clientsTokens = affectedClientsTokens,
+                        title = announcement.title,
+                        body = announcement.text
+                    )
+                }
+            }
         }
 
         delete("$PATH/delete") {
