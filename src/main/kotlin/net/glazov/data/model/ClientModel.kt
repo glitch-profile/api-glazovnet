@@ -11,6 +11,7 @@ data class ClientModel(
     val accountNumber: String, //Номер лицевого счёта
     val login: String,
     val password: String, //Пароль аккаунта
+    val fcmToken: String? = null, //Токен уведомлений
     val firstName: String,
     val lastName: String,
     val middleName: String? = null,

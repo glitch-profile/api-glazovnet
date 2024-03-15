@@ -37,3 +37,4 @@ out/
 
 ### App Configuration ###
 src/main/resources/application.conf
+/src/main/resources/firebase_service_key.json

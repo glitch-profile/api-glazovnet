@@ -52,4 +52,7 @@ dependencies {
     implementation("io.insert-koin:koin-core:$koin_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
 
+    //firebase
+    implementation("com.google.firebase:firebase-admin:9.2.0")
+
 }
