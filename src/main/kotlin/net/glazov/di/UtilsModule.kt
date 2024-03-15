@@ -3,6 +3,8 @@ package net.glazov.di
 import io.ktor.server.config.*
 import net.glazov.data.utils.filemanager.FileManager
 import net.glazov.data.utils.filemanager.FileManagerImpl
+import net.glazov.data.utils.notificationsmanager.NotificationManagerImpl
+import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.data.utils.paymentmanager.TransactionManager
 import net.glazov.data.utils.paymentmanager.TransactionManagerImpl
 import org.koin.dsl.module
@@ -18,6 +20,9 @@ val utilsModule = module {
     }
     single<TransactionManager> {
         TransactionManagerImpl()
+    }
+    single<NotificationsManager> {
+        NotificationManagerImpl()
     }
 
 }
