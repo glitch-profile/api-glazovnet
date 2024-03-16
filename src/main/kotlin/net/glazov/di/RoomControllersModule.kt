@@ -14,7 +14,8 @@ val roomControllersModule = module {
         RequestChatRoomController(
             chat = get(),
             clients = get(),
-            admins = get()
+            admins = get(),
+            notificationsManager = get()
         )
     }
 }
