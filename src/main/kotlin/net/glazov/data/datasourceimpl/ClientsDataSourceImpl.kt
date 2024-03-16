@@ -80,6 +80,13 @@ class ClientsDataSourceImpl(
         return clients.find(filter).singleOrNull()
     }
 
+    override suspend fun updateFcmToken(userId: String, newToken: String?): Boolean {
+        val filter = Filters.eq("_id", userId)
+        val update = Updates.set(ClientModel::fcmToken.name, newToken)
+        val result = clients.updateOne(filter, update)
+        return result.upsertedId != null
+    }
+
     override suspend fun changeAccountPassword(userId: String, oldPassword: String, newPassword: String): Boolean {
         val filter = Filters.and(
             Filters.eq("_id", userId),

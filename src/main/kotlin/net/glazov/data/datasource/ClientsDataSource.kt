@@ -24,6 +24,11 @@ interface ClientsDataSource {
         password: String?
     ): ClientModel?
 
+    suspend fun updateFcmToken(
+        userId: String,
+        newToken: String?
+    ): Boolean
+
     suspend fun changeAccountPassword(
         userId: String,
         oldPassword: String,
