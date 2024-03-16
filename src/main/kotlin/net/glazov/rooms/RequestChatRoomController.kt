@@ -114,7 +114,7 @@ class RequestChatRoomController(
                 title = request.title,
                 body = "У вас новое сообщение в чате!"
             )
-        } else println("Chat notification not send")
+        }
     }
 
 }

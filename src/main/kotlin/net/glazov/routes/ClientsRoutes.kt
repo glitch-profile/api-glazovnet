@@ -21,7 +21,7 @@ fun Route.clientsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val token = call.response.headers["fcm_token"]
+            val token = call.request.headers["fcm_token"]
             val status = clients.updateFcmToken(
                 userId = clientId,
                 newToken = token
