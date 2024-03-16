@@ -7,12 +7,14 @@ import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.requests.MessageModel
+import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import java.util.concurrent.ConcurrentHashMap
 
 class RequestChatRoomController(
     private val chat: ChatDataSource,
     private val clients: ClientsDataSource,
-    private val admins: AdminsDataSource
+    private val admins: AdminsDataSource,
+    private val notificationsManager: NotificationsManager
 ) {
 
     private val requests = ConcurrentHashMap<String, ConcurrentHashMap<String, ChatMember>>()
@@ -69,6 +71,11 @@ class RequestChatRoomController(
                     request.values.forEach { member ->
                         member.socket.send(Frame.Text(encodedMessage))
                     }
+                    sendPushNotification(
+                        requestId = requestId,
+                        senderId = senderId,
+                        currentMembersInChat = request.map { it.key }
+                    )
                 }
             }
         }
@@ -87,6 +94,27 @@ class RequestChatRoomController(
                 requests.remove(requestId)
             }
         }
+    }
+
+
+    //TODO rework notifications logic. Maybe replace to other file
+    private suspend fun sendPushNotification(
+        requestId: String,
+        senderId: String,
+        currentMembersInChat: List<String>
+    ) {
+        val request = chat.getRequestById(requestId) ?: return
+        val isNotificationsEnabled = request.isNotificationsEnabled
+        val isSendByRequestCreator = request.creatorId == senderId
+        val isOwnerOnline = currentMembersInChat.contains(request.creatorId)
+        if (!isSendByRequestCreator && !isOwnerOnline && isNotificationsEnabled) {
+            val clientFcmToken = clients.getClientById(request.creatorId)?.fcmToken ?: return
+            notificationsManager.sendNotificationToClient(
+                clientToken = clientFcmToken,
+                title = request.title,
+                body = "У вас новое сообщение в чате!"
+            )
+        } else println("Chat notification not send")
     }
 
 }

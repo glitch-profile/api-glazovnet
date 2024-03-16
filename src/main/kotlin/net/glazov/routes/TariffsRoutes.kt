@@ -66,8 +66,8 @@ fun Route.tariffsRoutes(
             if (tariff !== null) {
                 notificationsManager.sendNotificationToTopic(
                     topic = NotificationsTopics.TARIFFS,
-                    title = "New tariff: ${tariff.name}",
-                    body = "Maybe, it was created just for you?"
+                    title = "Новый тариф: ${tariff.name}",
+                    body = "Может быть, он создан специально для Вас?"
                 ) //TODO()
             }
         }
