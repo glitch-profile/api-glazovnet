@@ -6,6 +6,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.PostModel
 import net.glazov.data.model.response.SimpleResponse
@@ -94,12 +95,18 @@ fun Route.postRoutes(
                 )
             )
             if (post != null) {
-                notificationsManager.sendNotificationToTopic(
+                notificationsManager.sendNotificationToMultipleClients(
                     topic = NotificationsTopics.NEWS,
                     title = post.title,
                     body = post.text,
                     imageUrl = post.image?.imageUrl
                 )
+//                notificationsManager.sendNotificationToTopic(
+//                    topic = NotificationsTopics.NEWS,
+//                    title = post.title,
+//                    body = post.text,
+//                    imageUrl = post.image?.imageUrl
+//                )
             }
         }
 

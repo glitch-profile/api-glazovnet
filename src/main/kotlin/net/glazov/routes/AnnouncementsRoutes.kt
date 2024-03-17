@@ -74,9 +74,13 @@ fun Route.announcementsRoutes(
                     )
                 } else {
                     val affectedClientsTokens = announcements.getClientsForAnnouncement(announcement)
+                        .asSequence()
+                        .filter { it.isNotificationsEnabled == true
+                                && it.selectedNotificationsTopics?.contains(NotificationsTopics.ANNOUNCEMENTS.name) == true
+                        }
                         .mapNotNull { it.fcmToken }
                     notificationsManager.sendNotificationToMultipleClients(
-                        clientsTokens = affectedClientsTokens,
+                        clientsTokens = affectedClientsTokens.toList(),
                         title = announcement.title,
                         body = announcement.text
                     )

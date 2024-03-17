@@ -10,6 +10,13 @@ interface NotificationsManager {
     )
 
     suspend fun sendNotificationToMultipleClients(
+        topic: NotificationsTopics,
+        title: String,
+        body: String,
+        imageUrl: String? = null
+    )
+
+    suspend fun sendNotificationToMultipleClients(
         clientsTokens: List<String>,
         title: String,
         body: String,

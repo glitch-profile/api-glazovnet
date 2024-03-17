@@ -11,6 +11,7 @@ import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.model.AddressModel
 import net.glazov.data.model.AdminModel
 import net.glazov.data.model.ClientModel
+import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 import net.glazov.data.utils.paymentmanager.ClientNotFoundException
 import net.glazov.data.utils.paymentmanager.InsufficientFundsException
 import net.glazov.data.utils.paymentmanager.TransactionErrorException
@@ -97,6 +98,18 @@ class ClientsDataSourceImpl(
         val filter = Filters.eq("_id", clientId)
         val update = Updates.set(ClientModel::isNotificationsEnabled.name, newStatus)
         return clients.updateOne(filter, update).upsertedId != null
+    }
+
+    override suspend fun getClientsTokensWithSelectedTopic(topic: NotificationsTopics): List<String> {
+        val filter = Filters.and(
+            listOf(
+                Filters.eq(ClientModel::isNotificationsEnabled.name, true),
+                Filters.eq(ClientModel::selectedNotificationsTopics.name, topic.name)
+            )
+        )
+        return clients.find(filter).toList().mapNotNull {
+            it.fcmToken
+        }
     }
 
     override suspend fun changeAccountPassword(userId: String, oldPassword: String, newPassword: String): Boolean {

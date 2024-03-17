@@ -1,6 +1,7 @@
 package net.glazov.data.datasource
 
 import net.glazov.data.model.ClientModel
+import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 
 interface ClientsDataSource {
 
@@ -38,6 +39,10 @@ interface ClientsDataSource {
         clientId: String,
         newStatus: Boolean
     ): Boolean
+
+    suspend fun getClientsTokensWithSelectedTopic(
+        topic: NotificationsTopics
+    ): List<String>
 
     suspend fun changeAccountPassword(
         userId: String,

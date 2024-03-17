@@ -3,8 +3,11 @@ package net.glazov.data.utils.notificationsmanager
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.Message
 import com.google.firebase.messaging.Notification
+import net.glazov.data.datasource.ClientsDataSource
 
-class NotificationManagerImpl: NotificationsManager {
+class NotificationManagerImpl(
+    private val clients: ClientsDataSource,
+): NotificationsManager {
 
     private fun convertDataToNotification(
         title: String,
@@ -36,6 +39,24 @@ class NotificationManagerImpl: NotificationsManager {
             .build()
         val response = FirebaseMessaging.getInstance().send(message)
         println("Notification send result: $response")
+    }
+
+    override suspend fun sendNotificationToMultipleClients(
+        topic: NotificationsTopics,
+        title: String,
+        body: String,
+        imageUrl: String?
+    ) {
+        val clientsTokens = clients.getClientsTokensWithSelectedTopic(topic)
+        val messages = clientsTokens.map { token ->
+            Message.builder()
+                .setNotification(
+                    convertDataToNotification(title, body, imageUrl)
+                )
+                .setToken(token)
+                .build()
+        }
+        FirebaseMessaging.getInstance().sendEach(messages)
     }
 
     override suspend fun sendNotificationToMultipleClients(

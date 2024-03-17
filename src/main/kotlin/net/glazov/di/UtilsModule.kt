@@ -22,7 +22,9 @@ val utilsModule = module {
         TransactionManagerImpl()
     }
     single<NotificationsManager> {
-        NotificationManagerImpl()
+        NotificationManagerImpl(
+            clients = get()
+        )
     }
 
 }
