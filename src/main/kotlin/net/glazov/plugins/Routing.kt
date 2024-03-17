@@ -40,6 +40,7 @@ fun Application.configureRouting() {
         announcementsRoutes(announcementsDataSource, notificationManager)
         requestsRoute(requestsRoomController, requestChatRoomController, chatDataSource)
         utilRoutes(fileManager)
+        notificationsRoutes(clientsDataSource)
         //testRoutes()
     }
 }
