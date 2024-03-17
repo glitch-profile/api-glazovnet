@@ -52,12 +52,32 @@ fun Route.notificationsRoutes(
             )
         }
 
+        put("$PATH/set-client-notification-status") {
+            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val newNotificationsStatus = call.request.queryParameters["status"]
+                ?.toBooleanStrictOrNull() ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val result = clients.updateNotificationsStatus(clientId, newNotificationsStatus)
+            call.respond(
+                SimpleResponse(
+                    status = result,
+                    message = if (result) "status updated" else "failed to update status",
+                    data = Unit
+                )
+            )
+        }
+
         put("$PATH/update-client-subscribed-topics") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val topics = call.request.headers["topics"]
+            val topics = call.request.queryParameters["topics"]
             val topicsList = topics?.split(',') ?: emptyList()
             val result = clients.updateNotificationTopics(clientId, topicsList)
             call.respond(
@@ -74,7 +94,7 @@ fun Route.notificationsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val token = call.request.headers["fcm_token"]
+            val token = call.request.queryParameters["fcm_token"]
             val status = clients.updateFcmToken(
                 userId = clientId,
                 newToken = token
