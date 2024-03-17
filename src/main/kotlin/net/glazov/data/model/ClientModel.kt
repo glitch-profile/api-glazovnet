@@ -1,6 +1,7 @@
 package net.glazov.data.model
 
 import kotlinx.serialization.Serializable
+import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
 
@@ -11,7 +12,9 @@ data class ClientModel(
     val accountNumber: String, //Номер лицевого счёта
     val login: String,
     val password: String, //Пароль аккаунта
+    val isNotificationsEnabled: Boolean? = null,
     val fcmToken: String? = null, //Токен уведомлений
+    val selectedNotificationsTopics: List<String>? = null,
     val firstName: String,
     val lastName: String,
     val middleName: String? = null,

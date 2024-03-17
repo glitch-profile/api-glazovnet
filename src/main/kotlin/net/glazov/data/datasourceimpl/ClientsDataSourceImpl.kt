@@ -87,6 +87,18 @@ class ClientsDataSourceImpl(
         return result.upsertedId != null
     }
 
+    override suspend fun updateNotificationTopics(clientId: String, newTopicsList: List<String>): Boolean {
+        val filter = Filters.eq("_id", clientId)
+        val update = Updates.set(ClientModel::selectedNotificationsTopics.name, newTopicsList)
+        return clients.updateOne(filter, update).upsertedId != null
+    }
+
+    override suspend fun updateNotificationsStatus(clientId: String, newStatus: Boolean): Boolean {
+        val filter = Filters.eq("_id", clientId)
+        val update = Updates.set(ClientModel::isNotificationsEnabled.name, newStatus)
+        return clients.updateOne(filter, update).upsertedId != null
+    }
+
     override suspend fun changeAccountPassword(userId: String, oldPassword: String, newPassword: String): Boolean {
         val filter = Filters.and(
             Filters.eq("_id", userId),

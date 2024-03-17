@@ -29,6 +29,16 @@ interface ClientsDataSource {
         newToken: String?
     ): Boolean
 
+    suspend fun updateNotificationTopics(
+        clientId: String,
+        newTopicsList: List<String>
+    ): Boolean
+
+    suspend fun updateNotificationsStatus(
+        clientId: String,
+        newStatus: Boolean
+    ): Boolean
+
     suspend fun changeAccountPassword(
         userId: String,
         oldPassword: String,
