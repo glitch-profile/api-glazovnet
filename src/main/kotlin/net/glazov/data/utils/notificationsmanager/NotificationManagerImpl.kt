@@ -48,15 +48,17 @@ class NotificationManagerImpl(
         imageUrl: String?
     ) {
         val clientsTokens = clients.getClientsTokensWithSelectedTopic(topic)
-        val messages = clientsTokens.map { token ->
-            Message.builder()
-                .setNotification(
-                    convertDataToNotification(title, body, imageUrl)
-                )
-                .setToken(token)
-                .build()
+        if (clientsTokens.isNotEmpty()) {
+            val messages = clientsTokens.map { token ->
+                Message.builder()
+                    .setNotification(
+                        convertDataToNotification(title, body, imageUrl)
+                    )
+                    .setToken(token)
+                    .build()
+            }
+            FirebaseMessaging.getInstance().sendEach(messages)
         }
-        FirebaseMessaging.getInstance().sendEach(messages)
     }
 
     override suspend fun sendNotificationToMultipleClients(
@@ -65,15 +67,17 @@ class NotificationManagerImpl(
         body: String,
         imageUrl: String?
     ) {
-        val messages = clientsTokens.map { token ->
-            Message.builder()
-                .setNotification(
-                    convertDataToNotification(title, body, imageUrl)
-                )
-                .setToken(token)
-                .build()
+        if (clientsTokens.isNotEmpty()) {
+            val messages = clientsTokens.map { token ->
+                Message.builder()
+                    .setNotification(
+                        convertDataToNotification(title, body, imageUrl)
+                    )
+                    .setToken(token)
+                    .build()
+            }
+            FirebaseMessaging.getInstance().sendEach(messages)
         }
-        FirebaseMessaging.getInstance().sendEach(messages)
     }
 
     override suspend fun sendNotificationToTopic(
