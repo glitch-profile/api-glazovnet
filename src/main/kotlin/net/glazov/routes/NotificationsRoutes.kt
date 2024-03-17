@@ -17,7 +17,13 @@ fun Route.notificationsRoutes(
     authenticate {
 
         get("$PATH/get-topics") {
-            call.respond(NotificationsTopics.entries.map { it.name })
+            call.respond(
+                SimpleResponse(
+                    data = NotificationsTopics.entries.map { it.name },
+                    status = true,
+                    message = "topics retrieved"
+                )
+            )
         }
 
         get("$PATH/get-topics-for-client") {
