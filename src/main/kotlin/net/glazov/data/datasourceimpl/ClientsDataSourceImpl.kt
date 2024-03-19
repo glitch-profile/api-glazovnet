@@ -9,7 +9,6 @@ import net.glazov.data.datasource.AddressesDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.model.AddressModel
-import net.glazov.data.model.AdminModel
 import net.glazov.data.model.ClientModel
 import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 import net.glazov.data.utils.paymentmanager.ClientNotFoundException
