@@ -1,5 +1,6 @@
 package net.glazov.routes
 
+import com.google.firebase.messaging.AndroidNotification
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -8,11 +9,11 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.AnnouncementsDataSource
-import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
 
 private const val PATH = "/api/announcements"
 
@@ -67,10 +68,12 @@ fun Route.announcementsRoutes(
             )
             if (announcement !== null) {
                 if (announcement.addressFilters.isEmpty()) {
-                    notificationsManager.sendNotificationToTopic(
+                    notificationsManager.sendTranslatableNotificationToClientsByTopic(
                         topic = NotificationsTopics.ANNOUNCEMENTS,
-                        title = announcement.title,
-                        body = announcement.text
+                        translatableData = TranslatableNotificationData.NewAnnouncements(
+                            announcementTitle = announcement.title
+                        ),
+                        priority = AndroidNotification.Priority.HIGH
                     )
                 } else {
                     val affectedClientsTokens = announcements.getClientsForAnnouncement(announcement)
@@ -79,10 +82,12 @@ fun Route.announcementsRoutes(
                                 && it.selectedNotificationsTopics?.contains(NotificationsTopics.ANNOUNCEMENTS.name) == true
                         }
                         .mapNotNull { it.fcmToken }
-                    notificationsManager.sendNotificationToMultipleClients(
+                    notificationsManager.sendTranslatableNotificationToClientsByTokens(
                         clientsTokens = affectedClientsTokens.toList(),
-                        title = announcement.title,
-                        body = announcement.text
+                        translatableData = TranslatableNotificationData.NewAnnouncements(
+                            announcementTitle = announcement.title
+                        ),
+                        priority = AndroidNotification.Priority.HIGH
                     )
                 }
             }

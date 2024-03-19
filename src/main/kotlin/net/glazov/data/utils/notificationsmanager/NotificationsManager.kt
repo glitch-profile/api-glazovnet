@@ -1,32 +1,28 @@
 package net.glazov.data.utils.notificationsmanager
 
+import com.google.firebase.messaging.AndroidNotification
+
 interface NotificationsManager {
 
-    suspend fun sendNotificationToClient(
-        clientToken: String,
-        title: String,
-        body: String,
-        imageUrl: String? = null
-    )
-
-    suspend fun sendNotificationToMultipleClients(
+    suspend fun sendTranslatableNotificationToClientsByTopic(
         topic: NotificationsTopics,
-        title: String,
-        body: String,
-        imageUrl: String? = null
+        translatableData: TranslatableNotificationData,
+        imageUrl: String? = null,
+        priority: AndroidNotification.Priority = AndroidNotification.Priority.DEFAULT
     )
 
-    suspend fun sendNotificationToMultipleClients(
+    suspend fun sendTranslatableNotificationToClientsByTokens(
         clientsTokens: List<String>,
-        title: String,
-        body: String,
-        imageUrl: String? = null
+        translatableData: TranslatableNotificationData,
+        imageUrl: String? = null,
+        priority: AndroidNotification.Priority = AndroidNotification.Priority.DEFAULT
     )
 
-    suspend fun sendNotificationToTopic(
-        topic: NotificationsTopics,
-        title: String,
-        body: String,
-        imageUrl: String? = null
+    suspend fun sendTranslatableNotificationToClientsById(
+        clientsId: List<String>,
+        translatableData: TranslatableNotificationData,
+        imageUrl: String? = null,
+        priority: AndroidNotification.Priority = AndroidNotification.Priority.DEFAULT
     )
+
 }

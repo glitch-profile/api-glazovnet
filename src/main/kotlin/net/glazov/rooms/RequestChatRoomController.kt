@@ -1,5 +1,6 @@
 package net.glazov.rooms
 
+import com.google.firebase.messaging.AndroidNotification
 import io.ktor.websocket.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -8,6 +9,7 @@ import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.requests.MessageModel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
+import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
 import java.util.concurrent.ConcurrentHashMap
 
 class RequestChatRoomController(
@@ -74,6 +76,7 @@ class RequestChatRoomController(
                     sendPushNotification(
                         requestId = requestId,
                         senderId = senderId,
+                        messageText = message,
                         currentMembersInChat = request.map { it.key }
                     )
                 }
@@ -101,6 +104,7 @@ class RequestChatRoomController(
     private suspend fun sendPushNotification(
         requestId: String,
         senderId: String,
+        messageText: String,
         currentMembersInChat: List<String>
     ) {
         val request = chat.getRequestById(requestId) ?: return
@@ -109,10 +113,13 @@ class RequestChatRoomController(
         val isOwnerOnline = currentMembersInChat.contains(request.creatorId)
         if (!isSendByRequestCreator && !isOwnerOnline && isNotificationsEnabled) {
             val clientFcmToken = clients.getClientById(request.creatorId)?.fcmToken ?: return
-            notificationsManager.sendNotificationToClient(
-                clientToken = clientFcmToken,
-                title = request.title,
-                body = "У вас новое сообщение в чате!"
+            notificationsManager.sendTranslatableNotificationToClientsByTokens(
+                clientsTokens = listOf(clientFcmToken),
+                translatableData = TranslatableNotificationData.NewChatMessage(
+                    requestTitle = request.title,
+                    messageText = messageText
+                ),
+                priority = AndroidNotification.Priority.HIGH
             )
         }
     }

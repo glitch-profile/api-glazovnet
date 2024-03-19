@@ -1,18 +1,19 @@
 package net.glazov.routes
 
+import com.google.firebase.messaging.AndroidNotification
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.model.TariffModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.response.SimpleTariffResponse
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
 
 private const val PATH = "/api/tariffs"
 
@@ -65,16 +66,13 @@ fun Route.tariffsRoutes(
                 )
             )
             if (tariff !== null) {
-                notificationsManager.sendNotificationToMultipleClients(
+                notificationsManager.sendTranslatableNotificationToClientsByTopic(
                     topic = NotificationsTopics.TARIFFS,
-                    title = "Новый тариф: ${tariff.name}",
-                    body = "Может быть, он создан специально для Вас?"
+                    translatableData = TranslatableNotificationData.NewTariff(
+                        tariffName = tariff.name
+                    ),
+                    priority = AndroidNotification.Priority.DEFAULT
                 )
-//                notificationsManager.sendNotificationToTopic(
-//                    topic = NotificationsTopics.TARIFFS,
-//                    title = "Новый тариф: ${tariff.name}",
-//                    body = "Может быть, он создан специально для Вас?"
-//                ) //TODO()
             }
         }
 
