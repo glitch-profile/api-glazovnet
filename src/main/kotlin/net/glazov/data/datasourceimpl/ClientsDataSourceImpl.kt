@@ -114,11 +114,7 @@ class ClientsDataSourceImpl(
                 Filters.eq(ClientModel::selectedNotificationsTopics.name, topic.name)
             )
         )
-        val projection = Projections.fields(
-            Projections.include(ClientModel::fcmTokensList.name),
-            Projections.excludeId()
-        )
-        return clients.find(filter).projection(projection).toList().mapNotNull {
+        return clients.find(filter).toList().mapNotNull {
             it.fcmTokensList
         }
     }
