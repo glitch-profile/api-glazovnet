@@ -1,6 +1,7 @@
 package net.glazov.data.datasourceimpl
 
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
@@ -80,9 +81,16 @@ class ClientsDataSourceImpl(
         return clients.find(filter).singleOrNull()
     }
 
-    override suspend fun updateFcmToken(userId: String, newToken: String?): Boolean {
+    override suspend fun addFcmToken(userId: String, newToken: String): Boolean {
         val filter = Filters.eq("_id", userId)
-        val update = Updates.set(ClientModel::fcmToken.name, newToken)
+        val update = Updates.addToSet(ClientModel::fcmTokensList.name, newToken)
+        val result = clients.updateOne(filter, update)
+        return result.upsertedId != null
+    }
+
+    override suspend fun removeFcmToken(userId: String, tokenToRemove: String): Boolean {
+        val filter = Filters.eq("_id", userId)
+        val update = Updates.pull(ClientModel::fcmTokensList.name, tokenToRemove)
         val result = clients.updateOne(filter, update)
         return result.upsertedId != null
     }
@@ -99,15 +107,19 @@ class ClientsDataSourceImpl(
         return clients.updateOne(filter, update).upsertedId != null
     }
 
-    override suspend fun getClientsTokensWithSelectedTopic(topic: NotificationsTopics): List<String> {
+    override suspend fun getClientsTokensWithSelectedTopic(topic: NotificationsTopics): List<List<String>> {
         val filter = Filters.and(
             listOf(
                 Filters.eq(ClientModel::isNotificationsEnabled.name, true),
                 Filters.eq(ClientModel::selectedNotificationsTopics.name, topic.name)
             )
         )
-        return clients.find(filter).toList().mapNotNull {
-            it.fcmToken
+        val projection = Projections.fields(
+            Projections.include(ClientModel::fcmTokensList.name),
+            Projections.excludeId()
+        )
+        return clients.find(filter).projection(projection).toList().mapNotNull {
+            it.fcmTokensList
         }
     }
 

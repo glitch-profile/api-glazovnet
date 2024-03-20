@@ -15,26 +15,6 @@ private const val PATH = "/api/clients"
 fun Route.clientsRoutes(
     clients: ClientsDataSource
 ) {
-    authenticate {
-        put("$PATH/update-fcm-token") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            val token = call.request.headers["fcm_token"]
-            val status = clients.updateFcmToken(
-                userId = clientId,
-                newToken = token
-            )
-            call.respond(
-                SimpleResponse(
-                    status = status,
-                    message = if (status) "token updated" else "failed to update token",
-                    data = Unit
-                )
-            )
-        }
-    }
 
     authenticate("admin") {
 

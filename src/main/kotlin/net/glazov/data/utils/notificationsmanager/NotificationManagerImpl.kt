@@ -65,35 +65,35 @@ class NotificationManagerImpl(
                 imageUrl = imageUrl,
                 priority = priority
             )
-            val messagesList = clientsTokens.map { token ->
+            val messagesList = clientsTokens.flatten().map { token ->
                 Message.builder()
                     .setAndroidConfig(androidConfig)
                     .setToken(token)
                     .build()
             }
-            FirebaseMessaging.getInstance().sendEach(messagesList)
+            if (messagesList.isNotEmpty()) FirebaseMessaging.getInstance().sendEach(messagesList)
         }
     }
 
     override suspend fun sendTranslatableNotificationToClientsByTokens(
-        clientsTokens: List<String>,
+        clientsTokensLists: List<List<String>>,
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
         priority: AndroidNotification.Priority
     ) {
-        if (clientsTokens.isNotEmpty()) {
+        if (clientsTokensLists.isNotEmpty()) {
             val androidConfig = generateAndroidConfig(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
                 priority = priority
             )
-            val messagesList = clientsTokens.map { token ->
+            val messagesList = clientsTokensLists.flatten().map { token ->
                 Message.builder()
                     .setAndroidConfig(androidConfig)
                     .setToken(token)
                     .build()
             }
-            FirebaseMessaging.getInstance().sendEach(messagesList)
+            if (messagesList.isNotEmpty()) FirebaseMessaging.getInstance().sendEach(messagesList)
         }
     }
 
@@ -104,7 +104,7 @@ class NotificationManagerImpl(
         priority: AndroidNotification.Priority
     ) {
         val clientsTokens = clientsId.mapNotNull { clientId ->
-            clients.getClientById(clientId)?.fcmToken
+            clients.getClientById(clientId)?.fcmTokensList
         }
         if (clientsTokens.isNotEmpty()) {
             val androidConfig = generateAndroidConfig(
@@ -112,13 +112,13 @@ class NotificationManagerImpl(
                 imageUrl = imageUrl,
                 priority = priority
             )
-            val messagesList = clientsTokens.map { token ->
+            val messagesList = clientsTokens.flatten().map { token ->
                 Message.builder()
                     .setAndroidConfig(androidConfig)
                     .setToken(token)
                     .build()
             }
-            FirebaseMessaging.getInstance().sendEach(messagesList)
+            if (messagesList.isNotEmpty()) FirebaseMessaging.getInstance().sendEach(messagesList)
         }
     }
 }

@@ -12,7 +12,7 @@ interface NotificationsManager {
     )
 
     suspend fun sendTranslatableNotificationToClientsByTokens(
-        clientsTokens: List<String>,
+        clientsTokensLists: List<List<String>>,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
         priority: AndroidNotification.Priority = AndroidNotification.Priority.DEFAULT

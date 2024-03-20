@@ -81,9 +81,9 @@ fun Route.announcementsRoutes(
                         .filter { it.isNotificationsEnabled == true
                                 && it.selectedNotificationsTopics?.contains(NotificationsTopics.ANNOUNCEMENTS.name) == true
                         }
-                        .mapNotNull { it.fcmToken }
+                        .mapNotNull { it.fcmTokensList }
                     notificationsManager.sendTranslatableNotificationToClientsByTokens(
-                        clientsTokens = affectedClientsTokens.toList(),
+                        clientsTokensLists = affectedClientsTokens.toList(),
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),

@@ -25,9 +25,14 @@ interface ClientsDataSource {
         password: String?
     ): ClientModel?
 
-    suspend fun updateFcmToken(
+    suspend fun addFcmToken(
         userId: String,
-        newToken: String?
+        newToken: String
+    ): Boolean
+
+    suspend fun removeFcmToken(
+        userId: String,
+        tokenToRemove: String
     ): Boolean
 
     suspend fun updateNotificationTopics(
@@ -42,7 +47,7 @@ interface ClientsDataSource {
 
     suspend fun getClientsTokensWithSelectedTopic(
         topic: NotificationsTopics
-    ): List<String>
+    ): List<List<String>>
 
     suspend fun changeAccountPassword(
         userId: String,

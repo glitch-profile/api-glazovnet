@@ -12,7 +12,7 @@ data class ClientModel(
     val login: String,
     val password: String, //Пароль аккаунта
     val isNotificationsEnabled: Boolean? = null,
-    val fcmToken: String? = null, //Токен уведомлений
+    val fcmTokensList: List<String>? = null, //Токен уведомлений
     val selectedNotificationsTopics: List<String>? = null,
     val firstName: String,
     val lastName: String,

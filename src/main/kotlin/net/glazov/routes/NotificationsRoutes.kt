@@ -100,11 +100,16 @@ fun Route.notificationsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val token = call.request.queryParameters["fcm_token"]
-            val status = clients.updateFcmToken(
-                userId = clientId,
-                newToken = token
-            )
+            val token = call.request.headers["fcm_token"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val isExclude = call.request.queryParameters["exclude"]?.toBooleanStrictOrNull()
+            val status = if (isExclude == true) {
+                clients.removeFcmToken(userId = clientId, tokenToRemove = token)
+            } else {
+                clients.addFcmToken(userId = clientId, newToken = token)
+            }
             call.respond(
                 SimpleResponse(
                     status = status,

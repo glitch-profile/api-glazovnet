@@ -112,9 +112,9 @@ class RequestChatRoomController(
         val isSendByRequestCreator = request.creatorId == senderId
         val isOwnerOnline = currentMembersInChat.contains(request.creatorId)
         if (!isSendByRequestCreator && !isOwnerOnline && isNotificationsEnabled) {
-            val clientFcmToken = clients.getClientById(request.creatorId)?.fcmToken ?: return
+            val clientFcmToken = clients.getClientById(request.creatorId)?.fcmTokensList ?: return
             notificationsManager.sendTranslatableNotificationToClientsByTokens(
-                clientsTokens = listOf(clientFcmToken),
+                clientsTokensLists = listOf(clientFcmToken),
                 translatableData = TranslatableNotificationData.NewChatMessage(
                     requestTitle = request.title,
                     messageText = messageText
