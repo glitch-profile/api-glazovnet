@@ -104,8 +104,8 @@ fun Route.notificationsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val isExclude = call.request.queryParameters["exclude"]?.toBooleanStrictOrNull()
-            val status = if (isExclude == true) {
+            val isExclude = call.request.queryParameters["exclude"].toBoolean()
+            val status = if (isExclude) {
                 clients.removeFcmToken(userId = clientId, tokenToRemove = token)
             } else {
                 clients.addFcmToken(userId = clientId, newToken = token)
