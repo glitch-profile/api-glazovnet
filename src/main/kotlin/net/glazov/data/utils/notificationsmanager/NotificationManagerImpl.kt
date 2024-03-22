@@ -13,7 +13,7 @@ class NotificationManagerImpl(
     private fun generateAndroidConfig(
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
-        priority: AndroidNotification.Priority
+        notificationChannel: NotificationChannel
     ): AndroidConfig {
         return AndroidConfig.builder()
             .setNotification(
@@ -47,7 +47,7 @@ class NotificationManagerImpl(
                             setImage(imageUrl)
                         }
                     }
-                    .setPriority(priority)
+                    .setChannelId(notificationChannel.channel)
                     .build()
             ).build()
     }
@@ -56,14 +56,14 @@ class NotificationManagerImpl(
         topic: NotificationsTopics,
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
-        priority: AndroidNotification.Priority
+        notificationChannel: NotificationChannel
     ) {
         val clientsTokens = clients.getClientsTokensWithSelectedTopic(topic)
         if (clientsTokens.isNotEmpty()) {
             val androidConfig = generateAndroidConfig(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
-                priority = priority
+                notificationChannel = notificationChannel
             )
             val messagesList = clientsTokens.flatten().map { token ->
                 Message.builder()
@@ -79,13 +79,13 @@ class NotificationManagerImpl(
         clientsTokensLists: List<List<String>>,
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
-        priority: AndroidNotification.Priority
+        notificationChannel: NotificationChannel
     ) {
         if (clientsTokensLists.isNotEmpty()) {
             val androidConfig = generateAndroidConfig(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
-                priority = priority
+                notificationChannel = notificationChannel
             )
             val messagesList = clientsTokensLists.flatten().map { token ->
                 Message.builder()
@@ -101,7 +101,7 @@ class NotificationManagerImpl(
         clientsId: List<String>,
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
-        priority: AndroidNotification.Priority
+        notificationChannel: NotificationChannel
     ) {
         val clientsTokens = clientsId.mapNotNull { clientId ->
             clients.getClientById(clientId)?.fcmTokensList
@@ -110,7 +110,7 @@ class NotificationManagerImpl(
             val androidConfig = generateAndroidConfig(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
-                priority = priority
+                notificationChannel = notificationChannel
             )
             val messagesList = clientsTokens.flatten().map { token ->
                 Message.builder()

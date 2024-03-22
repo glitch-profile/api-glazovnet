@@ -3,9 +3,13 @@ package net.glazov.plugins
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.*
 import net.glazov.data.datasource.*
 import net.glazov.data.utils.filemanager.FileManager
+import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
+import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
 import net.glazov.rooms.RequestChatRoomController
 import net.glazov.rooms.RequestsRoomController
 import net.glazov.routes.*
@@ -42,5 +46,15 @@ fun Application.configureRouting() {
         utilRoutes(fileManager)
         notificationsRoutes(clientsDataSource)
         //testRoutes()
+    }
+
+    val scope = CoroutineScope(Dispatchers.Default + Job())
+    scope.launch {
+        delay(3000L)
+        notificationManager.sendTranslatableNotificationToClientsByTopic(
+            topic = NotificationsTopics.NEWS,
+            translatableData = TranslatableNotificationData.NewPost("Новый пост", "Тестируем уведомления"),
+            notificationChannel = NotificationChannel.News
+        )
     }
 }

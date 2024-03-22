@@ -8,21 +8,21 @@ interface NotificationsManager {
         topic: NotificationsTopics,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
-        priority: AndroidNotification.Priority = AndroidNotification.Priority.DEFAULT
+        notificationChannel: NotificationChannel
     )
 
     suspend fun sendTranslatableNotificationToClientsByTokens(
         clientsTokensLists: List<List<String>>,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
-        priority: AndroidNotification.Priority = AndroidNotification.Priority.DEFAULT
+        notificationChannel: NotificationChannel
     )
 
     suspend fun sendTranslatableNotificationToClientsById(
         clientsId: List<String>,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
-        priority: AndroidNotification.Priority = AndroidNotification.Priority.DEFAULT
+        notificationChannel: NotificationChannel = NotificationChannel.Other
     )
 
 }

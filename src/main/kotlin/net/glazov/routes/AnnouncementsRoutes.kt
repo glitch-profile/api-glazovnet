@@ -11,6 +11,7 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.AnnouncementsDataSource
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
@@ -73,7 +74,7 @@ fun Route.announcementsRoutes(
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),
-                        priority = AndroidNotification.Priority.HIGH
+                        notificationChannel = NotificationChannel.Announcements
                     )
                 } else {
                     val affectedClientsTokens = announcements.getClientsForAnnouncement(announcement)
@@ -87,7 +88,7 @@ fun Route.announcementsRoutes(
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),
-                        priority = AndroidNotification.Priority.HIGH
+                        notificationChannel = NotificationChannel.Announcements
                     )
                 }
             }

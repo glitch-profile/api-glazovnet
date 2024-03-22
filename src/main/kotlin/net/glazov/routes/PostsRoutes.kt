@@ -10,6 +10,7 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.PostModel
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
@@ -100,7 +101,7 @@ fun Route.postRoutes(
                     topic = NotificationsTopics.NEWS,
                     translatableData = TranslatableNotificationData.NewPost(postTitle = post.title, postBody = post.text),
                     imageUrl = post.image?.imageUrl,
-                    priority = AndroidNotification.Priority.DEFAULT
+                    notificationChannel = NotificationChannel.News
                 )
             }
         }

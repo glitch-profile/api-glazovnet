@@ -11,6 +11,7 @@ import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.model.TariffModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.response.SimpleTariffResponse
+import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.data.utils.notificationsmanager.NotificationsTopics
 import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
@@ -71,7 +72,7 @@ fun Route.tariffsRoutes(
                     translatableData = TranslatableNotificationData.NewTariff(
                         tariffName = tariff.name
                     ),
-                    priority = AndroidNotification.Priority.DEFAULT
+                    notificationChannel = NotificationChannel.Tariffs
                 )
             }
         }

@@ -8,6 +8,7 @@ import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.requests.MessageModel
+import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
 import java.util.concurrent.ConcurrentHashMap
@@ -119,7 +120,7 @@ class RequestChatRoomController(
                     requestTitle = request.title,
                     messageText = messageText
                 ),
-                priority = AndroidNotification.Priority.HIGH
+                notificationChannel = NotificationChannel.Chat
             )
         }
     }
