@@ -47,14 +47,4 @@ fun Application.configureRouting() {
         notificationsRoutes(clientsDataSource)
         //testRoutes()
     }
-
-    val scope = CoroutineScope(Dispatchers.Default + Job())
-    scope.launch {
-        delay(3000L)
-        notificationManager.sendTranslatableNotificationToClientsByTopic(
-            topic = NotificationsTopics.NEWS,
-            translatableData = TranslatableNotificationData.NewPost("Новый пост", "Тестируем уведомления"),
-            notificationChannel = NotificationChannel.News
-        )
-    }
 }
