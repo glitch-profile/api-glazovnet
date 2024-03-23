@@ -38,7 +38,6 @@ class FileManagerImpl(
         val absolutePathBase = "${Paths.get("").toAbsolutePath()}\\static"
         return absolutePath.replace(
             absolutePathBase,
-//            baseUrl //TODO
             secondaryUrl
         ).replace("\\", "/")
     }

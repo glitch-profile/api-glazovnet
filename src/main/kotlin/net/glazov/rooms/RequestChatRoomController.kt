@@ -1,6 +1,5 @@
 package net.glazov.rooms
 
-import com.google.firebase.messaging.AndroidNotification
 import io.ktor.websocket.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
