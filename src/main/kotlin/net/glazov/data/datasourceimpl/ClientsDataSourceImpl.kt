@@ -1,7 +1,6 @@
 package net.glazov.data.datasourceimpl
 
 import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
@@ -11,7 +10,7 @@ import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.model.AddressModel
 import net.glazov.data.model.ClientModel
-import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 import net.glazov.data.utils.paymentmanager.ClientNotFoundException
 import net.glazov.data.utils.paymentmanager.InsufficientFundsException
 import net.glazov.data.utils.paymentmanager.TransactionErrorException
@@ -107,7 +106,7 @@ class ClientsDataSourceImpl(
         return clients.updateOne(filter, update).upsertedId != null
     }
 
-    override suspend fun getClientsTokensWithSelectedTopic(topic: NotificationsTopics): List<List<String>> {
+    override suspend fun getClientsTokensWithSelectedTopic(topic: NotificationsTopicsCodes): List<List<String>> {
         val filter = Filters.and(
             listOf(
                 Filters.eq(ClientModel::isNotificationsEnabled.name, true),

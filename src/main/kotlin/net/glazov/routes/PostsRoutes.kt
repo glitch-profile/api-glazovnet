@@ -1,6 +1,5 @@
 package net.glazov.routes
 
-import com.google.firebase.messaging.AndroidNotification
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -12,7 +11,7 @@ import net.glazov.data.model.PostModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
-import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
 
 private const val PATH = "/api/posts"
@@ -98,7 +97,7 @@ fun Route.postRoutes(
             )
             if (post != null) {
                 notificationsManager.sendTranslatableNotificationToClientsByTopic(
-                    topic = NotificationsTopics.NEWS,
+                    topic = NotificationsTopicsCodes.NEWS,
                     translatableData = TranslatableNotificationData.NewPost(postTitle = post.title, postBody = post.text),
                     imageUrl = post.image?.imageUrl,
                     notificationChannel = NotificationChannel.News

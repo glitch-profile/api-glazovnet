@@ -1,8 +1,8 @@
 package net.glazov.data.utils.notificationsmanager
 
-enum class NotificationsTopics() {
+enum class NotificationsTopicsCodes {
     NEWS,
-    ANNOUNCEMENTS,
     TARIFFS,
+    ANNOUNCEMENTS,
     PERSONAL_ACCOUNT_WARNINGS
 }

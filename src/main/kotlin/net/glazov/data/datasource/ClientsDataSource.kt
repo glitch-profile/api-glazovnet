@@ -1,7 +1,7 @@
 package net.glazov.data.datasource
 
 import net.glazov.data.model.ClientModel
-import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 
 interface ClientsDataSource {
 
@@ -46,7 +46,7 @@ interface ClientsDataSource {
     ): Boolean
 
     suspend fun getClientsTokensWithSelectedTopic(
-        topic: NotificationsTopics
+        topic: NotificationsTopicsCodes
     ): List<List<String>>
 
     suspend fun changeAccountPassword(

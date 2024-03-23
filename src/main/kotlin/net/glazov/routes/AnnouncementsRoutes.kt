@@ -1,6 +1,5 @@
 package net.glazov.routes
 
-import com.google.firebase.messaging.AndroidNotification
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -13,7 +12,7 @@ import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
-import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
 
 private const val PATH = "/api/announcements"
@@ -70,7 +69,7 @@ fun Route.announcementsRoutes(
             if (announcement !== null) {
                 if (announcement.addressFilters.isEmpty()) {
                     notificationsManager.sendTranslatableNotificationToClientsByTopic(
-                        topic = NotificationsTopics.ANNOUNCEMENTS,
+                        topic = NotificationsTopicsCodes.ANNOUNCEMENTS,
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),
@@ -80,7 +79,7 @@ fun Route.announcementsRoutes(
                     val affectedClientsTokens = announcements.getClientsForAnnouncement(announcement)
                         .asSequence()
                         .filter { it.isNotificationsEnabled == true
-                                && it.selectedNotificationsTopics?.contains(NotificationsTopics.ANNOUNCEMENTS.name) == true
+                                && it.selectedNotificationsTopics?.contains(NotificationsTopicsCodes.ANNOUNCEMENTS.name) == true
                         }
                         .mapNotNull { it.fcmTokensList }
                     notificationsManager.sendTranslatableNotificationToClientsByTokens(

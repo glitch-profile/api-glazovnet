@@ -1,11 +1,9 @@
 package net.glazov.data.utils.notificationsmanager
 
-import com.google.firebase.messaging.AndroidNotification
-
 interface NotificationsManager {
 
     suspend fun sendTranslatableNotificationToClientsByTopic(
-        topic: NotificationsTopics,
+        topic: NotificationsTopicsCodes,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
         notificationChannel: NotificationChannel

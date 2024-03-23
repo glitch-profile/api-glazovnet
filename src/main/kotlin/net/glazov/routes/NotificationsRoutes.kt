@@ -7,7 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.response.SimpleResponse
-import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.NotificationTopic
 
 private const val PATH = "/api/notifications"
 
@@ -19,7 +19,7 @@ fun Route.notificationsRoutes(
         get("$PATH/get-topics") {
             call.respond(
                 SimpleResponse(
-                    data = NotificationsTopics.entries.map { it.name },
+                    data = NotificationTopic.all(),
                     status = true,
                     message = "topics retrieved"
                 )

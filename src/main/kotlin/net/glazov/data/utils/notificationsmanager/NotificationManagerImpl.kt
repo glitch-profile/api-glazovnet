@@ -53,7 +53,7 @@ class NotificationManagerImpl(
     }
 
     override suspend fun sendTranslatableNotificationToClientsByTopic(
-        topic: NotificationsTopics,
+        topic: NotificationsTopicsCodes,
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
         notificationChannel: NotificationChannel

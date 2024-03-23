@@ -1,6 +1,5 @@
 package net.glazov.routes
 
-import com.google.firebase.messaging.AndroidNotification
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -13,7 +12,7 @@ import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.response.SimpleTariffResponse
 import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
-import net.glazov.data.utils.notificationsmanager.NotificationsTopics
+import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
 
 private const val PATH = "/api/tariffs"
@@ -68,7 +67,7 @@ fun Route.tariffsRoutes(
             )
             if (tariff !== null) {
                 notificationsManager.sendTranslatableNotificationToClientsByTopic(
-                    topic = NotificationsTopics.TARIFFS,
+                    topic = NotificationsTopicsCodes.TARIFFS,
                     translatableData = TranslatableNotificationData.NewTariff(
                         tariffName = tariff.name
                     ),
