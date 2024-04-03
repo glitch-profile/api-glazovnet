@@ -6,21 +6,24 @@ interface NotificationsManager {
         topic: NotificationsTopicsCodes,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
-        notificationChannel: NotificationChannel
+        notificationChannel: NotificationChannel,
+        deepLink: String? = null
     )
 
     suspend fun sendTranslatableNotificationToClientsByTokens(
         clientsTokensLists: List<List<String>>,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
-        notificationChannel: NotificationChannel
+        notificationChannel: NotificationChannel,
+        deepLink: String? = null
     )
 
     suspend fun sendTranslatableNotificationToClientsById(
         clientsId: List<String>,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
-        notificationChannel: NotificationChannel = NotificationChannel.Other
+        notificationChannel: NotificationChannel = NotificationChannel.Other,
+        deepLink: String? = null
     )
 
 }
