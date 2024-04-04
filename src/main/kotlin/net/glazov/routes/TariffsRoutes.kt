@@ -10,10 +10,7 @@ import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.model.TariffModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.response.SimpleTariffResponse
-import net.glazov.data.utils.notificationsmanager.NotificationChannel
-import net.glazov.data.utils.notificationsmanager.NotificationsManager
-import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
-import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
+import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/tariffs"
 
@@ -71,7 +68,8 @@ fun Route.tariffsRoutes(
                     translatableData = TranslatableNotificationData.NewTariff(
                         tariffName = tariff.name
                     ),
-                    notificationChannel = NotificationChannel.Tariffs
+                    notificationChannel = NotificationChannel.Tariffs,
+                    deepLink = Deeplink.Tariff(tariff.id)
                 )
             }
         }

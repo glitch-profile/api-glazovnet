@@ -10,10 +10,7 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.AnnouncementsDataSource
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.model.response.SimpleResponse
-import net.glazov.data.utils.notificationsmanager.NotificationChannel
-import net.glazov.data.utils.notificationsmanager.NotificationsManager
-import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
-import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
+import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/announcements"
 
@@ -73,7 +70,9 @@ fun Route.announcementsRoutes(
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),
-                        notificationChannel = NotificationChannel.Announcements
+                        notificationChannel = NotificationChannel.Announcements,
+//                        deepLink = Deeplink.Announcement(announcement.id)
+                        deepLink = Deeplink.AnnouncementsList
                     )
                 } else {
                     val affectedClientsTokens = announcements.getClientsForAnnouncement(announcement)
@@ -87,7 +86,9 @@ fun Route.announcementsRoutes(
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),
-                        notificationChannel = NotificationChannel.Announcements
+                        notificationChannel = NotificationChannel.Announcements,
+//                        deepLink = Deeplink.Announcement(announcement.id)
+                        deepLink = Deeplink.AnnouncementsList
                     )
                 }
             }

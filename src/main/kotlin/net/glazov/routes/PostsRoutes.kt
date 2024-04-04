@@ -9,10 +9,7 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.PostModel
 import net.glazov.data.model.response.SimpleResponse
-import net.glazov.data.utils.notificationsmanager.NotificationChannel
-import net.glazov.data.utils.notificationsmanager.NotificationsManager
-import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
-import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
+import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/posts"
 
@@ -92,7 +89,7 @@ fun Route.postRoutes(
                 SimpleResponse(
                     status = status,
                     message = if (status) "post added" else "error while adding the post",
-                    data = if (status) listOf(post!!) else emptyList()
+                    data = if (status) listOf(post) else emptyList()
                 )
             )
             if (post != null) {
@@ -100,7 +97,8 @@ fun Route.postRoutes(
                     topic = NotificationsTopicsCodes.NEWS,
                     translatableData = TranslatableNotificationData.NewPost(postTitle = post.title, postBody = post.text),
                     imageUrl = post.image?.imageUrl,
-                    notificationChannel = NotificationChannel.News
+                    notificationChannel = NotificationChannel.News,
+                    deepLink = Deeplink.Post(post.id)
                 )
             }
         }

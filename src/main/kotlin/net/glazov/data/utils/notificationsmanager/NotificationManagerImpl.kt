@@ -59,7 +59,7 @@ class NotificationManagerImpl(
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
         notificationChannel: NotificationChannel,
-        deepLink: String?
+        deepLink: Deeplink?
     ) {
         val clientsTokens = clients.getClientsTokensWithSelectedTopic(topic)
         if (clientsTokens.isNotEmpty()) {
@@ -67,7 +67,7 @@ class NotificationManagerImpl(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
                 notificationChannel = notificationChannel,
-                deepLink = deepLink
+                deepLink = deepLink?.route
             )
             val messagesList = clientsTokens.flatten().map { token ->
                 Message.builder()
@@ -84,14 +84,14 @@ class NotificationManagerImpl(
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
         notificationChannel: NotificationChannel,
-        deepLink: String?
+        deepLink: Deeplink?
     ) {
         if (clientsTokensLists.isNotEmpty()) {
             val androidConfig = generateAndroidDataConfig(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
                 notificationChannel = notificationChannel,
-                deepLink = deepLink
+                deepLink = deepLink?.route
             )
             val messagesList = clientsTokensLists.flatten().map { token ->
                 Message.builder()
@@ -108,7 +108,7 @@ class NotificationManagerImpl(
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
         notificationChannel: NotificationChannel,
-        deepLink: String?
+        deepLink: Deeplink?
     ) {
         val clientsTokens = clientsId.mapNotNull { clientId ->
             clients.getClientById(clientId)?.fcmTokensList
@@ -118,7 +118,7 @@ class NotificationManagerImpl(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
                 notificationChannel = notificationChannel,
-                deepLink = deepLink
+                deepLink = deepLink?.route
             )
             val messagesList = clientsTokens.flatten().map { token ->
                 Message.builder()

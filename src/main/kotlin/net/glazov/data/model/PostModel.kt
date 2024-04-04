@@ -7,7 +7,7 @@ import org.bson.types.ObjectId
 @Serializable
 data class PostModel(
     @BsonId
-    var id: String? = ObjectId().toString(),
+    var id: String = ObjectId().toString(),
     val title: String,
     val creationDate: Long,
     val lastEditDate: Long? = null,

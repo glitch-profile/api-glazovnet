@@ -7,6 +7,7 @@ import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.datasource.ClientsDataSource
 import net.glazov.data.model.requests.MessageModel
+import net.glazov.data.utils.notificationsmanager.Deeplink
 import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.data.utils.notificationsmanager.TranslatableNotificationData
@@ -119,7 +120,8 @@ class RequestChatRoomController(
                     requestTitle = request.title,
                     messageText = messageText
                 ),
-                notificationChannel = NotificationChannel.Chat
+                notificationChannel = NotificationChannel.Chat,
+                deepLink = Deeplink.SupportChat(requestId)
             )
         }
     }

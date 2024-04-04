@@ -7,7 +7,7 @@ interface NotificationsManager {
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
         notificationChannel: NotificationChannel,
-        deepLink: String? = null
+        deepLink: Deeplink? = null
     )
 
     suspend fun sendTranslatableNotificationToClientsByTokens(
@@ -15,7 +15,7 @@ interface NotificationsManager {
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
         notificationChannel: NotificationChannel,
-        deepLink: String? = null
+        deepLink: Deeplink? = null
     )
 
     suspend fun sendTranslatableNotificationToClientsById(
@@ -23,7 +23,7 @@ interface NotificationsManager {
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
         notificationChannel: NotificationChannel = NotificationChannel.Other,
-        deepLink: String? = null
+        deepLink: Deeplink? = null
     )
 
 }
