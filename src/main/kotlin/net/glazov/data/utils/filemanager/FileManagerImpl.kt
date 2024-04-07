@@ -3,8 +3,6 @@ package net.glazov.data.utils.filemanager
 import java.io.File
 import java.nio.file.Paths
 
-private const val secondaryUrl = "http://82.179.120.84:8080"
-
 class FileManagerImpl(
     private val baseUrl: String
 ): FileManager {
@@ -39,7 +37,6 @@ class FileManagerImpl(
         return absolutePath.replace(
             absolutePathBase,
             baseUrl
-//            secondaryUrl
         ).replace("\\", "/")
     }
 }

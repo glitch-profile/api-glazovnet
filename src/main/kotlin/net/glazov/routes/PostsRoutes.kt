@@ -9,6 +9,7 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.PostModel
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.UrlChanger
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/posts"
@@ -22,11 +23,20 @@ fun Route.postRoutes(
 
         get("$PATH/") {
             val postsList = posts.getAllPosts()
+
+            //TODO: remove after set up stable server
+            val postsListWithLocalImages = postsList.map {
+                if (it.image != null) {
+                    val newImageUrl = UrlChanger.toCurrentUrl(it.image.imageUrl)
+                    it.copy(image = it.image.copy(imageUrl = newImageUrl))
+                } else it
+            }
+
             call.respond(
                 SimpleResponse(
                     status = true,
                     message = "posts retrieved",
-                    data = postsList
+                    data = postsListWithLocalImages
                 )
             )
         }
@@ -48,12 +58,18 @@ fun Route.postRoutes(
         get("$PATH/{post_id}") {
             val id = call.parameters["post_id"] ?: ""
             val post = posts.getPostById(id)
+
+            //TODO: remove later
+            val postWithLocalImage = post?.copy(
+                image = post.image?.copy(imageUrl = UrlChanger.toCurrentUrl(post.image.imageUrl))
+            )
+
             val status = (post !== null)
             call.respond(
                 SimpleResponse(
                     status = true,
                     message = if (status) "post retrieved" else "no post with id found",
-                    data = if (status) listOf(post!!) else emptyList()
+                    data = if (status) listOf(postWithLocalImage!!) else emptyList()
                 )
             )
         }

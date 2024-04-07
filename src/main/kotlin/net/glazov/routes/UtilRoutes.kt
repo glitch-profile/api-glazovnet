@@ -9,6 +9,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.UrlChanger
 import net.glazov.data.utils.filemanager.FileManager
 import java.io.File
 import kotlin.io.path.Path
@@ -83,7 +84,12 @@ fun Routing.utilRoutes(
         val imagesList = directory.listFiles()
         if (imagesList?.isNotEmpty() == true) {
             val image = imagesList.random().absolutePath
-            call.respond(fileManager.getLocalPath(image))
+
+            //TODO: remove after set up stable server
+            val replacedImagePath = UrlChanger.toCurrentUrl(fileManager.getLocalPath(image))
+            call.respond(replacedImagePath)
+
+//            call.respond(fileManager.getLocalPath(image))
         } else call.respond("")
     }
 }
