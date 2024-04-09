@@ -8,6 +8,7 @@ import org.bson.types.ObjectId
 data class ClientModel(
     @BsonId
     val id: String = ObjectId().toString(),
+    val profileAvatar: String? = null, //Аватар профиля
     val accountNumber: String, //Номер лицевого счёта
     val login: String,
     val password: String, //Пароль аккаунта
