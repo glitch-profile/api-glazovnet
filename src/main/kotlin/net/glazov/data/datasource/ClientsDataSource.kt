@@ -60,6 +60,11 @@ interface ClientsDataSource {
         newTariffId: String
     ): Boolean
 
+    suspend fun setIsAccountActive(
+        userId: String,
+        newStatus: Boolean
+    ): Boolean
+
     suspend fun addPositiveTransaction(
         userId: String,
         amount: Double,

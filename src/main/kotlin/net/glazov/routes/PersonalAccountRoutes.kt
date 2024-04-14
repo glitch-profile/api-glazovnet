@@ -80,6 +80,25 @@ fun Route.personalAccountRoutes(
             )
         }
 
+        put("$PATH/block") {
+            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val result = clients.setIsAccountActive(
+                userId = clientId,
+                newStatus = false
+            )
+            call.respond(
+                SimpleResponse(
+                    status = result,
+                    message = if (result) "account blocked" else "unable to block account",
+                    data = Unit
+                )
+            )
+
+        }
+
         put("$PATH/add-funds") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)

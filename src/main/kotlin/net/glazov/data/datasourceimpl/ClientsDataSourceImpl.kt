@@ -135,6 +135,13 @@ class ClientsDataSourceImpl(
         return result.upsertedId != null
     }
 
+    override suspend fun setIsAccountActive(userId: String, newStatus: Boolean): Boolean {
+        val filter = Filters.eq("_id", userId)
+        val update = Updates.set(ClientModel::isAccountActive.name, newStatus)
+        val result = clients.updateOne(filter, update)
+        return result.upsertedId != null
+    }
+
     override suspend fun addPositiveTransaction(
         userId: String,
         amount: Double,
