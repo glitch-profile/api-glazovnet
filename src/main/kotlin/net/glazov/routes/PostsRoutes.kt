@@ -7,7 +7,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.InnerPostsDataSource
+import net.glazov.data.datasource.InnerDataSource
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.posts.PostModel
 import net.glazov.data.model.response.SimpleResponse
@@ -19,7 +19,6 @@ private const val INNER_POSTS_PATH = "/api/inner-posts"
 
 fun Route.postRoutes(
     posts: PostsDataSource,
-    innerPosts: InnerPostsDataSource,
     notificationsManager: NotificationsManager
 ) {
 
@@ -133,27 +132,6 @@ fun Route.postRoutes(
                     data = Unit
                 )
             )
-        }
-
-        get("$INNER_POSTS_PATH/") {
-            try {
-                val innerPostsResponse = innerPosts.getAllInnerPosts()
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "inner posts retrieved",
-                        data = innerPostsResponse
-                    )
-                )
-            } catch (e: ResponseException) {
-                call.respond(
-                    SimpleResponse(
-                        status = false,
-                        message = e.response.status.toString(),
-                        data = null
-                    )
-                )
-            }
         }
     }
 }

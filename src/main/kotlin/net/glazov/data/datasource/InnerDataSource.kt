@@ -2,7 +2,7 @@ package net.glazov.data.datasource
 
 import net.glazov.data.model.posts.InnerPostModel
 
-interface InnerPostsDataSource {
+interface InnerDataSource {
 
     suspend fun getAllInnerPosts(): List<InnerPostModel>
 

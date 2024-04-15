@@ -30,7 +30,7 @@ fun Application.configureRouting() {
     val fileManager by inject<FileManager>()
     val notificationManager by inject<NotificationsManager>()
     //RAW DATA
-    val innerPostsDataSource by inject<InnerPostsDataSource>()
+    val innerDataSource by inject<InnerDataSource>()
 
     routing {
         staticFiles(
@@ -38,7 +38,7 @@ fun Application.configureRouting() {
             File("${Paths.get("").toAbsolutePath()}/static/images")) //http://url:8080/images/filename
 
         authRoutes(clientsDataSource, adminsDataSource)
-        postRoutes(posts = postsDataSource, innerPosts = innerPostsDataSource, notificationManager)
+        postRoutes(posts = postsDataSource, notificationManager)
         tariffsRoutes(tariffsDataSource, notificationManager)
         addressRoutes(addressesDataSource)
         clientsRoutes(clientsDataSource)
@@ -48,11 +48,7 @@ fun Application.configureRouting() {
         notificationsRoutes(clientsDataSource)
         personalAccountRoutes(clientsDataSource)
         //testRoutes()
+        innerRoutes(innerData = innerDataSource)
     }
 
-    val scope = CoroutineScope(Dispatchers.Default)
-    scope.launch {
-        val posts = innerPostsDataSource.getAllInnerPosts()
-        println(posts)
-    }
 }

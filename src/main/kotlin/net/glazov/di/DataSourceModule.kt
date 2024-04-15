@@ -41,8 +41,8 @@ val dataSourcesModule = module {
         TransactionsDataSourceImpl(db = get())
     }
     // RAW DATA SOURCES
-    single<InnerPostsDataSource> {
-        InnerPostsDataSourceImpl(client = get())
+    single<InnerDataSource> {
+        InnerDataSourceImpl(client = get())
     }
 
 }
