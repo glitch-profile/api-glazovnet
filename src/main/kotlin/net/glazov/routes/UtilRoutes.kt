@@ -89,7 +89,6 @@ fun Routing.utilRoutes(
             val replacedImagePath = UrlChanger.toCurrentUrl(fileManager.getLocalPath(image))
             call.respond(replacedImagePath)
 
-//            call.respond(fileManager.getLocalPath(image))
         } else call.respond("")
     }
 }

@@ -1,13 +1,11 @@
 package net.glazov.routes
 
-import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.InnerDataSource
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.model.posts.PostModel
 import net.glazov.data.model.response.SimpleResponse

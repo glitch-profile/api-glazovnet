@@ -8,7 +8,6 @@ plugins {
     id("io.ktor.plugin") version "2.3.5"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-//    kotlin("plugin.serialization") version "1.9.10"
 }
 
 group = "net.glazov"
@@ -23,6 +22,7 @@ application {
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
@@ -62,5 +62,5 @@ dependencies {
 
     //firebase
     implementation("com.google.firebase:firebase-admin:9.2.0")
-
+    implementation("com.google.guava:guava:33.1.0-jre")
 }

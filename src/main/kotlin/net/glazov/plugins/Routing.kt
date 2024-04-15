@@ -3,9 +3,6 @@ package net.glazov.plugins
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import net.glazov.data.datasource.*
 import net.glazov.data.utils.filemanager.FileManager
 import net.glazov.data.utils.notificationsmanager.NotificationsManager

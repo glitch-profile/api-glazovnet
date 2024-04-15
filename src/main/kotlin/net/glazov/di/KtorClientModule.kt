@@ -7,7 +7,6 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.auth.*
 import io.ktor.server.config.*
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
