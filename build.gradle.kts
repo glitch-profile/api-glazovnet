@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "net.glazov"
-version = "0.7.4"
+version = "0.7.6"
 
 application {
     mainClass.set("net.glazov.ApplicationKt")
@@ -48,9 +48,13 @@ dependencies {
     implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 
-    //Koin
+    //Koin-server
     implementation("io.insert-koin:koin-core:$koin_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
+
+    //Ktor-client-okhttp
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-okhttp:$ktor_version")
 
     //firebase
     implementation("com.google.firebase:firebase-admin:9.2.0")
