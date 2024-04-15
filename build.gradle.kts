@@ -8,6 +8,7 @@ plugins {
     id("io.ktor.plugin") version "2.3.5"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
+//    kotlin("plugin.serialization") version "1.9.10"
 }
 
 group = "net.glazov"
@@ -48,13 +49,16 @@ dependencies {
     implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 
-    //Koin-server
+    //Koin
     implementation("io.insert-koin:koin-core:$koin_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
 
-    //Ktor-client-okhttp
+    //Ktor-client
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-okhttp:$ktor_version")
+    implementation("io.ktor:ktor-client-auth:$ktor_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
 
     //firebase
     implementation("com.google.firebase:firebase-admin:9.2.0")

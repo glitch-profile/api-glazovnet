@@ -1,10 +1,7 @@
 package net.glazov.plugins
 
 import io.ktor.server.application.*
-import net.glazov.di.dataSourcesModule
-import net.glazov.di.databaseModule
-import net.glazov.di.roomControllersModule
-import net.glazov.di.utilsModule
+import net.glazov.di.*
 import org.koin.ktor.plugin.Koin
 
 fun Application.configureKoin() {
@@ -14,7 +11,8 @@ fun Application.configureKoin() {
             databaseModule,
             dataSourcesModule,
             roomControllersModule,
-            utilsModule
+            utilsModule,
+            ktorClientModule
         )
     }
 

@@ -3,6 +3,9 @@ package net.glazov.plugins
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.glazov.data.datasource.*
 import net.glazov.data.utils.filemanager.FileManager
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
@@ -26,6 +29,8 @@ fun Application.configureRouting() {
     val chatDataSource by inject<ChatDataSource>()
     val fileManager by inject<FileManager>()
     val notificationManager by inject<NotificationsManager>()
+    //RAW DATA
+    val innerPostsDataSource by inject<InnerPostsDataSource>()
 
     routing {
         staticFiles(
@@ -33,7 +38,7 @@ fun Application.configureRouting() {
             File("${Paths.get("").toAbsolutePath()}/static/images")) //http://url:8080/images/filename
 
         authRoutes(clientsDataSource, adminsDataSource)
-        postRoutes(postsDataSource, notificationManager)
+        postRoutes(posts = postsDataSource, innerPosts = innerPostsDataSource, notificationManager)
         tariffsRoutes(tariffsDataSource, notificationManager)
         addressRoutes(addressesDataSource)
         clientsRoutes(clientsDataSource)
@@ -43,5 +48,11 @@ fun Application.configureRouting() {
         notificationsRoutes(clientsDataSource)
         personalAccountRoutes(clientsDataSource)
         //testRoutes()
+    }
+
+    val scope = CoroutineScope(Dispatchers.Default)
+    scope.launch {
+        val posts = innerPostsDataSource.getAllInnerPosts()
+        println(posts)
     }
 }

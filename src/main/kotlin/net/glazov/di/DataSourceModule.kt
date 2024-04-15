@@ -40,4 +40,9 @@ val dataSourcesModule = module {
     single<TransactionsDataSource> {
         TransactionsDataSourceImpl(db = get())
     }
+    // RAW DATA SOURCES
+    single<InnerPostsDataSource> {
+        InnerPostsDataSourceImpl(client = get())
+    }
+
 }

@@ -1,6 +1,6 @@
 package net.glazov.data.datasource
 
-import net.glazov.data.model.PostModel
+import net.glazov.data.model.posts.PostModel
 
 interface PostsDataSource {
 

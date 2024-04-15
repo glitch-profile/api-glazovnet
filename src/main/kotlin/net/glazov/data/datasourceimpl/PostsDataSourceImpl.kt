@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.PostsDataSource
-import net.glazov.data.model.PostModel
+import net.glazov.data.model.posts.PostModel
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneId
