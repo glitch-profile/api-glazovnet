@@ -39,27 +39,28 @@ fun Route.innerRoutes(
 
         }
 
-    }
-
-    get("$PATH/posts") {
-        try {
-            val innerPostsResponse = innerData.getAllInnerPosts()
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = "inner posts retrieved",
-                    data = innerPostsResponse
+        get("$PATH/posts") {
+            try {
+                val innerPostsResponse = innerData.getAllInnerPosts()
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "inner posts retrieved",
+                        data = innerPostsResponse
+                    )
                 )
-            )
-        } catch (e: ResponseException) {
-            call.respond(
-                SimpleResponse(
-                    status = false,
-                    message = e.response.status.toString(),
-                    data = null
+            } catch (e: ResponseException) {
+                println("ERROR - ${e.stackTrace}")
+                call.respond(
+                    SimpleResponse(
+                        status = false,
+                        message = e.response.status.toString(),
+                        data = null
+                    )
                 )
-            )
+            }
         }
+
     }
 
 }

@@ -8,7 +8,7 @@ data class InnerNewsDto(
     @SerialName("Id")
     val id: String,
     @SerialName("Title")
-    val title: String?,
+    val title: String, //"", if it should be null
     @SerialName("Text")
     val text: String,
     @SerialName("DateCreation")
