@@ -17,6 +17,6 @@ class InnerDataSourceImpl(
     override suspend fun getAllInnerPosts(): List<InnerPostModel> {
         val innerNews: List<InnerNewsDto> = client.get(PATH).body()
         val mappedPosts = innerNews.map { it.toInnerPostModel() }
-        return mappedPosts
+        return mappedPosts.reversed()
     }
 }
