@@ -11,6 +11,7 @@ import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.AddressModel
 import net.glazov.data.model.ClientModelOld
 import net.glazov.data.model.users.ClientModel
+import net.glazov.data.model.users.PersonModel
 import net.glazov.data.utils.paymentmanager.ClientNotFoundException
 import net.glazov.data.utils.paymentmanager.InsufficientFundsException
 import net.glazov.data.utils.paymentmanager.TransactionErrorException
@@ -18,16 +19,28 @@ import net.glazov.data.utils.paymentmanager.TransactionManager
 
 class ClientsDataSourceImpl(
     db: MongoDatabase,
-    private val personsDataSource: PersonsDataSource,
-    private val addressesDataSource: AddressesDataSource,
+    private val persons: PersonsDataSource,
+    private val addresses: AddressesDataSource,
     private val transactions: TransactionsDataSource,
     private val transactionManager: TransactionManager
 ): ClientsDataSource {
 
-    val clients = db.getCollection<ClientModel>("Clients V2")
+    private val clients = db.getCollection<ClientModel>("ClientsV2")
 
     override suspend fun getClientById(clientId: String): ClientModel? {
         val filter = Filters.eq("_id", clientId)
+        return clients.find(filter).singleOrNull()
+    }
+
+    override suspend fun getAssociatedPerson(clientId: String): PersonModel? {
+        val client = getClientById(clientId)
+        return if (client != null) {
+            persons.getPersonById(client.personId)
+        } else null
+    }
+
+    override suspend fun getClientByPersonId(personId: String): ClientModel? {
+        val filter = Filters.eq(ClientModel::personId.name, personId)
         return clients.find(filter).singleOrNull()
     }
 
@@ -36,24 +49,27 @@ class ClientsDataSourceImpl(
         accountNumber: String,
         address: AddressModel
     ): ClientModel? {
-        val clientAddress = addressesDataSource.getOrAddAddress(
-            city = address.cityName,
-            street = address.streetName,
-            houseNumber = address.cityName
-        )
-        return if (clientAddress != null) {
-            val client = ClientModel(
-                personId = associatedPersonId,
-                accountNumber = accountNumber,
-                address = AddressModel(
-                    cityName = clientAddress.city,
-                    streetName = clientAddress.street,
-                    houseNumber = address.houseNumber,
-                    roomNumber = address.roomNumber
-                )
+        val isPersonAvailable = getClientByPersonId(associatedPersonId) == null
+        return if (isPersonAvailable) {
+            val clientAddress = addresses.getOrAddAddress(
+                city = address.cityName,
+                street = address.streetName,
+                houseNumber = address.cityName
             )
-            val status = clients.insertOne(client)
-            if (status.insertedId != null) client else null
+            if (clientAddress != null) {
+                val client = ClientModel(
+                    personId = associatedPersonId,
+                    accountNumber = accountNumber,
+                    address = AddressModel(
+                        cityName = clientAddress.city,
+                        streetName = clientAddress.street,
+                        houseNumber = address.houseNumber,
+                        roomNumber = address.roomNumber
+                    )
+                )
+                val status = clients.insertOne(client)
+                if (status.insertedId != null) client else null
+            } else null
         } else null
     }
 

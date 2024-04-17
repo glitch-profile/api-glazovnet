@@ -4,8 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.*
-import net.glazov.data.datasource.users.AdminsDataSourceOld
-import net.glazov.data.datasource.users.ClientsDataSourceOld
+import net.glazov.data.datasource.users.*
 import net.glazov.data.utils.filemanager.FileManager
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.rooms.RequestChatRoomController
@@ -21,8 +20,13 @@ fun Application.configureRouting() {
     val tariffsDataSource by inject<TariffsDataSource>()
     val addressesDataSource by inject<AddressesDataSource>()
     val announcementsDataSource by inject<AnnouncementsDataSource>()
+    val personsDataSource by inject<PersonsDataSource>()
+    val clientsDataSource by inject<ClientsDataSource>()
+    val employeesDataSource by inject<EmployeesDataSource>()
+    //TODO: Remove this later
     val clientsDataSourceOld by inject<ClientsDataSourceOld>()
     val adminsDataSourceOld by inject<AdminsDataSourceOld>()
+    //REMOVE UPPER PART
     val requestsRoomController by inject<RequestsRoomController>()
     val requestChatRoomController by inject<RequestChatRoomController>()
     val chatDataSource by inject<ChatDataSource>()

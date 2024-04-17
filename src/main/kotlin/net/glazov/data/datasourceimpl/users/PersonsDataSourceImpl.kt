@@ -5,8 +5,8 @@ import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
+import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
-import net.glazov.data.model.ClientModelOld
 import net.glazov.data.model.users.PersonModel
 import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 
