@@ -5,14 +5,14 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.ClientsDataSourceOld
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.notificationsmanager.NotificationTopic
 
 private const val PATH = "/api/notifications"
 
 fun Route.notificationsRoutes(
-    clients: ClientsDataSource
+    clients: ClientsDataSourceOld
 ) {
     authenticate {
 

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AuthResponseModel(
     val token: String,
-    val userId: String,
-    val isAdmin: Boolean
+    val personId: String,
+    val clientId: String?,
+    val employeeId: String?
 )

@@ -1,8 +1,8 @@
-package net.glazov.data.datasource
+package net.glazov.data.datasource.users
 
 import net.glazov.data.model.AdminModel
 
-interface AdminsDataSource {
+interface AdminsDataSourceOld {
 
     suspend fun addAdmin(
         adminModel: AdminModel

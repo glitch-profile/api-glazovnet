@@ -10,8 +10,8 @@ import io.ktor.server.config.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.AdminsDataSource
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.AdminsDataSourceOld
+import net.glazov.data.datasource.users.ClientsDataSourceOld
 import net.glazov.data.model.AdminModel
 import net.glazov.data.model.auth.AuthModel
 import net.glazov.data.model.auth.AuthResponseModel
@@ -22,12 +22,20 @@ import java.time.ZoneId
 private const val PATH = "/api"
 
 fun Routing.authRoutes(
-    clientsDataSource: ClientsDataSource,
-    adminsDataSource: AdminsDataSource
+    clientsDataSourceOld: ClientsDataSourceOld,
+    adminsDataSourceOld: AdminsDataSourceOld
 ) {
 
     val issuer = ApplicationConfig(null).tryGetString("auth.issuer").toString()
     val secret = ApplicationConfig(null).tryGetString("auth.secret").toString()
+
+    post("$PATH/login") {
+        val authData = call.receiveNullable<AuthModel>() ?: kotlin.run {
+            call.respond(HttpStatusCode.BadRequest)
+            return@post
+        }
+
+    }
 
     post("$PATH/login") {
         val authData = try {
@@ -41,7 +49,7 @@ fun Routing.authRoutes(
         var isAdmin: Boolean? = null
 
         if (authData.asAdmin) {
-            val admin = adminsDataSource.login(authData.username, authData.password)
+            val admin = adminsDataSourceOld.login(authData.username, authData.password)
             if (admin != null) {
                 userId = admin.id
                 isAdmin = true
@@ -55,7 +63,7 @@ fun Routing.authRoutes(
                 generatedToken = token
             }
         } else {
-            val client = clientsDataSource.login(authData.username, authData.password)
+            val client = clientsDataSourceOld.login(authData.username, authData.password)
             if (client != null) {
                 userId = client.id
                 isAdmin = false
@@ -96,7 +104,7 @@ fun Routing.authRoutes(
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val result = adminsDataSource.addAdmin(admin)
+        val result = adminsDataSourceOld.addAdmin(admin)
         if (result != null) call.respond(
             SimpleResponse(
                 status = true,

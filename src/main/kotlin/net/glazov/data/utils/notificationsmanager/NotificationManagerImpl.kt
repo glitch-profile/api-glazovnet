@@ -3,10 +3,10 @@ package net.glazov.data.utils.notificationsmanager
 import com.google.firebase.messaging.AndroidConfig
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.Message
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.ClientsDataSourceOld
 
 class NotificationManagerImpl(
-    private val clients: ClientsDataSource,
+    private val clients: ClientsDataSourceOld,
 ): NotificationsManager {
 
     private fun generateAndroidDataConfig(

@@ -1,7 +1,11 @@
 package net.glazov.di
 
 import net.glazov.data.datasource.*
+import net.glazov.data.datasource.users.AdminsDataSourceOld
+import net.glazov.data.datasource.users.ClientsDataSourceOld
 import net.glazov.data.datasourceimpl.*
+import net.glazov.data.datasourceimpl.users.AdminsDataSourceOldImpl
+import net.glazov.data.datasourceimpl.users.ClientsDataSourceOldImpl
 import org.koin.dsl.module
 
 val dataSourcesModule = module {
@@ -9,16 +13,16 @@ val dataSourcesModule = module {
     single<AddressesDataSource> {
         AddressesDataSourceImpl(db = get())
     }
-    single<ClientsDataSource> {
-        ClientsDataSourceImpl(
+    single<ClientsDataSourceOld> {
+        ClientsDataSourceOldImpl(
             db = get(),
             addresses = get(),
             transactions = get(),
             transactionManager = get()
         )
     }
-    single<AdminsDataSource> {
-        AdminsDataSourceImpl(
+    single<AdminsDataSourceOld> {
+        AdminsDataSourceOldImpl(
             db = get()
         )
     }
@@ -29,7 +33,7 @@ val dataSourcesModule = module {
         )
     }
     single<ChatDataSource> {
-        ChatDataSourceImpl(db = get(), clientsDataSource = get())
+        ChatDataSourceImpl(db = get(), clientsDataSourceOld = get())
     }
     single<TariffsDataSource> {
         TariffsDataSourceImpl(db = get())

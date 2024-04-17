@@ -5,13 +5,13 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.ClientsDataSourceOld
 import net.glazov.data.model.response.SimpleResponse
 
 private const val PATH = "/api/account"
 
 fun Route.personalAccountRoutes(
-    clients: ClientsDataSource
+    clients: ClientsDataSourceOld
 ) {
 
     authenticate {

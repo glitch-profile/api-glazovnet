@@ -4,9 +4,9 @@ import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.AnnouncementsDataSource
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.ClientsDataSourceOld
 import net.glazov.data.model.AnnouncementModel
-import net.glazov.data.model.ClientModel
+import net.glazov.data.model.ClientModelOld
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter
 
 class AnnouncementsDataSourceImpl(
     private val db: MongoDatabase,
-    private val clients: ClientsDataSource
+    private val clients: ClientsDataSourceOld
 ): AnnouncementsDataSource {
 
     private val announcements = db.getCollection<AnnouncementModel>("Announcements")
@@ -55,7 +55,7 @@ class AnnouncementsDataSourceImpl(
         return announcements.filter { it.isContainingAddress(city, street, houseNumber) || it.addressFilters.isEmpty() }
     }
 
-    override suspend fun getClientsForAnnouncement(announcement: AnnouncementModel): List<ClientModel> {
+    override suspend fun getClientsForAnnouncement(announcement: AnnouncementModel): List<ClientModelOld> {
         val clients = clients.getAllClients()
         return clients.filter { client ->
             announcement.isContainingAddress(

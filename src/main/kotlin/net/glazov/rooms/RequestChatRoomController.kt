@@ -3,9 +3,9 @@ package net.glazov.rooms
 import io.ktor.websocket.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.glazov.data.datasource.AdminsDataSource
+import net.glazov.data.datasource.users.AdminsDataSourceOld
 import net.glazov.data.datasource.ChatDataSource
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.ClientsDataSourceOld
 import net.glazov.data.model.requests.MessageModel
 import net.glazov.data.utils.notificationsmanager.Deeplink
 import net.glazov.data.utils.notificationsmanager.NotificationChannel
@@ -15,8 +15,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 class RequestChatRoomController(
     private val chat: ChatDataSource,
-    private val clients: ClientsDataSource,
-    private val admins: AdminsDataSource,
+    private val clients: ClientsDataSourceOld,
+    private val admins: AdminsDataSourceOld,
     private val notificationsManager: NotificationsManager
 ) {
 

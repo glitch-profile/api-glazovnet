@@ -4,6 +4,8 @@ import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.*
+import net.glazov.data.datasource.users.AdminsDataSourceOld
+import net.glazov.data.datasource.users.ClientsDataSourceOld
 import net.glazov.data.utils.filemanager.FileManager
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.rooms.RequestChatRoomController
@@ -19,8 +21,8 @@ fun Application.configureRouting() {
     val tariffsDataSource by inject<TariffsDataSource>()
     val addressesDataSource by inject<AddressesDataSource>()
     val announcementsDataSource by inject<AnnouncementsDataSource>()
-    val clientsDataSource by inject<ClientsDataSource>()
-    val adminsDataSource by inject<AdminsDataSource>()
+    val clientsDataSourceOld by inject<ClientsDataSourceOld>()
+    val adminsDataSourceOld by inject<AdminsDataSourceOld>()
     val requestsRoomController by inject<RequestsRoomController>()
     val requestChatRoomController by inject<RequestChatRoomController>()
     val chatDataSource by inject<ChatDataSource>()
@@ -34,16 +36,16 @@ fun Application.configureRouting() {
             "/images",
             File("${Paths.get("").toAbsolutePath()}/static/images")) //http://url:8080/images/filename
 
-        authRoutes(clientsDataSource, adminsDataSource)
+        authRoutes(clientsDataSourceOld, adminsDataSourceOld)
         postRoutes(posts = postsDataSource, notificationManager)
         tariffsRoutes(tariffsDataSource, notificationManager)
         addressRoutes(addressesDataSource)
-        clientsRoutes(clientsDataSource)
+        clientsRoutes(clientsDataSourceOld)
         announcementsRoutes(announcementsDataSource, notificationManager)
         requestsRoute(requestsRoomController, requestChatRoomController, chatDataSource)
         utilRoutes(fileManager)
-        notificationsRoutes(clientsDataSource)
-        personalAccountRoutes(clientsDataSource)
+        notificationsRoutes(clientsDataSourceOld)
+        personalAccountRoutes(clientsDataSourceOld)
         //testRoutes()
         innerRoutes(innerData = innerDataSource)
     }
