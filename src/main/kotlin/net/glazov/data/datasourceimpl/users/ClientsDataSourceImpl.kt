@@ -26,7 +26,7 @@ class ClientsDataSourceImpl(
     private val transactionManager: TransactionManager
 ): ClientsDataSource {
 
-    private val clients = db.getCollection<ClientModel>("ClientsV2")
+    private val clients = db.getCollection<ClientModel>("Clients")
 
     override suspend fun getAllClients(): List<ClientModel> {
         return clients.find().toList()
@@ -59,7 +59,7 @@ class ClientsDataSourceImpl(
             val clientAddress = addresses.getOrAddAddress(
                 city = address.cityName,
                 street = address.streetName,
-                houseNumber = address.cityName
+                houseNumber = address.houseNumber
             )
             if (clientAddress != null) {
                 val client = ClientModel(
