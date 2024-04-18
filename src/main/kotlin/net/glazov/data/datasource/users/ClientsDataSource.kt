@@ -6,6 +6,8 @@ import net.glazov.data.model.users.PersonModel
 
 interface ClientsDataSource {
 
+    suspend fun getAllClients(): List<ClientModel>
+
     suspend fun getClientById(clientId: String): ClientModel?
 
     suspend fun getClientByPersonId(personId: String): ClientModel?

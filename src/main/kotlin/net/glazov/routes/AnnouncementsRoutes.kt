@@ -3,29 +3,34 @@ package net.glazov.routes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.AnnouncementsDataSource
+import net.glazov.data.datasource.users.ClientsDataSource
+import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/announcements"
 
 fun Route.announcementsRoutes(
     announcements: AnnouncementsDataSource,
-    notificationsManager: NotificationsManager
+    notificationsManager: NotificationsManager,
+    clients: ClientsDataSource,
+    employees: EmployeesDataSource
 ) {
 
-    authenticate {
+    authenticate("client") {
 
         get("$PATH/for-client") {
-            val principal = call.principal<JWTPrincipal>()
-            val clientId = principal!!.payload.getClaim("user_id").asString()
-            val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
-            val announcementsList = announcements.getAnnouncementForClient(clientId, isAdmin)
+            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val announcementsList = announcements.getAnnouncementForClient(clientId)
             call.respond(
                 SimpleResponse(
                     status = true,
@@ -36,9 +41,17 @@ fun Route.announcementsRoutes(
         }
     }
 
-    authenticate("admin") {
+    authenticate("employee") {
 
         get("$PATH/") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ANNOUNCEMENTS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@get
+            }
             val announcementsList = announcements.getAnnouncements()
             call.respond(
                 SimpleResponse(
@@ -50,6 +63,14 @@ fun Route.announcementsRoutes(
         }
 
         post("$PATH/create") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ANNOUNCEMENTS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@post
+            }
             val newAnnouncement = call.receiveNullable<AnnouncementModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
@@ -65,29 +86,29 @@ fun Route.announcementsRoutes(
             )
             if (announcement !== null) {
                 if (announcement.addressFilters.isEmpty()) {
-                    notificationsManager.sendTranslatableNotificationToClientsByTopic(
+                    notificationsManager.sendTranslatableNotificationByTopic(
                         topic = NotificationsTopicsCodes.ANNOUNCEMENTS,
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),
                         notificationChannel = NotificationChannel.Announcements,
-//                        deepLink = Deeplink.Announcement(announcement.id)
                         deepLink = Deeplink.AnnouncementsList
                     )
                 } else {
                     val affectedClientsTokens = announcements.getClientsForAnnouncement(announcement)
+                    val mappedPersonFromClients = affectedClientsTokens.map { clients.getAssociatedPerson(it.personId) }
                         .asSequence()
-                        .filter { it.isNotificationsEnabled == true
-                                && it.selectedNotificationsTopics?.contains(NotificationsTopicsCodes.ANNOUNCEMENTS.name) == true
+                        .filter {
+                            it?.isNotificationsEnabled == true
+                                    && it.selectedNotificationsTopics.contains(NotificationsTopicsCodes.ANNOUNCEMENTS.name)
                         }
-                        .mapNotNull { it.fcmTokensList }
-                    notificationsManager.sendTranslatableNotificationToClientsByTokens(
-                        clientsTokensLists = affectedClientsTokens.toList(),
+                        .mapNotNull { it?.fcmTokensList }
+                    notificationsManager.sendTranslatableNotificationByTokens(
+                        personsTokensList = mappedPersonFromClients.toList(),
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),
                         notificationChannel = NotificationChannel.Announcements,
-//                        deepLink = Deeplink.Announcement(announcement.id)
                         deepLink = Deeplink.AnnouncementsList
                     )
                 }
@@ -95,6 +116,14 @@ fun Route.announcementsRoutes(
         }
 
         delete("$PATH/delete") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@delete
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ANNOUNCEMENTS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@delete
+            }
             val announcementId = call.request.queryParameters["id"]
             if (announcementId != null) {
                 val status = announcements.deleteAnnouncement(announcementId)
@@ -111,6 +140,14 @@ fun Route.announcementsRoutes(
         }
 
         put("$PATH/edit") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ANNOUNCEMENTS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@put
+            }
             val newAnnouncement = try {
                 call.receive<AnnouncementModel>()
             } catch (e: ContentTransformationException) {

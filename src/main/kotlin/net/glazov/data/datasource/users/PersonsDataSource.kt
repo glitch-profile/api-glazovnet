@@ -18,6 +18,8 @@ interface PersonsDataSource {
         password: String
     ): PersonModel?
 
+    suspend fun getAllPersons(): List<PersonModel>
+
     suspend fun getPersonById(
         personId: String
     ): PersonModel?

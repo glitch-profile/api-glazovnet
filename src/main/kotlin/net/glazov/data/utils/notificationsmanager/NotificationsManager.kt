@@ -2,7 +2,7 @@ package net.glazov.data.utils.notificationsmanager
 
 interface NotificationsManager {
 
-    suspend fun sendTranslatableNotificationToClientsByTopic(
+    suspend fun sendTranslatableNotificationByTopic(
         topic: NotificationsTopicsCodes,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
@@ -10,16 +10,16 @@ interface NotificationsManager {
         deepLink: Deeplink? = null
     )
 
-    suspend fun sendTranslatableNotificationToClientsByTokens(
-        clientsTokensLists: List<List<String>>,
+    suspend fun sendTranslatableNotificationByTokens(
+        personsTokensList: List<List<String>>,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
         notificationChannel: NotificationChannel,
         deepLink: Deeplink? = null
     )
 
-    suspend fun sendTranslatableNotificationToClientsById(
-        clientsId: List<String>,
+    suspend fun sendTranslatableNotificationByPersonsId(
+        personsId: List<String>,
         translatableData: TranslatableNotificationData,
         imageUrl: String? = null,
         notificationChannel: NotificationChannel = NotificationChannel.Other,

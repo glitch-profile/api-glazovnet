@@ -7,16 +7,19 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.TariffsDataSource
+import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.TariffModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.response.SimpleTariffResponse
+import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/tariffs"
 
 fun Route.tariffsRoutes(
     tariffs: TariffsDataSource,
-    notificationsManager: NotificationsManager
+    notificationsManager: NotificationsManager,
+    employees: EmployeesDataSource
 ) {
 
     authenticate {
@@ -46,9 +49,17 @@ fun Route.tariffsRoutes(
         }
     }
 
-    authenticate("admin") {
+    authenticate("employee") {
 
         post("$PATH/add") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.TARIFFS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@post
+            }
             val newTariff = call.receiveNullable<TariffModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
@@ -63,7 +74,7 @@ fun Route.tariffsRoutes(
                 )
             )
             if (tariff !== null) {
-                notificationsManager.sendTranslatableNotificationToClientsByTopic(
+                notificationsManager.sendTranslatableNotificationByTopic(
                     topic = NotificationsTopicsCodes.TARIFFS,
                     translatableData = TranslatableNotificationData.NewTariff(
                         tariffName = tariff.name
@@ -75,6 +86,14 @@ fun Route.tariffsRoutes(
         }
 
         delete("$PATH/remove") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@delete
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.TARIFFS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@delete
+            }
             val tariffId = call.request.queryParameters["tariff_id"]
             val status = tariffs.deleteTariff(tariffId = tariffId.toString())
             call.respond(
@@ -87,9 +106,15 @@ fun Route.tariffsRoutes(
         }
 
         put("$PATH/edit") {
-            val newTariff = try {
-                call.receive<TariffModel>()
-            } catch (e: ContentTransformationException) {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.TARIFFS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@put
+            }
+            val newTariff = call.receiveNullable<TariffModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }

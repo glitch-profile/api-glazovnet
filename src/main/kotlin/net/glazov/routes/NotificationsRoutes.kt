@@ -5,61 +5,66 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.users.ClientsDataSourceOld
+import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.notificationsmanager.NotificationTopic
 
 private const val PATH = "/api/notifications"
 
 fun Route.notificationsRoutes(
-    clients: ClientsDataSourceOld
+    persons: PersonsDataSource
 ) {
     authenticate {
 
         get("$PATH/get-topics") {
+            val includeClientTopics = call.request.headers["include_client"].toBoolean()
+            val includeEmployeeTopics = call.request.headers["employee_id"].toBoolean()
             call.respond(
                 SimpleResponse(
-                    data = NotificationTopic.all(),
+                    data = NotificationTopic.all(
+                        includeClientTopics = includeClientTopics,
+                        includeEmployeeTopics = includeEmployeeTopics
+                    ),
                     status = true,
                     message = "topics retrieved"
                 )
             )
         }
 
-        get("$PATH/get-topics-for-client") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+        get("$PATH/get-topics-for-person") {
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
             }
-            val client = clients.getClientById(clientId)
-            val topics = client?.selectedNotificationsTopics ?: emptyList()
+            val person = persons.getPersonById(personId)
+            val topics = person?.selectedNotificationsTopics ?: emptyList()
             call.respond(
                 SimpleResponse(
                     data = topics,
-                    message = "retrieved topics for client",
-                    status = client != null
+                    message = "retrieved topics for person",
+                    status = person != null
                 )
             )
         }
 
-        get("$PATH/get-client-notifications-status") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+        get("$PATH/get-person-notifications-status") {
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
             }
-            val client = clients.getClientById(clientId)
-            val notificationsStatus = client?.isNotificationsEnabled
+            val person = persons.getPersonById(personId)
+            val notificationsStatus = person?.isNotificationsEnabled
             call.respond(
                 SimpleResponse(
                     data = notificationsStatus,
                     message = "notifications status retrieved",
-                    status = client != null
+                    status = person != null
                 )
             )
         }
 
-        put("$PATH/set-client-notification-status") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+        put("$PATH/set-person-notification-status") {
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
@@ -68,7 +73,7 @@ fun Route.notificationsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val result = clients.updateNotificationsStatus(clientId, newNotificationsStatus)
+            val result = persons.updateNotificationsStatus(personId, newNotificationsStatus)
             call.respond(
                 SimpleResponse(
                     status = result,
@@ -79,13 +84,13 @@ fun Route.notificationsRoutes(
         }
 
         put("$PATH/update-client-subscribed-topics") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
             val topics = call.request.queryParameters["topics"]
             val topicsList = topics?.split(',') ?: emptyList()
-            val result = clients.updateNotificationTopics(clientId, topicsList)
+            val result = persons.updateNotificationTopics(personId, topicsList)
             call.respond(
                 SimpleResponse(
                     status = result,
@@ -95,8 +100,8 @@ fun Route.notificationsRoutes(
             )
         }
 
-        put("$PATH/update-client-fcm-token") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+        put("$PATH/update-person-fcm-token") {
+            val personId = call.request.headers["personId"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
@@ -106,9 +111,9 @@ fun Route.notificationsRoutes(
             }
             val isExclude = call.request.queryParameters["exclude"].toBoolean()
             val status = if (isExclude) {
-                clients.removeFcmToken(userId = clientId, tokenToRemove = token)
+                persons.removeFcmToken(personId, tokenToRemove = token)
             } else {
-                clients.addFcmToken(userId = clientId, newToken = token)
+                persons.addFcmToken(personId, newToken = token)
             }
             call.respond(
                 SimpleResponse(

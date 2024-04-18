@@ -3,6 +3,7 @@ package net.glazov.data.datasource.users
 import net.glazov.data.model.ClientModelOld
 import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 
+@Deprecated("use new data sources instead", level = DeprecationLevel.WARNING)
 interface ClientsDataSourceOld {
 
     suspend fun getAllClients(): List<ClientModelOld>

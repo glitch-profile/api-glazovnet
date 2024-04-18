@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.users.EmployeeModel
 import net.glazov.data.model.users.PersonModel
@@ -16,6 +17,10 @@ class EmployeesDataSourceImpl(
 ): EmployeesDataSource {
 
     private val employees = db.getCollection<EmployeeModel>("Employees")
+
+    override suspend fun getAllEmployees(): List<EmployeeModel> {
+        return employees.find().toList()
+    }
 
     override suspend fun getEmployeeById(employeeId: String): EmployeeModel? {
         val filter = Filters.eq("_id", employeeId)

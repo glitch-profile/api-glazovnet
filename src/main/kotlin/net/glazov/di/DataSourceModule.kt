@@ -48,7 +48,7 @@ val dataSourcesModule = module {
         )
     }
     single<ChatDataSource> {
-        ChatDataSourceImpl(db = get(), clientsDataSourceOld = get())
+        ChatDataSourceImpl(db = get(), clients = get(), persons = get())
     }
     single<TariffsDataSource> {
         TariffsDataSourceImpl(db = get())

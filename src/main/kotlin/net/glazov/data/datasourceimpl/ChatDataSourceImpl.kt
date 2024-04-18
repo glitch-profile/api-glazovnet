@@ -7,7 +7,8 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.ChatDataSource
-import net.glazov.data.datasource.users.ClientsDataSourceOld
+import net.glazov.data.datasource.users.ClientsDataSource
+import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.requests.MessageModel
 import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.requests.RequestsStatus.Companion.convertToIntCode
@@ -18,7 +19,8 @@ import java.time.ZoneId
 
 class ChatDataSourceImpl(
     private val db: MongoDatabase,
-    private val clientsDataSourceOld: ClientsDataSourceOld
+    private val clients: ClientsDataSource,
+    private val persons: PersonsDataSource
 ): ChatDataSource {
 
     private val requests = db.getCollection<SupportRequestModel>("SupportRequests")
@@ -45,20 +47,26 @@ class ChatDataSourceImpl(
 
     override suspend fun getRequestsForClient(clientId: String): List<SupportRequestModel> {
         val filter = Filters.eq(SupportRequestModel::creatorId.name, clientId)
-        val requestsList = requests.find(filter).toList().sortedByDescending { it.creationDate }
-        return requestsList
+        return requests.find(filter).toList().sortedByDescending { it.creationDate }
     }
 
-    override suspend fun createNewRequest(newRequest: SupportRequestModel): SupportRequestModel? {
-        val requestToInsert = newRequest.copy(
-            id = ObjectId().toString(),
-            creatorName = clientsDataSourceOld.getClientNameById(newRequest.creatorId),
-            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
-            associatedSupportId = null,
-            messages = emptyList()
+    override suspend fun createNewRequest(
+        clientId: String,
+        title: String,
+        text: String,
+        isNotificationEnabled: Boolean
+    ): SupportRequestModel? {
+        val associatedPersonId = clients.getAssociatedPerson(clientId)?.id ?: return null
+        val creatorName = persons.getNameById(associatedPersonId, useShortForm = false)
+        val requestToInsert = SupportRequestModel(
+            creatorId = clientId,
+            creatorName = creatorName,
+            title = title,
+            description = text,
+            isNotificationsEnabled = isNotificationEnabled
         )
-        val status = requests.insertOne(requestToInsert).wasAcknowledged()
-        return if (status) requestToInsert else null
+        val status = requests.insertOne(requestToInsert)
+        return if (status.insertedId != null) requestToInsert else null
     }
 
     override suspend fun getRequestById(requestId: String): SupportRequestModel? {

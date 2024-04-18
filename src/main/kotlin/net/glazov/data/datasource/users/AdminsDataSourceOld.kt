@@ -2,6 +2,7 @@ package net.glazov.data.datasource.users
 
 import net.glazov.data.model.AdminModel
 
+@Deprecated("use new data sources instead", level = DeprecationLevel.WARNING)
 interface AdminsDataSourceOld {
 
     suspend fun addAdmin(

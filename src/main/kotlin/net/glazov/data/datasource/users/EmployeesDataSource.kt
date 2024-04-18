@@ -5,6 +5,8 @@ import net.glazov.data.utils.employeesroles.EmployeeRoles
 
 interface EmployeesDataSource {
 
+    suspend fun getAllEmployees(): List<EmployeeModel>
+
     suspend fun getEmployeeById(employeeId: String): EmployeeModel?
 
     suspend fun getEmployeeByPersonId(personId: String): EmployeeModel?

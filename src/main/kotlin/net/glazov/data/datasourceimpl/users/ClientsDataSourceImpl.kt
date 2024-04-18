@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.AddressesDataSource
 import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.datasource.users.ClientsDataSource
@@ -26,6 +27,10 @@ class ClientsDataSourceImpl(
 ): ClientsDataSource {
 
     private val clients = db.getCollection<ClientModel>("ClientsV2")
+
+    override suspend fun getAllClients(): List<ClientModel> {
+        return clients.find().toList()
+    }
 
     override suspend fun getClientById(clientId: String): ClientModel? {
         val filter = Filters.eq("_id", clientId)

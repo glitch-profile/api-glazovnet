@@ -1,17 +1,27 @@
 package net.glazov.data.utils.notificationsmanager
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 enum class NotificationsTopicsCodes {
     NEWS,
     TARIFFS,
     ANNOUNCEMENTS,
-    PERSONAL_ACCOUNT_WARNINGS
+    PERSONAL_ACCOUNT_WARNINGS,
+    SERVICE_NEWS
+}
+
+enum class NotificationTopicVisibility {
+    DEFAULT,
+    CLIENT,
+    EMPLOYEE,
 }
 
 @Serializable
 data class NotificationTopic(
     val topicCode: NotificationsTopicsCodes,
+    @Transient
+    val visibility: NotificationTopicVisibility = NotificationTopicVisibility.DEFAULT,
     val name: String,
     val nameEn: String? = null,
     val description: String,
@@ -19,7 +29,16 @@ data class NotificationTopic(
 ) {
 
     companion object {
-        fun  all(): List<NotificationTopic> {
+        fun  all(
+            includeClientTopics: Boolean,
+            includeEmployeeTopics: Boolean
+        ): List<NotificationTopic> {
+            val visibilityList = buildList<NotificationTopicVisibility> {
+                NotificationTopicVisibility.DEFAULT
+                if (includeClientTopics) NotificationTopicVisibility.CLIENT
+                if (includeEmployeeTopics) NotificationTopicVisibility.EMPLOYEE
+            }
+
             val news = NotificationTopic(
                 topicCode = NotificationsTopicsCodes.NEWS,
                 name = "Новости",
@@ -36,20 +55,33 @@ data class NotificationTopic(
             )
             val announcements = NotificationTopic(
                 topicCode = NotificationsTopicsCodes.ANNOUNCEMENTS,
+                visibility = NotificationTopicVisibility.CLIENT,
                 name = "Объявления",
                 nameEn = "Announcements",
                 description = "Информация об объявлениях по Вашему адресу",
                 descriptionEn = "Information about announcements at your address"
             )
+            val serviceNews = NotificationTopic(
+                topicCode = NotificationsTopicsCodes.SERVICE_NEWS,
+                visibility = NotificationTopicVisibility.EMPLOYEE,
+                name = "Служебные новости",
+                nameEn = "Service news",
+                description = "Быстрый доступ ко всем служебным новостям",
+                descriptionEn = "Quick access to all service news"
+            )
             val accountWarnings =  NotificationTopic(
                 topicCode = NotificationsTopicsCodes.PERSONAL_ACCOUNT_WARNINGS,
+                visibility = NotificationTopicVisibility.CLIENT,
                 name = "Учетная запись",
                 nameEn = "Personal account",
                 description = "Предупреждения о событиях в Личном кабинете",
                 descriptionEn = "Alerts on events in your Personal account"
             )
 
-            return listOf(news, tariffs, announcements, accountWarnings)
+            val filteredList = listOf(news, tariffs, announcements, serviceNews, accountWarnings).filter { topic ->
+                visibilityList.any { it == topic.visibility }
+            }
+            return filteredList
         }
     }
 

@@ -7,17 +7,19 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.PostsDataSource
+import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.posts.PostModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.UrlChanger
+import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/posts"
-private const val INNER_POSTS_PATH = "/api/inner-posts"
 
 fun Route.postRoutes(
     posts: PostsDataSource,
-    notificationsManager: NotificationsManager
+    notificationsManager: NotificationsManager,
+    employees: EmployeesDataSource
 ) {
 
     authenticate {
@@ -76,12 +78,18 @@ fun Route.postRoutes(
         }
     }
 
-    authenticate("admin") {
+    authenticate("employee") {
 
         put("$PATH/edit") {
-            val newPost = try {
-                call.receive<PostModel>()
-            } catch (e: ContentTransformationException) {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.NEWS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@put
+            }
+            val newPost = call.receiveNullable<PostModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
@@ -96,6 +104,14 @@ fun Route.postRoutes(
         }
 
         post("$PATH/add") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.NEWS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@post
+            }
             val newPost = call.receiveNullable<PostModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
@@ -110,7 +126,7 @@ fun Route.postRoutes(
                 )
             )
             if (post != null) {
-                notificationsManager.sendTranslatableNotificationToClientsByTopic(
+                notificationsManager.sendTranslatableNotificationByTopic(
                     topic = NotificationsTopicsCodes.NEWS,
                     translatableData = TranslatableNotificationData.NewPost(postTitle = post.title, postBody = post.text),
                     imageUrl = post.image?.imageUrl,
@@ -121,6 +137,14 @@ fun Route.postRoutes(
         }
 
         delete("$PATH/delete") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@delete
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.NEWS)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@delete
+            }
             val postId = call.request.queryParameters["post_id"]
             val status = posts.deletePost(postId.toString())
             call.respond(

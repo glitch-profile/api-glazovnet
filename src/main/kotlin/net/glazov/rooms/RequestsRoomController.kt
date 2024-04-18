@@ -24,7 +24,7 @@ class RequestsRoomController {
         }
     }
 
-    suspend fun addRequest(
+    suspend fun sendRequestToSocket(
         request: SupportRequestModel
     ) {
         val json = Json {

@@ -1,7 +1,7 @@
 package net.glazov.data.datasource
 
 import net.glazov.data.model.AnnouncementModel
-import net.glazov.data.model.ClientModelOld
+import net.glazov.data.model.users.ClientModel
 
 interface AnnouncementsDataSource {
 
@@ -13,13 +13,12 @@ interface AnnouncementsDataSource {
     ): List<AnnouncementModel>
 
     suspend fun getAnnouncementForClient(
-        clientId: String,
-        isAdmin: Boolean
+        clientId: String
     ): List<AnnouncementModel>
 
     suspend fun getClientsForAnnouncement(
         announcement: AnnouncementModel
-    ): List<ClientModelOld>
+    ): List<ClientModel>
 
     suspend fun addAnnouncement(
         announcement: AnnouncementModel

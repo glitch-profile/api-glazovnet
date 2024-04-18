@@ -5,7 +5,6 @@ import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
-import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.users.PersonModel
 import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
@@ -39,6 +38,10 @@ class PersonsDataSourceImpl(
         )
         val status = persons.insertOne(person)
         return if (status.insertedId != null) person else null
+    }
+
+    override suspend fun getAllPersons(): List<PersonModel> {
+        return persons.find().toList()
     }
 
     override suspend fun getPersonById(personId: String): PersonModel? {
