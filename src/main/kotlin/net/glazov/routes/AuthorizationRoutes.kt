@@ -58,7 +58,8 @@ fun Routing.authRoutes(
                 token = token,
                 personId = person.id,
                 clientId = associatedClient?.id,
-                employeeId = associatedEmployee?.id
+                employeeId = associatedEmployee?.id,
+                employeeRoles = associatedEmployee?.roles
             )
         )
     }
