@@ -18,7 +18,7 @@ fun Route.notificationsRoutes(
 
         get("$PATH/get-topics") {
             val includeClientTopics = call.request.headers["include_client"].toBoolean()
-            val includeEmployeeTopics = call.request.headers["employee_id"].toBoolean()
+            val includeEmployeeTopics = call.request.headers["include_employee"].toBoolean()
             call.respond(
                 SimpleResponse(
                     data = NotificationTopic.all(
@@ -83,7 +83,7 @@ fun Route.notificationsRoutes(
             )
         }
 
-        put("$PATH/update-client-subscribed-topics") {
+        put("$PATH/update-person-subscribed-topics") {
             val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
