@@ -1,19 +1,20 @@
-package net.glazov.data.datasource
+package net.glazov.data.datasource.users
 
-import net.glazov.data.model.ClientModel
+import net.glazov.data.model.ClientModelOld
 import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 
-interface ClientsDataSource {
+@Deprecated("use new data sources instead", level = DeprecationLevel.WARNING)
+interface ClientsDataSourceOld {
 
-    suspend fun getAllClients(): List<ClientModel>
+    suspend fun getAllClients(): List<ClientModelOld>
 
     suspend fun createClient(
-        clientModel: ClientModel
-    ): ClientModel?
+        clientModelOld: ClientModelOld
+    ): ClientModelOld?
 
     suspend fun getClientById(
         clientId: String
-    ): ClientModel?
+    ): ClientModelOld?
 
     suspend fun getClientNameById(
         clientId: String,
@@ -23,7 +24,7 @@ interface ClientsDataSource {
     suspend fun login(
         login: String?,
         password: String?
-    ): ClientModel?
+    ): ClientModelOld?
 
     suspend fun addFcmToken(
         userId: String,

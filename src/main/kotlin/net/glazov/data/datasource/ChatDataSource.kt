@@ -19,7 +19,10 @@ interface ChatDataSource {
     ): SupportRequestModel?
 
     suspend fun createNewRequest(
-        newRequest: SupportRequestModel
+        clientId: String,
+        title: String,
+        text: String,
+        isNotificationEnabled: Boolean
     ): SupportRequestModel?
 
     suspend fun addMessageToRequest(

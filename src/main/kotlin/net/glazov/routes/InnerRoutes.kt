@@ -16,7 +16,7 @@ fun Route.innerRoutes(
     innerData: InnerDataSource
 ) {
 
-    authenticate("admin") {
+    authenticate("employee") {
 
         authenticate("glazov-net-oauth") {
 

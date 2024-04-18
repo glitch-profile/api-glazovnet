@@ -33,7 +33,7 @@ fun Routing.utilRoutes(
         }
     }
 
-    authenticate("admin") {
+    authenticate("employee") {
 
         post("$PATH/upload-files") {
             val requestLength = call.request.headers["content-length"]!!.toLong()

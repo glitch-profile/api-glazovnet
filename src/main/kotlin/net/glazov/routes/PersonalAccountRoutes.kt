@@ -5,16 +5,49 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.ClientsDataSource
+import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.response.SimpleResponse
 
 private const val PATH = "/api/account"
 
 fun Route.personalAccountRoutes(
+    persons: PersonsDataSource,
     clients: ClientsDataSource
 ) {
 
     authenticate {
+
+        put("$PATH/update-password") {
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val oldPassword = call.request.headers["old_password"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val newPassword = call.request.headers["new_password"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val result = persons.changeAccountPassword(
+                personId = personId,
+                oldPassword = oldPassword,
+                newPassword = newPassword
+            )
+            call.respond(
+                SimpleResponse(
+                    status = result,
+                    message = if (result) "password updated" else "unable to update password",
+                    data = Unit
+                )
+            )
+        }
+
+    }
+
+    authenticate("client") {
 
         get("$PATH/info") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
@@ -43,38 +76,11 @@ fun Route.personalAccountRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val result = clients.changeTariff(userId = clientId, newTariffId = tariffId)
+            val result = clients.changeTariff(clientId = clientId, newTariffId = tariffId)
             call.respond(
                 SimpleResponse(
                     status = result,
                     message = if (result) "tariff updated" else "unable to update tariff",
-                    data = Unit
-                )
-            )
-        }
-
-        put("$PATH/update-password") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            val oldPassword = call.request.headers["old_password"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            val newPassword = call.request.headers["new_password"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            val result = clients.changeAccountPassword(
-                userId = clientId,
-                oldPassword = oldPassword,
-                newPassword = newPassword
-            )
-            call.respond(
-                SimpleResponse(
-                    status = result,
-                    message = if (result) "password updated" else "unable to update password",
                     data = Unit
                 )
             )
@@ -86,7 +92,7 @@ fun Route.personalAccountRoutes(
                 return@put
             }
             val result = clients.setIsAccountActive(
-                userId = clientId,
+                clientId = clientId,
                 newStatus = false
             )
             call.respond(
@@ -111,7 +117,7 @@ fun Route.personalAccountRoutes(
             val note = call.request.queryParameters["note"]
             try {
                 clients.addPositiveTransaction(
-                    userId = clientId,
+                    clientId = clientId,
                     amount = amount,
                     note = note
                 )

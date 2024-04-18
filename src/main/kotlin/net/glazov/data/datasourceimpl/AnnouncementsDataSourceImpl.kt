@@ -4,9 +4,9 @@ import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.AnnouncementsDataSource
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.model.AnnouncementModel
-import net.glazov.data.model.ClientModel
+import net.glazov.data.model.users.ClientModel
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -29,21 +29,15 @@ class AnnouncementsDataSourceImpl(
     }
 
     override suspend fun getAnnouncementForClient(
-        clientId: String,
-        isAdmin: Boolean
+        clientId: String
     ): List<AnnouncementModel> {
-        return if (!isAdmin) {
-            val client = clients.getClientById(clientId)
-            if (client != null) {
-                val address = client.address
-                val announcementList = getAnnouncementsByAddress(
-                    city = address.cityName,
-                    street = address.streetName,
-                    houseNumber = address.houseNumber
-                )
-                announcementList
-            } else emptyList()
-        } else emptyList()
+        val client = clients.getClientById(clientId) ?: return emptyList()
+        val address = client.address
+        return getAnnouncementsByAddress(
+            city = address.cityName,
+            street = address.streetName,
+            houseNumber = address.houseNumber
+        )
     }
 
     private suspend fun getAnnouncementsByAddress(

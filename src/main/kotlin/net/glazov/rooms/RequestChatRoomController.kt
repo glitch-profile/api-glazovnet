@@ -3,9 +3,8 @@ package net.glazov.rooms
 import io.ktor.websocket.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.glazov.data.datasource.AdminsDataSource
 import net.glazov.data.datasource.ChatDataSource
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.requests.MessageModel
 import net.glazov.data.utils.notificationsmanager.Deeplink
 import net.glazov.data.utils.notificationsmanager.NotificationChannel
@@ -15,8 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class RequestChatRoomController(
     private val chat: ChatDataSource,
-    private val clients: ClientsDataSource,
-    private val admins: AdminsDataSource,
+    private val persons: PersonsDataSource,
     private val notificationsManager: NotificationsManager
 ) {
 
@@ -24,11 +22,10 @@ class RequestChatRoomController(
 
     suspend fun onJoin(
         requestId: String,
-        memberId: String,
-        isAdmin: Boolean,
+        personId: String,
         memberSocket: WebSocketSession
     ) {
-        if (requests[requestId]?.containsKey(memberId) == true) {
+        if (requests[requestId]?.containsKey(personId) == true) {
             throw MemberAlreadyExistException()
         } else {
             if (!requests.containsKey(requestId)) {
@@ -37,12 +34,11 @@ class RequestChatRoomController(
                     value = ConcurrentHashMap<String, ChatMember>()
                 )
             }
-            val memberName = if (isAdmin) admins.getAdminNameById(memberId, true)
-            else clients.getClientNameById(memberId, true)
+            val memberName = persons.getNameById(personId, true)
             requests[requestId]!!.put(
-                memberId,
+                personId,
                 ChatMember(
-                    memberId = memberId,
+                    memberId = personId,
                     memberName = memberName,
                     socket = memberSocket
                 )
@@ -100,7 +96,6 @@ class RequestChatRoomController(
         }
     }
 
-
     //TODO rework notifications logic. Maybe replace to other file
     private suspend fun sendPushNotification(
         requestId: String,
@@ -113,9 +108,9 @@ class RequestChatRoomController(
         val isSendByRequestCreator = request.creatorId == senderId
         val isOwnerOnline = currentMembersInChat.contains(request.creatorId)
         if (!isSendByRequestCreator && !isOwnerOnline && isNotificationsEnabled) {
-            val clientFcmToken = clients.getClientById(request.creatorId)?.fcmTokensList ?: return
-            notificationsManager.sendTranslatableNotificationToClientsByTokens(
-                clientsTokensLists = listOf(clientFcmToken),
+            val clientFcmToken = persons.getPersonById(request.creatorId)?.fcmTokensList ?: return
+            notificationsManager.sendTranslatableNotificationByTokens(
+                personsTokensList = listOf(clientFcmToken),
                 translatableData = TranslatableNotificationData.NewChatMessage(
                     requestTitle = request.title,
                     messageText = messageText

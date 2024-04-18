@@ -5,7 +5,7 @@ import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
 
 @Serializable
-data class ClientModel(
+data class ClientModelOld(
     @BsonId
     val id: String = ObjectId().toString(),
     val profileAvatar: String? = null, //Аватар профиля

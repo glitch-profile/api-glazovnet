@@ -1,8 +1,9 @@
-package net.glazov.data.datasource
+package net.glazov.data.datasource.users
 
 import net.glazov.data.model.AdminModel
 
-interface AdminsDataSource {
+@Deprecated("use new data sources instead", level = DeprecationLevel.WARNING)
+interface AdminsDataSourceOld {
 
     suspend fun addAdmin(
         adminModel: AdminModel

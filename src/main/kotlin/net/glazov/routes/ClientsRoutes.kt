@@ -6,9 +6,9 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import net.glazov.data.datasource.ClientsDataSource
-import net.glazov.data.model.ClientModel
+import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.model.users.ClientModel
 
 private const val PATH = "/api/clients"
 
@@ -16,16 +16,18 @@ fun Route.clientsRoutes(
     clients: ClientsDataSource
 ) {
 
-    authenticate("admin") {
+    authenticate("employee") {
 
         post("$PATH/create") {
-            val clientModel = try {
-                call.receive<ClientModel>()
-            } catch (e: ContentTransformationException) {
+            val client = call.receiveNullable<ClientModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val newClient = clients.createClient(clientModel)
+            val newClient = clients.addClient(
+                associatedPersonId = client.personId,
+                accountNumber = client.accountNumber,
+                address = client.address
+            )
             val status = newClient != null
             call.respond(
                 SimpleResponse(

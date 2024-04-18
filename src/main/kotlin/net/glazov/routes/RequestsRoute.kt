@@ -3,7 +3,6 @@ package net.glazov.routes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -11,10 +10,11 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 import net.glazov.data.datasource.ChatDataSource
-import net.glazov.data.datasourceimpl.RequestNotFoundException
+import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.requests.SupportRequestModel
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.rooms.MemberAlreadyExistException
 import net.glazov.rooms.RequestChatRoomController
 import net.glazov.rooms.RequestsRoomController
@@ -24,76 +24,78 @@ private const val PATH = "/api/support"
 fun Route.requestsRoute(
     requestsRoomController: RequestsRoomController,
     requestChatRoomController: RequestChatRoomController,
-    chat: ChatDataSource
+    chat: ChatDataSource,
+    employees: EmployeesDataSource
 ) {
 
-    authenticate {
+    authenticate("client") {
 
         webSocket("$PATH/requests-socket") {
-            val principal = call.principal<JWTPrincipal>()
-            val memberId = principal!!.payload.getClaim("user_id").asString()
-            if (memberId != null) {
-                try {
-                    requestsRoomController.onJoin(
-                        memberId = memberId,
-                        socket = this
-                    )
-                    incoming.consumeEach {  }
-                } catch (e: MemberAlreadyExistException) {
-                    call.respond(HttpStatusCode.Conflict)
-                } catch (e: Exception) {
-                    call.respond(HttpStatusCode.ServiceUnavailable)
-                } finally {
-                    requestsRoomController.tryDisconnect(memberId)
-                }
-            } else {
-                call.respond(HttpStatusCode.Unauthorized)
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@webSocket
+            }
+            try {
+                requestsRoomController.onJoin(
+                    memberId = personId,
+                    socket = this
+                )
+                incoming.consumeEach {  }
+            } catch (e: MemberAlreadyExistException) {
+                call.respond(HttpStatusCode.Conflict)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.ServiceUnavailable)
+            } finally {
+                requestsRoomController.tryDisconnect(personId)
             }
         }
 
         webSocket("$PATH/requests/{request_id}/chat-socket") {
-            val requestId = call.parameters["request_id"]
-            val principal = call.principal<JWTPrincipal>()
-            val memberId = principal!!.payload.getClaim("user_id").asString()
-            val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
-            if (memberId != null && requestId != null) {
-                try {
-                    requestChatRoomController.onJoin(
-                        requestId = requestId,
-                        memberId = memberId,
-                        isAdmin = isAdmin,
-                        memberSocket = this
-                    )
-                    incoming.consumeEach {frame ->
-                        if (frame is Frame.Text) {
-                            try {
-                                val messageText = frame.readText()
-                                requestChatRoomController.sendMessage(
-                                    requestId = requestId,
-                                    senderId = memberId,
-                                    message = messageText
-                                )
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@webSocket
+            }
+            val requestId = call.parameters["request_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@webSocket
+            }
+            try {
+                requestChatRoomController.onJoin(
+                    requestId = requestId,
+                    personId = personId,
+                    memberSocket = this
+                )
+                incoming.consumeEach {frame ->
+                    if (frame is Frame.Text) {
+                        try {
+                            val messageText = frame.readText()
+                            requestChatRoomController.sendMessage(
+                                requestId = requestId,
+                                senderId = personId,
+                                message = messageText
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
                     }
-                } catch (e: MemberAlreadyExistException) {
-                    call.respond(HttpStatusCode.Conflict)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    requestChatRoomController.tryDisconnect(
-                        requestId = requestId,
-                        memberId = memberId
-                    )
                 }
-            } else call.respond(HttpStatusCode.BadRequest)
+            } catch (e: MemberAlreadyExistException) {
+                call.respond(HttpStatusCode.Conflict)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                requestChatRoomController.tryDisconnect(
+                    requestId = requestId,
+                    memberId = personId
+                )
+            }
         }
 
         get("$PATH/requests") {
-            val principal = call.principal<JWTPrincipal>()
-            val clientId = principal!!.payload.getClaim("user_id").asString()
+            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
             val requests = chat.getRequestsForClient(clientId)
             call.respond(
                 SimpleResponse(
@@ -106,12 +108,14 @@ fun Route.requestsRoute(
 
         get("$PATH/requests/{request_id}") {
             val requestId = call.parameters["request_id"] ?: ""
-            val principal = call.principal<JWTPrincipal>()
-            val clientId = principal!!.payload.getClaim("user_id").asString()
-            val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
+            val clientId = call.request.headers["client_id"]
+            var isEmployeeWithRole = false
+            call.request.headers["employee_Id"]?.let {
+                isEmployeeWithRole = employees.checkEmployeeRole(it, EmployeeRoles.SUPPORT_CHAT)
+            }
             val request = chat.getRequestById(requestId)
             if (request != null) {
-                if (isAdmin || clientId == request.creatorId) {
+                if (isEmployeeWithRole || clientId == request.creatorId) {
                     val requestToRespond = request.copy(messages = emptyList())
                     call.respond(
                         SimpleResponse(
@@ -126,12 +130,14 @@ fun Route.requestsRoute(
 
         get("$PATH/requests/{request_id}/messages") {
             val requestId = call.parameters["request_id"] ?: ""
-            val principal = call.principal<JWTPrincipal>()
-            val clientId = principal!!.payload.getClaim("user_id").asString()
-            val isAdmin = principal.payload.getClaim("is_admin").asBoolean()
+            val clientId = call.request.headers["client_id"]
+            var isEmployeeWithRole = false
+            call.request.headers["employee_Id"]?.let {
+                isEmployeeWithRole = employees.checkEmployeeRole(it, EmployeeRoles.SUPPORT_CHAT)
+            }
             val request = chat.getRequestById(requestId)
             if (request != null) {
-                if (isAdmin || clientId == request.creatorId) {
+                if (isEmployeeWithRole || clientId == request.creatorId) {
                     val messages = request.messages.sortedByDescending { it.timestamp }
                     call.respond(
                         SimpleResponse(
@@ -145,15 +151,18 @@ fun Route.requestsRoute(
         }
 
         post("$PATH/create-request") {
-            val newRequest = try {
-                call.receive<SupportRequestModel>()
-            } catch (e: ContentTransformationException) {
+            val newRequest = call.receiveNullable<SupportRequestModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val request = chat.createNewRequest(newRequest)
+            val request = chat.createNewRequest(
+                clientId = newRequest.creatorId,
+                title = newRequest.title,
+                text = newRequest.description,
+                isNotificationEnabled = newRequest.isNotificationsEnabled
+            )
             if (request != null) {
-                requestsRoomController.addRequest(request)
+                requestsRoomController.sendRequestToSocket(request)
                 call.respond(
                     SimpleResponse(
                         status = true,
@@ -162,37 +171,22 @@ fun Route.requestsRoute(
                     )
                 )
             } else {
-                call.respond(HttpStatusCode.InternalServerError)
-            }
-        }
-
-        put("$PATH/requests/{request_id}/set-status") {
-            val requestId = call.parameters["request_id"]
-            val newStatusCode = call.request.headers["new_status"]
-            try {
-                if (requestId != null && newStatusCode != null) {
-                    val status = chat.changeRequestStatus(requestId, newStatusCode.toInt())
-                    if (status) {
-                        val request = chat.getRequestById(requestId)
-                        requestsRoomController.addRequest(request!!)
-                    }
-                    call.respond(
-                        SimpleResponse(
-                            status = status,
-                            message = if (status) "request updated" else "failed to update request",
-                            data = Unit
-                        )
-                    )
-                } else call.respond(HttpStatusCode.BadRequest)
-            } catch (e: RequestNotFoundException) {
                 call.respond(HttpStatusCode.NotFound)
             }
         }
     }
 
-    authenticate("admin") {
+    authenticate("employee") {
 
         get("$PATH/all-requests") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.SUPPORT_CHAT)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@get
+            }
             val requestsList = chat.getAllRequests(listOf(RequestsStatus.Active, RequestsStatus.InProgress))
             call.respond(
                 SimpleResponse(
@@ -204,25 +198,58 @@ fun Route.requestsRoute(
         }
 
         put("$PATH/requests/{request_id}/set-helper") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.SUPPORT_CHAT)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@put
+            }
             val requestId = call.parameters["request_id"]
-            val newHelperId = call.request.headers["new_helper_id"]
-            try {
-                if (requestId != null && newHelperId != null) {
-                    val status = chat.changeRequestHelper(requestId, newHelperId)
-                    if (status) {
-                        val request = chat.getRequestById(requestId)
-                        requestsRoomController.addRequest(request!!)
-                    }
-                    call.respond(
-                        SimpleResponse(
-                            status = status,
-                            message = if (status) "request updated" else "failed to update request",
-                            data = Unit
-                        )
+            if (requestId != null) {
+                val status = chat.changeRequestHelper(requestId, employeeId)
+                if (status) {
+                    val request = chat.getRequestById(requestId)
+                    requestsRoomController.sendRequestToSocket(request!!)
+                }
+                call.respond(
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "request updated" else "failed to update request",
+                        data = Unit
                     )
-                } else call.respond(HttpStatusCode.BadRequest)
-            } catch (e: RequestNotFoundException) {
-                call.respond(HttpStatusCode.NotFound)
+                )
+            } else call.respond(HttpStatusCode.NotFound)
+        }
+
+        put("$PATH/requests/{request_id}/set-status") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.SUPPORT_CHAT)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@put
+            }
+            val requestId = call.parameters["request_id"]
+            val newStatusCode = call.request.headers["new_status"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            if (requestId != null) {
+                val status = chat.changeRequestStatus(requestId, newStatusCode.toInt())
+                if (status) {
+                    val request = chat.getRequestById(requestId)
+                    requestsRoomController.sendRequestToSocket(request!!)
+                }
+                call.respond(
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "request updated" else "failed to update request",
+                        data = Unit
+                    )
+                )
             }
         }
     }

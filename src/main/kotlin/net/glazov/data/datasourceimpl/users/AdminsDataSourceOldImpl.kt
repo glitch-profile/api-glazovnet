@@ -1,20 +1,20 @@
-package net.glazov.data.datasourceimpl
+package net.glazov.data.datasourceimpl.users
 
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
-import net.glazov.data.datasource.AdminsDataSource
+import net.glazov.data.datasource.users.AdminsDataSourceOld
 import net.glazov.data.model.AdminModel
 import org.bson.types.ObjectId
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class AdminsDataSourceImpl(
+class AdminsDataSourceOldImpl(
     private val db: MongoDatabase
-): AdminsDataSource {
+): AdminsDataSourceOld {
 
     private val admins = db.getCollection<AdminModel>("Admins")
 

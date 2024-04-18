@@ -3,10 +3,10 @@ package net.glazov.data.utils.notificationsmanager
 import com.google.firebase.messaging.AndroidConfig
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.Message
-import net.glazov.data.datasource.ClientsDataSource
+import net.glazov.data.datasource.users.PersonsDataSource
 
 class NotificationManagerImpl(
-    private val clients: ClientsDataSource,
+    private val persons: PersonsDataSource
 ): NotificationsManager {
 
     private fun generateAndroidDataConfig(
@@ -54,22 +54,22 @@ class NotificationManagerImpl(
             .build()
     }
 
-    override suspend fun sendTranslatableNotificationToClientsByTopic(
+    override suspend fun sendTranslatableNotificationByTopic(
         topic: NotificationsTopicsCodes,
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
         notificationChannel: NotificationChannel,
         deepLink: Deeplink?
     ) {
-        val clientsTokens = clients.getClientsTokensWithSelectedTopic(topic)
-        if (clientsTokens.isNotEmpty()) {
+        val tokens = persons.getPersonTokensWithSelectedTopic(topic)
+        if (tokens.isNotEmpty()) {
             val androidConfig = generateAndroidDataConfig(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
                 notificationChannel = notificationChannel,
                 deepLink = deepLink?.route
             )
-            val messagesList = clientsTokens.flatten().map { token ->
+            val messagesList = tokens.flatten().map { token ->
                 Message.builder()
                     .setAndroidConfig(androidConfig)
                     .setToken(token)
@@ -79,21 +79,21 @@ class NotificationManagerImpl(
         }
     }
 
-    override suspend fun sendTranslatableNotificationToClientsByTokens(
-        clientsTokensLists: List<List<String>>,
+    override suspend fun sendTranslatableNotificationByTokens(
+        personsTokensList: List<List<String>>,
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
         notificationChannel: NotificationChannel,
         deepLink: Deeplink?
     ) {
-        if (clientsTokensLists.isNotEmpty()) {
+        if (personsTokensList.isNotEmpty()) {
             val androidConfig = generateAndroidDataConfig(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
                 notificationChannel = notificationChannel,
                 deepLink = deepLink?.route
             )
-            val messagesList = clientsTokensLists.flatten().map { token ->
+            val messagesList = personsTokensList.flatten().map { token ->
                 Message.builder()
                     .setAndroidConfig(androidConfig)
                     .setToken(token)
@@ -103,24 +103,24 @@ class NotificationManagerImpl(
         }
     }
 
-    override suspend fun sendTranslatableNotificationToClientsById(
-        clientsId: List<String>,
+    override suspend fun sendTranslatableNotificationByPersonsId(
+        personsId: List<String>,
         translatableData: TranslatableNotificationData,
         imageUrl: String?,
         notificationChannel: NotificationChannel,
         deepLink: Deeplink?
     ) {
-        val clientsTokens = clientsId.mapNotNull { clientId ->
-            clients.getClientById(clientId)?.fcmTokensList
+        val personsTokens = personsId.mapNotNull { personId ->
+            persons.getPersonById(personId)?.fcmTokensList
         }
-        if (clientsTokens.isNotEmpty()) {
+        if (personsTokens.isNotEmpty()) {
             val androidConfig = generateAndroidDataConfig(
                 translatableData = translatableData,
                 imageUrl = imageUrl,
                 notificationChannel = notificationChannel,
                 deepLink = deepLink?.route
             )
-            val messagesList = clientsTokens.flatten().map { token ->
+            val messagesList = personsTokens.flatten().map { token ->
                 Message.builder()
                     .setAndroidConfig(androidConfig)
                     .setToken(token)

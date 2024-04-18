@@ -28,7 +28,7 @@ fun Application.configureAuthentication() {
                     .build()
             )
             validate { credential ->
-                if ( (credential.payload.getClaim("user_id").asString()) != "" ) {
+                if (!credential.payload.getClaim("person_id").isNull) {
                     JWTPrincipal(credential.payload)
                 } else {
                     null
@@ -38,7 +38,7 @@ fun Application.configureAuthentication() {
                 call.respond(HttpStatusCode.Unauthorized)
             }
         }
-        jwt("admin") {
+        jwt("client") {
             realm = authRealm
             verifier(
                 JWT
@@ -47,7 +47,28 @@ fun Application.configureAuthentication() {
                     .build()
             )
             validate { credential ->
-                if (credential.payload.getClaim("is_admin").asBoolean() == true) {
+                if (!credential.payload.getClaim("client_id").isNull
+                    && !credential.payload.getClaim("person_id").isNull) {
+                    JWTPrincipal(credential.payload)
+                } else {
+                    null
+                }
+            }
+            challenge { _, _ ->
+                call.respond(HttpStatusCode.Forbidden)
+            }
+        }
+        jwt("employee") {
+            realm = authRealm
+            verifier(
+                JWT
+                    .require(Algorithm.HMAC256(secret))
+                    .withIssuer(issuer)
+                    .build()
+            )
+            validate { credential ->
+                if (!credential.payload.getClaim("employee_id").isNull
+                    && !credential.payload.getClaim("person_id").isNull) {
                     JWTPrincipal(credential.payload)
                 } else {
                     null
