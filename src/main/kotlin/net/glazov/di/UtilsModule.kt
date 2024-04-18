@@ -23,7 +23,7 @@ val utilsModule = module {
     }
     single<NotificationsManager> {
         NotificationManagerImpl(
-            clients = get()
+            persons = get()
         )
     }
 

@@ -13,8 +13,7 @@ val roomControllersModule = module {
     single<RequestChatRoomController> {
         RequestChatRoomController(
             chat = get(),
-            clients = get(),
-            admins = get(),
+            persons = get(),
             notificationsManager = get()
         )
     }
