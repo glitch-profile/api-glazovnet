@@ -13,6 +13,12 @@ sealed class TranslatableNotificationData(
         titleArgs = listOf(postTitle),
         body = postBody
     )
+    data class NewServicePost(val postTitle: String?, val postBody: String): TranslatableNotificationData(
+        titleResource = if (postTitle != null) "notifications_new_service_post_title_with_arg"
+            else "notifications_new_service_post_title",
+        titleArgs = if (postTitle != null) listOf(postTitle) else null,
+        body = postBody
+    )
     data class NewTariff(val tariffName: String): TranslatableNotificationData(
         titleResource = "notifications_new_tariff_title",
         titleArgs = listOf(tariffName),
