@@ -54,12 +54,16 @@ fun Routing.authRoutes(
             .withExpiresAt(expireDateInstant)
             .sign(Algorithm.HMAC256(secret))
         call.respond(
-            AuthResponseModel(
-                token = token,
-                personId = person.id,
-                clientId = associatedClient?.id,
-                employeeId = associatedEmployee?.id,
-                employeeRoles = associatedEmployee?.roles
+            SimpleResponse(
+                status = true,
+                data = AuthResponseModel(
+                    token = token,
+                    personId = person.id,
+                    clientId = associatedClient?.id,
+                    employeeId = associatedEmployee?.id,
+                    employeeRoles = associatedEmployee?.roles
+                ),
+                message = "login success"
             )
         )
     }
