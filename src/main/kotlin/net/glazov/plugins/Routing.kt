@@ -3,10 +3,15 @@ package net.glazov.plugins
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.glazov.data.datasource.*
 import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
+import net.glazov.data.model.AddressModel
+import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.data.utils.filemanager.FileManager
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
 import net.glazov.rooms.RequestChatRoomController
@@ -51,5 +56,25 @@ fun Application.configureRouting() {
         //testRoutes()
         innerRoutes(innerData = innerDataSource)
     }
+
+//    val scope = CoroutineScope(Dispatchers.Default)
+//    scope.launch {
+//        val person = personsDataSource.addPerson(
+//            firstName = "Тест2",
+//            lastName = "Тест2",
+//            middleName = "Тест2",
+//            login = "456",
+//            password = "456"
+//        )
+//        val client = clientsDataSource.addClient(
+//            associatedPersonId = person!!.id,
+//            accountNumber = "0005",
+//            address = AddressModel()
+//        )
+//        val employee = employeesDataSource.addEmployee(
+//            associatedPersonId = person!!.id,
+//            roles = listOf(EmployeeRoles.NEWS, EmployeeRoles.ANNOUNCEMENTS, EmployeeRoles.SUPPORT_CHAT)
+//        )
+//    }
 
 }

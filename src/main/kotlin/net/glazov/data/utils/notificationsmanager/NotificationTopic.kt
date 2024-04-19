@@ -34,9 +34,9 @@ data class NotificationTopic(
             includeEmployeeTopics: Boolean
         ): List<NotificationTopic> {
             val visibilityList = buildList<NotificationTopicVisibility> {
-                NotificationTopicVisibility.DEFAULT
-                if (includeClientTopics) NotificationTopicVisibility.CLIENT
-                if (includeEmployeeTopics) NotificationTopicVisibility.EMPLOYEE
+                add(NotificationTopicVisibility.DEFAULT)
+                if (includeClientTopics) add(NotificationTopicVisibility.CLIENT)
+                if (includeEmployeeTopics) add(NotificationTopicVisibility.EMPLOYEE)
             }
 
             val news = NotificationTopic(
@@ -79,7 +79,7 @@ data class NotificationTopic(
             )
 
             val filteredList = listOf(news, tariffs, announcements, serviceNews, accountWarnings).filter { topic ->
-                visibilityList.any { it == topic.visibility }
+                visibilityList.contains(topic.visibility)
             }
             return filteredList
         }
