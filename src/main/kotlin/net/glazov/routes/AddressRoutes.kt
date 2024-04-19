@@ -69,7 +69,14 @@ fun Route.addressRoutes(
         }
 
         get("$PATH/addresses") {
-
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ADDRESSES)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@get
+            }
             val city = call.request.queryParameters["city"]
             val street = call.request.queryParameters["street"]
             if (city != null && street != null) {

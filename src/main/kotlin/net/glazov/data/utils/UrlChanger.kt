@@ -5,7 +5,7 @@ import io.ktor.server.config.*
 object UrlChanger {
 
     private val enabled =
-        ApplicationConfig(null).tryGetString("misc.is_url_changer_active")?.toBooleanStrict() ?: true
+        ApplicationConfig(null).tryGetString("misc.is_url_changer_active")?.toBooleanStrict() ?: false
 
     fun toCurrentUrl(sourcePath: String): String {
         return if (enabled) {

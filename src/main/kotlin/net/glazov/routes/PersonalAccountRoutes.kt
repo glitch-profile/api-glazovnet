@@ -114,7 +114,7 @@ fun Route.personalAccountRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val note = call.request.queryParameters["note"]
+            val note = call.request.headers["note"]
             try {
                 clients.addPositiveTransaction(
                     clientId = clientId,

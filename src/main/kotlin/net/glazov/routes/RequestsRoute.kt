@@ -28,7 +28,7 @@ fun Route.requestsRoute(
     employees: EmployeesDataSource
 ) {
 
-    authenticate("client") {
+    authenticate("client", "employee") {
 
         webSocket("$PATH/requests-socket") {
             val personId = call.request.headers["person_id"] ?: kotlin.run {
@@ -40,7 +40,7 @@ fun Route.requestsRoute(
                     memberId = personId,
                     socket = this
                 )
-                incoming.consumeEach {  }
+                incoming.consumeEach { }
             } catch (e: MemberAlreadyExistException) {
                 call.respond(HttpStatusCode.Conflict)
             } catch (e: Exception) {
@@ -65,7 +65,7 @@ fun Route.requestsRoute(
                     personId = personId,
                     memberSocket = this
                 )
-                incoming.consumeEach {frame ->
+                incoming.consumeEach { frame ->
                     if (frame is Frame.Text) {
                         try {
                             val messageText = frame.readText()
@@ -89,21 +89,6 @@ fun Route.requestsRoute(
                     memberId = personId
                 )
             }
-        }
-
-        get("$PATH/requests") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
-            val requests = chat.getRequestsForClient(clientId)
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = "requests retrieved",
-                    data = requests
-                )
-            )
         }
 
         get("$PATH/requests/{request_id}") {
@@ -148,6 +133,24 @@ fun Route.requestsRoute(
                     )
                 } else call.respond(HttpStatusCode.Forbidden)
             } else call.respond(HttpStatusCode.NotFound)
+        }
+    }
+
+    authenticate("client") {
+
+        get("$PATH/requests") {
+            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val requests = chat.getRequestsForClient(clientId)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "requests retrieved",
+                    data = requests
+                )
+            )
         }
 
         post("$PATH/create-request") {
