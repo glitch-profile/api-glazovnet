@@ -4,7 +4,11 @@ import net.glazov.data.model.TariffModel
 
 interface TariffsDataSource {
 
-    suspend fun getAllTariffs(): List<TariffModel>
+    suspend fun getAllTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
+
+    suspend fun getActiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
+
+    suspend fun getArchiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
 
     suspend fun getTariffById(tariffId: String): TariffModel?
 

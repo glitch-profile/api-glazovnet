@@ -13,8 +13,36 @@ class TariffsDataSourceImpl(
 
     private val tariffs = db.getCollection<TariffModel>("Tariffs")
 
-    override suspend fun getAllTariffs(): List<TariffModel> {
-        return tariffs.find().toList().asReversed()
+    override suspend fun getAllTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
+        return if (includeOrganizationTariffs) {
+            tariffs.find().toList().reversed()
+        } else {
+            val filter = Filters.eq(TariffModel::isForOrganization.name, false)
+            tariffs.find(filter).toList().reversed()
+        }
+    }
+
+    override suspend fun getActiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
+        val filter = Filters.or(
+            Filters.eq(TariffModel::categoryCode.name, 0),
+            Filters.eq(TariffModel::categoryCode.name, 1)
+        )
+        val organisationFilter = Filters.and(
+            filter, Filters.eq(TariffModel::isForOrganization.name, false)
+        )
+        return if (includeOrganizationTariffs) {
+            tariffs.find(filter).toList().reversed()
+        } else tariffs.find(organisationFilter).toList().reversed()
+    }
+
+    override suspend fun getArchiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
+        val filter = Filters.eq(TariffModel::categoryCode.name, 2)
+        val organisationFilter = Filters.and(
+            filter, Filters.eq(TariffModel::isForOrganization.name, false)
+        )
+        return if (includeOrganizationTariffs) {
+            tariffs.find(filter).toList().reversed()
+        } else tariffs.find(organisationFilter).toList().reversed()
     }
 
     override suspend fun getTariffById(tariffId: String): TariffModel? {

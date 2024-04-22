@@ -5,12 +5,12 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.server.config.*
 import net.glazov.data.datasource.InnerDataSource
-import net.glazov.data.mappers.toTariffModel
 import net.glazov.data.model.TariffModel
 import net.glazov.data.model.posts.InnerPostModel
 import net.glazov.rawdata.dto.InnerNewsDto
 import net.glazov.rawdata.dto.InnerTariffDto
 import net.glazov.rawdata.mappers.toInnerPostModel
+import net.glazov.rawdata.mappers.toTariffModel
 
 private const val NEWS_PATH = "api/v2/news"
 private const val TARIFFS_PATH = "api/v2/tariffs"
@@ -28,12 +28,33 @@ class InnerDataSourceImpl(
         return mappedPosts.reversed()
     }
 
-    override suspend fun getInnerTariffs(includeOrgTariffs: Boolean, showOnlyActive: Boolean): List<TariffModel> {
+    override suspend fun getAllInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
         val innerTariffs: List<InnerTariffDto> = client.get("$PATH_TEST/$TARIFFS_PATH").body()
         val filteredTariffs = innerTariffs.asSequence()
             .filter { it.name.isNotEmpty() }
-            .filter { if (showOnlyActive) it.active == "yes" else true }
-            .filter { if (!includeOrgTariffs) it.forOrg == "no" else true }
+            .filter { if (!includeOrganizationTariffs) it.forOrg == "no" else true }
+            .map { it.toTariffModel() }
+            .toList()
+        return filteredTariffs.reversed()
+    }
+
+    override suspend fun getActiveInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
+        val innerTariffs: List<InnerTariffDto> = client.get("$PATH_TEST/$TARIFFS_PATH").body()
+        val filteredTariffs = innerTariffs.asSequence()
+            .filter { it.name.isNotEmpty() }
+            .filter { it.active == "yes" }
+            .filter { if (!includeOrganizationTariffs) it.forOrg == "no" else true }
+            .map { it.toTariffModel() }
+            .toList()
+        return filteredTariffs.reversed()
+    }
+
+    override suspend fun getArchiveInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
+        val innerTariffs: List<InnerTariffDto> = client.get("$PATH_TEST/$TARIFFS_PATH").body()
+        val filteredTariffs = innerTariffs.asSequence()
+            .filter { it.name.isNotEmpty() }
+            .filter { it.active == "no" }
+            .filter { if (!includeOrganizationTariffs) it.forOrg == "no" else true }
             .map { it.toTariffModel() }
             .toList()
         return filteredTariffs.reversed()

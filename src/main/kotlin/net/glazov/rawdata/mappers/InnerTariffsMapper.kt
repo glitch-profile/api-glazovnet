@@ -1,4 +1,4 @@
-package net.glazov.data.mappers
+package net.glazov.rawdata.mappers
 
 import net.glazov.data.model.TariffModel
 import net.glazov.rawdata.dto.InnerTariffDto
@@ -10,12 +10,11 @@ fun InnerTariffDto.toTariffModel(): TariffModel {
     return TariffModel(
         id = this.id,
         name = this.name,
-        description = null,
         categoryCode = categoryCode,
         maxSpeed = this.speed.toInt(),
         costPerMonth = this.price.toInt(),
-        prepaidTraffic = this.trafficLimit.toInt(),
+        prepaidTraffic = if (categoryCode == 0) null else this.trafficLimit,
         prepaidTrafficDescription = null,
-        isForOrganisation = this.forOrg != "no"
-    )
+        isForOrganization = this.forOrg != "no"
+    ) //in kilobytes
 }

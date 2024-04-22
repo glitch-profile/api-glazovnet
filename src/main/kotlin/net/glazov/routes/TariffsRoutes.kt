@@ -3,9 +3,11 @@ package net.glazov.routes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.config.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.InnerDataSource
 import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.TariffModel
@@ -15,21 +17,51 @@ import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/tariffs"
+private val useInnerTariffs = ApplicationConfig(null).tryGetString("tariffs.use_inner_tariffs").toBoolean()
 
 fun Route.tariffsRoutes(
     tariffs: TariffsDataSource,
+    innerDataSource: InnerDataSource,
     notificationsManager: NotificationsManager,
     employees: EmployeesDataSource
 ) {
 
     authenticate {
-        get("$PATH/") {
-            val tariffsList = tariffs.getAllTariffs()
+        get(PATH) {
+            val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
+            val result = if (useInnerTariffs) innerDataSource.getAllInnerTariffs(isShowOrganizationTariffs)
+            else tariffs.getAllTariffs(isShowOrganizationTariffs)
             call.respond(
-                SimpleTariffResponse(
+                SimpleResponse(
                     status = true,
-                    message = "${tariffsList.size} tariffs retrieved",
-                    data = tariffsList
+                    message = "all tariffs received",
+                    data = result
+                )
+            )
+        }
+
+        get("$PATH/active") {
+            val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
+            val result = if (useInnerTariffs) innerDataSource.getActiveInnerTariffs(isShowOrganizationTariffs)
+            else tariffs.getActiveTariffs(isShowOrganizationTariffs)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "active tariffs received",
+                    data = result
+                )
+            )
+        }
+
+        get("$PATH/archive") {
+            val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
+            val result = if (useInnerTariffs) innerDataSource.getArchiveInnerTariffs(isShowOrganizationTariffs)
+            else tariffs.getArchiveTariffs(isShowOrganizationTariffs)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "archive tariffs received",
+                    data = result
                 )
             )
         }

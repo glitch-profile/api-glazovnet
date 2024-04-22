@@ -7,6 +7,10 @@ interface InnerDataSource {
 
     suspend fun getAllInnerPosts(): List<InnerPostModel>
 
-    suspend fun getInnerTariffs(includeOrgTariffs: Boolean, showOnlyActive: Boolean): List<TariffModel>
+    suspend fun getAllInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
+
+    suspend fun getActiveInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
+
+    suspend fun getArchiveInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
 
 }

@@ -9,11 +9,10 @@ data class TariffModel(
     @BsonId
     val id: String = ObjectId().toString(),
     val name: String,
-    val description: String?,
     val categoryCode: Int,
     val maxSpeed: Int,
     val costPerMonth: Int,
-    val prepaidTraffic: Int?,
+    val prepaidTraffic: Long?,
     val prepaidTrafficDescription: String?,
-    val isForOrganisation: Boolean = false
+    val isForOrganization: Boolean = false
 )
