@@ -63,4 +63,26 @@ fun Route.innerRoutes(
 
     }
 
+    get("$PATH/tariffs") {
+        try {
+            val tariffs = innerData.getInnerTariffs(false, true)
+            call.respond(
+                SimpleResponse(
+                    status = true,
+                    message = "inner tariffs retrieved",
+                    data = tariffs
+                )
+            )
+        } catch (e: ResponseException) {
+            println("ERROR - ${e.stackTrace}")
+            call.respond(
+                SimpleResponse(
+                    status = false,
+                    message = e.response.status.toString(),
+                    data = null
+                )
+            )
+        }
+    }
+
 }
