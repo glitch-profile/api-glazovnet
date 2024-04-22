@@ -68,9 +68,6 @@ fun Routing.authRoutes(
         )
     }
 
-    val guestLogin = ApplicationConfig(null).tryGetString("auth.guest_user_login")
-    val guestPassword = ApplicationConfig(null).tryGetString("auth.guest_user_password")
-
     post("$PATH/login/guest") {
         val expireDateInstant = OffsetDateTime.now(ZoneId.systemDefault()).plusMonths(6).toInstant()
         val token = JWT.create()

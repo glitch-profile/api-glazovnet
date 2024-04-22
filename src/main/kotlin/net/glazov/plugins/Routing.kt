@@ -40,7 +40,7 @@ fun Application.configureRouting() {
 
         authRoutes(personsDataSource, clientsDataSource, employeesDataSource)
         postRoutes(posts = postsDataSource, notificationManager, employeesDataSource)
-        tariffsRoutes(tariffsDataSource, notificationManager, employeesDataSource)
+        tariffsRoutes(tariffsDataSource, innerDataSource, notificationManager, employeesDataSource)
         addressRoutes(addressesDataSource, employeesDataSource)
         clientsRoutes(clientsDataSource)
         announcementsRoutes(announcementsDataSource, notificationManager, clientsDataSource, employeesDataSource)
