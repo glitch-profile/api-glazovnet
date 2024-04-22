@@ -10,7 +10,8 @@ import java.time.ZoneId
 data class SupportRequestModel(
     @BsonId
     val id: String = ObjectId().toString(),
-    val creatorId: String,
+    val creatorPersonId: String,
+    val creatorClientId: String,
     val creatorName: String,
     val associatedSupportId: String? = null,
     val title: String,

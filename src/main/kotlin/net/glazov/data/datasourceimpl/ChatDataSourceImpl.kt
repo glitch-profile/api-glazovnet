@@ -46,7 +46,7 @@ class ChatDataSourceImpl(
     }
 
     override suspend fun getRequestsForClient(clientId: String): List<SupportRequestModel> {
-        val filter = Filters.eq(SupportRequestModel::creatorId.name, clientId)
+        val filter = Filters.eq(SupportRequestModel::creatorClientId.name, clientId)
         return requests.find(filter).toList().sortedByDescending { it.creationDate }
     }
 
@@ -59,7 +59,8 @@ class ChatDataSourceImpl(
         val associatedPersonId = clients.getAssociatedPerson(clientId)?.id ?: return null
         val creatorName = persons.getNameById(associatedPersonId, useShortForm = false)
         val requestToInsert = SupportRequestModel(
-            creatorId = clientId,
+            creatorPersonId = associatedPersonId,
+            creatorClientId = clientId,
             creatorName = creatorName,
             title = title,
             description = text,

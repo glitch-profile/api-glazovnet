@@ -100,7 +100,7 @@ fun Route.requestsRoute(
             }
             val request = chat.getRequestById(requestId)
             if (request != null) {
-                if (isEmployeeWithRole || clientId == request.creatorId) {
+                if (isEmployeeWithRole || clientId == request.creatorClientId) {
                     val requestToRespond = request.copy(messages = emptyList())
                     call.respond(
                         SimpleResponse(
@@ -122,7 +122,7 @@ fun Route.requestsRoute(
             }
             val request = chat.getRequestById(requestId)
             if (request != null) {
-                if (isEmployeeWithRole || clientId == request.creatorId) {
+                if (isEmployeeWithRole || clientId == request.creatorClientId) {
                     val messages = request.messages.sortedByDescending { it.timestamp }
                     call.respond(
                         SimpleResponse(
@@ -159,7 +159,7 @@ fun Route.requestsRoute(
                 return@post
             }
             val request = chat.createNewRequest(
-                clientId = newRequest.creatorId,
+                clientId = newRequest.creatorClientId,
                 title = newRequest.title,
                 text = newRequest.description,
                 isNotificationEnabled = newRequest.isNotificationsEnabled
