@@ -68,4 +68,29 @@ fun Routing.authRoutes(
         )
     }
 
+    val guestLogin = ApplicationConfig(null).tryGetString("auth.guest_user_login")
+    val guestPassword = ApplicationConfig(null).tryGetString("auth.guest_user_password")
+
+    post("$PATH/login/guest") {
+        val expireDateInstant = OffsetDateTime.now(ZoneId.systemDefault()).plusMonths(6).toInstant()
+        val token = JWT.create()
+            .withIssuer(issuer)
+            .withClaim("person_id", "0")
+            .withExpiresAt(expireDateInstant)
+            .sign(Algorithm.HMAC256(secret))
+        call.respond(
+            SimpleResponse(
+                status = true,
+                message= "logged in as guest",
+                data = AuthResponseModel(
+                    token = token,
+                    personId = "0",
+                    clientId = null,
+                    employeeId = null,
+                    employeeRoles = null
+                )
+            )
+        )
+    }
+
 }
