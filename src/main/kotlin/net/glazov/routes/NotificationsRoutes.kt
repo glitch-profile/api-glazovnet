@@ -38,6 +38,7 @@ fun Route.notificationsRoutes(
             }
             val person = persons.getPersonById(personId)
             val topics = person?.selectedNotificationsTopics ?: emptyList()
+            println("getting topics - ${topics.size}")
             call.respond(
                 SimpleResponse(
                     data = topics,
@@ -90,6 +91,7 @@ fun Route.notificationsRoutes(
             }
             val topics = call.request.queryParameters["topics"]
             val topicsList = topics?.split(',') ?: emptyList()
+            println("topics list - ${topicsList.size}")
             val result = persons.updateNotificationTopics(personId, topicsList)
             call.respond(
                 SimpleResponse(
@@ -101,7 +103,7 @@ fun Route.notificationsRoutes(
         }
 
         put("$PATH/update-person-fcm-token") {
-            val personId = call.request.headers["personId"] ?: kotlin.run {
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
