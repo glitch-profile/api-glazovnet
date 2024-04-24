@@ -1,9 +1,13 @@
 package net.glazov.di
 
 import net.glazov.data.datasource.*
-import net.glazov.data.datasource.users.*
+import net.glazov.data.datasource.users.ClientsDataSource
+import net.glazov.data.datasource.users.EmployeesDataSource
+import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.datasourceimpl.*
-import net.glazov.data.datasourceimpl.users.*
+import net.glazov.data.datasourceimpl.users.ClientsDataSourceImpl
+import net.glazov.data.datasourceimpl.users.EmployeesDataSourceImpl
+import net.glazov.data.datasourceimpl.users.PersonsDataSourceImpl
 import org.koin.dsl.module
 
 val dataSourcesModule = module {
@@ -26,21 +30,6 @@ val dataSourcesModule = module {
     single<EmployeesDataSource> {
         EmployeesDataSourceImpl(get())
     }
-    //TODO: Remove this when implementation of new dataSources will be completed
-    single<ClientsDataSourceOld> {
-        ClientsDataSourceOldImpl(
-            db = get(),
-            addresses = get(),
-            transactions = get(),
-            transactionManager = get()
-        )
-    }
-    single<AdminsDataSourceOld> {
-        AdminsDataSourceOldImpl(
-            db = get()
-        )
-    }
-    // REMOVE UPPER SECTOR
     single<AnnouncementsDataSource> {
         AnnouncementsDataSourceImpl(
             db = get(),

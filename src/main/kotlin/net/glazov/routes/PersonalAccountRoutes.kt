@@ -6,6 +6,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.users.ClientsDataSource
+import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.response.SimpleResponse
 
@@ -13,7 +14,8 @@ private const val PATH = "/api/account"
 
 fun Route.personalAccountRoutes(
     persons: PersonsDataSource,
-    clients: ClientsDataSource
+    clients: ClientsDataSource,
+    employees: EmployeesDataSource
 ) {
 
     authenticate {
@@ -49,7 +51,7 @@ fun Route.personalAccountRoutes(
 
     authenticate("client") {
 
-        get("$PATH/info") {
+        get("$PATH/client-info") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
@@ -110,7 +112,7 @@ fun Route.personalAccountRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val amount = call.request.headers["amount"]?.toDoubleOrNull() ?: kotlin.run {
+            val amount = call.request.headers["amount"]?.toFloatOrNull() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
@@ -137,6 +139,24 @@ fun Route.personalAccountRoutes(
                     )
                 )
             }
+        }
+
+    }
+
+    authenticate("employee") {
+
+        get("$PATH/employee-info") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val employee = employees.getEmployeeById(employeeId) ?: kotlin.run {
+                call.respond(HttpStatusCode.NotFound)
+                return@get
+            }
+            call.respond(
+                SimpleResponse
+            )
         }
 
     }

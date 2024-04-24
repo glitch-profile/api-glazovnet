@@ -38,7 +38,6 @@ fun Route.notificationsRoutes(
             }
             val person = persons.getPersonById(personId)
             val topics = person?.selectedNotificationsTopics ?: emptyList()
-            println("getting topics - ${topics.size}")
             call.respond(
                 SimpleResponse(
                     data = topics,

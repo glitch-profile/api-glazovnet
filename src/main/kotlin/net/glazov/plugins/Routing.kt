@@ -47,7 +47,7 @@ fun Application.configureRouting() {
         requestsRoute(requestsRoomController, requestChatRoomController, chatDataSource, employeesDataSource)
         utilRoutes(fileManager)
         notificationsRoutes(personsDataSource)
-        personalAccountRoutes(personsDataSource, clientsDataSource)
+        personalAccountRoutes(personsDataSource, clientsDataSource, employeesDataSource)
         //testRoutes()
         innerRoutes(innerData = innerDataSource)
     }
