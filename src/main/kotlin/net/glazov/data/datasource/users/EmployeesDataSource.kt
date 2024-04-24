@@ -20,6 +20,6 @@ interface EmployeesDataSource {
 
     suspend fun updateRoles(employeeId: String, newRolesList: List<String>): Boolean
 
-    suspend fun addRating(employeeId: String, rating: Double): Boolean
+    suspend fun addRating(employeeId: String, rating: Int): Boolean
 
 }

@@ -8,7 +8,7 @@ interface TransactionsDataSource {
 
     suspend fun addTransaction(
         clientId: String,
-        amount: Double,
+        amount: Float,
         isIncoming: Boolean,
         note: String? = null,
         transactionTimestamp: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()

@@ -15,7 +15,7 @@ class TransactionsDataSourceImpl(
 
     override suspend fun addTransaction(
         clientId: String,
-        amount: Double,
+        amount: Float,
         isIncoming: Boolean,
         note: String?,
         transactionTimestamp: Long

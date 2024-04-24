@@ -58,8 +58,8 @@ class EmployeesDataSourceImpl(
         return employees.updateOne(filter, update).upsertedId != null
     }
 
-    override suspend fun addRating(employeeId: String, rating: Double): Boolean {
-        val normalizedRating = max(0.0, min(rating, 5.0))
+    override suspend fun addRating(employeeId: String, rating: Int): Boolean {
+        val normalizedRating = max(1, min(rating, 5))
         val filter = Filters.eq("_id", employeeId)
         val update = Updates.combine(
             Updates.inc(EmployeeModel::overallRating.name, rating),

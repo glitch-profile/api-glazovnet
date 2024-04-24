@@ -32,13 +32,13 @@ interface ClientsDataSource {
 
     suspend fun addPositiveTransaction(
         clientId: String,
-        amount: Double,
+        amount: Float,
         note: String? = null
     )
 
     suspend fun addNegativeTransaction(
         clientId: String,
-        amount: Double,
+        amount: Float,
         note: String? = null
     )
 

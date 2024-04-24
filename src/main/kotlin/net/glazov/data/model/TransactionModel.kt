@@ -10,7 +10,7 @@ data class TransactionModel(
     val id: String = ObjectId().toString(),
     val clientId: String,
     val transactionTimestamp: Long,
-    val amount: Double,
+    val amount: Float,
     val isIncoming: Boolean,
     val note: String?
 )

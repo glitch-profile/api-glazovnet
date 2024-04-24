@@ -10,7 +10,6 @@ import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.AddressModel
-import net.glazov.data.model.ClientModelOld
 import net.glazov.data.model.users.ClientModel
 import net.glazov.data.model.users.PersonModel
 import net.glazov.data.utils.paymentmanager.ClientNotFoundException
@@ -92,14 +91,14 @@ class ClientsDataSourceImpl(
         return result.upsertedId != null
     }
 
-    override suspend fun addPositiveTransaction(clientId: String, amount: Double, note: String?) {
+    override suspend fun addPositiveTransaction(clientId: String, amount: Float, note: String?) {
         val client = getClientById(clientId)
         if (client !== null) {
             val transactionResult = transactionManager.makeTransaction()
             if (transactionResult) {
                 val newBalance = client.balance + amount
                 val filter = Filters.eq("_id", clientId)
-                val update = Updates.set(ClientModelOld::balance.name, newBalance)
+                val update = Updates.set(ClientModel::balance.name, newBalance)
                 clients.updateOne(filter, update)
                 transactions.addTransaction(
                     clientId = clientId,
@@ -111,7 +110,7 @@ class ClientsDataSourceImpl(
         } else throw ClientNotFoundException()
     }
 
-    override suspend fun addNegativeTransaction(clientId: String, amount: Double, note: String?) {
+    override suspend fun addNegativeTransaction(clientId: String, amount: Float, note: String?) {
         val client = getClientById(clientId)
         if (client !== null) {
             val newBalance = client.balance - amount
@@ -119,7 +118,7 @@ class ClientsDataSourceImpl(
                 throw InsufficientFundsException()
             } else {
                 val filter = Filters.eq("_id", clientId)
-                val update = Updates.set(ClientModelOld::balance.name, newBalance)
+                val update = Updates.set(ClientModel::balance.name, newBalance)
                 clients.updateOne(filter, update)
                 transactions.addTransaction(
                     clientId = clientId,
