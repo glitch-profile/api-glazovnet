@@ -62,7 +62,7 @@ class EmployeesDataSourceImpl(
         val normalizedRating = max(1, min(rating, 5))
         val filter = Filters.eq("_id", employeeId)
         val update = Updates.combine(
-            Updates.inc(EmployeeModel::overallRating.name, rating),
+            Updates.inc(EmployeeModel::overallRating.name, normalizedRating),
             Updates.inc(EmployeeModel::numberOfRatings.name, 1)
         )
         val result = employees.updateOne(filter, update)
