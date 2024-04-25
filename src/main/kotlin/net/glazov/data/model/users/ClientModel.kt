@@ -1,12 +1,16 @@
 package net.glazov.data.model.users
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.glazov.data.model.AddressModel
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
+@Serializable
 data class ClientModel(
+    @Transient
     @BsonId
     val id: String = ObjectId().toString(),
     val personId: String,

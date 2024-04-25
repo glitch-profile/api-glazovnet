@@ -47,6 +47,24 @@ fun Route.personalAccountRoutes(
             )
         }
 
+        get("$PATH/person-info") {
+            val personId = call.request.headers["person_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val personInfo = persons.getPersonById(personId) ?: kotlin.run {
+                call.respond(HttpStatusCode.NotFound)
+                return@get
+            }
+            call.respond(
+                SimpleResponse(
+                    data = personInfo,
+                    message = "person retrieved",
+                    status = true
+                )
+            )
+        }
+
     }
 
     authenticate("client") {
@@ -155,7 +173,11 @@ fun Route.personalAccountRoutes(
                 return@get
             }
             call.respond(
-                SimpleResponse
+                SimpleResponse(
+                    status = true,
+                    message = "employee retrieved",
+                    data = employee
+                )
             )
         }
 
