@@ -23,10 +23,7 @@ class TariffsDataSourceImpl(
     }
 
     override suspend fun getActiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
-        val filter = Filters.or(
-            Filters.eq(TariffModel::categoryCode.name, 0),
-            Filters.eq(TariffModel::categoryCode.name, 1)
-        )
+        val filter = Filters.eq(TariffModel::isActive.name, true)
         val organisationFilter = Filters.and(
             filter, Filters.eq(TariffModel::isForOrganization.name, false)
         )
@@ -36,7 +33,7 @@ class TariffsDataSourceImpl(
     }
 
     override suspend fun getArchiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
-        val filter = Filters.eq(TariffModel::categoryCode.name, 2)
+        val filter = Filters.eq(TariffModel::isActive.name, false)
         val organisationFilter = Filters.and(
             filter, Filters.eq(TariffModel::isForOrganization.name, false)
         )
