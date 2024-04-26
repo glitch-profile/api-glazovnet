@@ -14,6 +14,7 @@ import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.requests.IncomingSupportRequestModel
 import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.chatrequests.AlarmMessageTextCode
 import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.rooms.MemberAlreadyExistException
 import net.glazov.rooms.RequestChatRoomController
@@ -205,6 +206,7 @@ fun Route.requestsRoute(
                 if (status) {
                     val requestToSend = chat.getRequestById(requestId)
                     requestsRoomController.sendRequestToSocket(requestToSend!!)
+                    requestChatRoomController.sendAlarmMessage(requestId, AlarmMessageTextCode.RequestReopened)
                 }
             }
         }
@@ -285,13 +287,14 @@ fun Route.requestsRoute(
             call.respond(
                 SimpleResponse(
                     status = status,
-                    message = if (status) "request updated" else "failed to update request",
+                    message = if (status) "request updated" else "failed to close request",
                     data = Unit
                 )
             )
             if (status) {
                 val requestToSend = chat.getRequestById(requestId)
                 requestsRoomController.sendRequestToSocket(requestToSend!!)
+                requestChatRoomController.sendAlarmMessage(requestId, AlarmMessageTextCode.RequestClosed)
             }
         }
     }

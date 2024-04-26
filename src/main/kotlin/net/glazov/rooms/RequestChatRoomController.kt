@@ -6,6 +6,7 @@ import kotlinx.serialization.json.Json
 import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.requests.MessageModel
+import net.glazov.data.utils.chatrequests.AlarmMessageTextCode
 import net.glazov.data.utils.notificationsmanager.Deeplink
 import net.glazov.data.utils.notificationsmanager.NotificationChannel
 import net.glazov.data.utils.notificationsmanager.NotificationsManager
@@ -43,6 +44,32 @@ class RequestChatRoomController(
                     socket = memberSocket
                 )
             )
+        }
+    }
+
+    suspend fun sendAlarmMessage(
+        requestId: String,
+        text: AlarmMessageTextCode
+    ) {
+        val messageToSend = chat.addMessageToRequest(
+            requestId = requestId,
+            newMessage = MessageModel(
+                senderId = "",
+                senderName = "system",
+                text = text.code,
+                timestamp = 0L
+            )
+        )
+        requests[requestId]?.let { request ->
+            if (messageToSend != null) {
+                val json = Json {
+                    encodeDefaults = true
+                }
+                val encodedMessage = json.encodeToString(messageToSend)
+                request.values.forEach { member ->
+                    member.socket.send(Frame.Text(encodedMessage))
+                }
+            }
         }
     }
 
