@@ -16,7 +16,7 @@ data class ClientModel(
     val personId: String,
     val accountNumber: String, //Номер лицевого счёта
     val address: AddressModel,
-    val tariffId: String? = null, //ID подключенного тарифа
+    val tariffId: String, //ID подключенного тарифа
     val balance: Float = 0.0f, //Остаток средств на аккаунте
     val accountCreationDate: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
     val debitDate: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(), //Дата списания средств
