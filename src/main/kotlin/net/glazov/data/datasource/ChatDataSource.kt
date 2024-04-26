@@ -30,9 +30,12 @@ interface ChatDataSource {
         newMessage: MessageModel
     ): MessageModel?
 
-    suspend fun changeRequestStatus(
-        requestId: String,
-        newStatus: Int
+    suspend fun closeRequest(
+        requestId: String
+    ): Boolean
+
+    suspend fun reopenRequest(
+        requestId: String
     ): Boolean
 
     suspend fun changeRequestHelper(

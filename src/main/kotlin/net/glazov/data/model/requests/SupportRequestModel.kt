@@ -18,6 +18,7 @@ data class SupportRequestModel(
     val description: String,
     val messages: List<MessageModel> = emptyList(),
     val creationDate: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
+    val reopenDate: Long? = null,
     val isNotificationsEnabled: Boolean,
     val status: Int = 0
 )

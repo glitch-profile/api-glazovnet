@@ -1,6 +1,5 @@
 package net.glazov.data.datasourceimpl
 
-import com.mongodb.MongoException
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
@@ -18,7 +17,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 
 class ChatDataSourceImpl(
-    private val db: MongoDatabase,
+    db: MongoDatabase,
     private val clients: ClientsDataSource,
     private val persons: PersonsDataSource
 ): ChatDataSource {
@@ -92,37 +91,33 @@ class ChatDataSourceImpl(
         } else null
     }
 
-    override suspend fun changeRequestStatus(requestId: String, newStatus: Int): Boolean {
+    override suspend fun closeRequest(requestId: String): Boolean {
         val filter = Filters.eq("_id", requestId)
-        val update = Updates.set(SupportRequestModel::status.name, newStatus)
-        return try {
-            val status = requests.updateOne(filter, update)
-            if (status.matchedCount != 0L) {
-                status.wasAcknowledged()
-            } else throw RequestNotFoundException()
-        } catch (e: MongoException) {
-            false
-        }
+        val update = Updates.set(SupportRequestModel::status.name, RequestsStatus.Solved.convertToIntCode())
+        val status = requests.updateOne(filter, update)
+        return status.modifiedCount != 0L
+    }
+
+    override suspend fun reopenRequest(requestId: String): Boolean {
+        val currentDateTimestamp = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
+        val filter = Filters.eq("_id", requestId)
+        val update = Updates.combine(
+            Updates.set(SupportRequestModel::status.name, RequestsStatus.Active.convertToIntCode()),
+            Updates.set(SupportRequestModel::associatedSupportId.name, null),
+            Updates.set(SupportRequestModel::reopenDate.name, currentDateTimestamp)
+        )
+        val status = requests.updateOne(filter, update)
+        return status.modifiedCount != 0L
     }
 
     override suspend fun changeRequestHelper(requestId: String, newSupportId: String): Boolean {
         val filter = Filters.eq("_id", requestId)
         val update = Updates.combine(
-            listOf(
-                Updates.set(SupportRequestModel::associatedSupportId.name, newSupportId),
-                Updates.set(SupportRequestModel::status.name, 1)
-            )
+            Updates.set(SupportRequestModel::associatedSupportId.name, newSupportId),
+            Updates.set(SupportRequestModel::status.name, RequestsStatus.InProgress.convertToIntCode())
         )
-        return try {
-            val status = requests.updateOne(filter = filter, update = update)
-            if (status.matchedCount != 0L) {
-                status.wasAcknowledged()
-            } else {
-                throw RequestNotFoundException()
-            }
-        } catch (e: MongoException) {
-            false
-        }
+        val status = requests.updateOne(filter = filter, update = update)
+        return status.modifiedCount != 0L
     }
 
     override suspend fun deleteRequest(requestId: String): Boolean {
