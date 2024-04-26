@@ -17,6 +17,7 @@ interface ClientsDataSource {
     suspend fun addClient(
         associatedPersonId: String,
         accountNumber: String,
+        tariffId: String,
         address: AddressModel
     ): ClientModel?
 

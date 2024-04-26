@@ -26,6 +26,7 @@ fun Route.clientsRoutes(
             val newClient = clients.addClient(
                 associatedPersonId = client.personId,
                 accountNumber = client.accountNumber,
+                tariffId = client.tariffId,
                 address = client.address
             )
             val status = newClient != null

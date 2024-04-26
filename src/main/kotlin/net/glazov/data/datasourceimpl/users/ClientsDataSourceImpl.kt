@@ -51,6 +51,7 @@ class ClientsDataSourceImpl(
     override suspend fun addClient(
         associatedPersonId: String,
         accountNumber: String,
+        tariffId: String,
         address: AddressModel
     ): ClientModel? {
         val isPersonAvailable = getClientByPersonId(associatedPersonId) == null
@@ -64,6 +65,7 @@ class ClientsDataSourceImpl(
                 val client = ClientModel(
                     personId = associatedPersonId,
                     accountNumber = accountNumber,
+                    tariffId = tariffId,
                     address = AddressModel(
                         cityName = clientAddress.city,
                         streetName = clientAddress.street,
