@@ -46,7 +46,7 @@ fun Route.requestsRoute(
             } catch (e: MemberAlreadyExistException) {
                 call.respond(HttpStatusCode.Conflict)
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.ServiceUnavailable)
+                call.respond(HttpStatusCode.InternalServerError)
             } finally {
                 requestsRoomController.tryDisconnect(personId)
             }
@@ -84,7 +84,7 @@ fun Route.requestsRoute(
             } catch (e: MemberAlreadyExistException) {
                 call.respond(HttpStatusCode.Conflict)
             } catch (e: Exception) {
-                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError)
             } finally {
                 requestChatRoomController.tryDisconnect(
                     requestId = requestId,
