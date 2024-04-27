@@ -69,12 +69,12 @@ class ChatDataSourceImpl(
         return if (status.insertedId != null) requestToInsert else null
     }
 
-    override suspend fun getRequestById(requestId: String): SupportRequestModel? {
+    override suspend fun getRequestById(requestId: String): SupportRequestModel {
         val filter = Filters.eq("_id", requestId)
-        return requests.find(filter).singleOrNull()
+        return requests.find(filter).singleOrNull() ?: throw RequestNotFoundException()
     }
 
-    override suspend fun addMessageToRequest(requestId: String, newMessage: MessageModel): MessageModel? {
+    override suspend fun addMessageToRequest(requestId: String, newMessage: MessageModel): MessageModel {
 
         val requestFilter = Filters.eq("_id", requestId)
         val request = requests.find(requestFilter).singleOrNull()
@@ -88,13 +88,14 @@ class ChatDataSourceImpl(
             val newRequest = request.copy(messages = newMessagesList)
             requests.findOneAndReplace(requestFilter, newRequest)
             message
-        } else null
+        } else throw RequestNotFoundException()
     }
 
     override suspend fun closeRequest(requestId: String): Boolean {
         val filter = Filters.eq("_id", requestId)
         val update = Updates.set(SupportRequestModel::status.name, RequestsStatus.Solved.convertToIntCode())
         val status = requests.updateOne(filter, update)
+        if (status.matchedCount == 0L) throw RequestNotFoundException()
         return status.modifiedCount != 0L
     }
 
@@ -107,6 +108,7 @@ class ChatDataSourceImpl(
             Updates.set(SupportRequestModel::reopenDate.name, currentDateTimestamp)
         )
         val status = requests.updateOne(filter, update)
+        if (status.matchedCount == 0L) throw RequestNotFoundException()
         return status.modifiedCount != 0L
     }
 
@@ -117,6 +119,7 @@ class ChatDataSourceImpl(
             Updates.set(SupportRequestModel::status.name, RequestsStatus.InProgress.convertToIntCode())
         )
         val status = requests.updateOne(filter = filter, update = update)
+        if (status.matchedCount == 0L) throw RequestNotFoundException()
         return status.modifiedCount != 0L
     }
 

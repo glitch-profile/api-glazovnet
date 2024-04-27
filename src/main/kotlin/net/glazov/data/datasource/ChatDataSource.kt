@@ -16,7 +16,7 @@ interface ChatDataSource {
 
     suspend fun getRequestById(
         requestId: String
-    ): SupportRequestModel?
+    ): SupportRequestModel
 
     suspend fun createNewRequest(
         clientId: String,
@@ -28,7 +28,7 @@ interface ChatDataSource {
     suspend fun addMessageToRequest(
         requestId: String,
         newMessage: MessageModel
-    ): MessageModel?
+    ): MessageModel
 
     suspend fun closeRequest(
         requestId: String
