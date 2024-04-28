@@ -43,7 +43,7 @@ fun Route.announcementsRoutes(
 
     authenticate("employee") {
 
-        get("$PATH/") {
+        get(PATH) {
             val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
@@ -116,52 +116,56 @@ fun Route.announcementsRoutes(
         }
 
         delete("$PATH/delete") {
-            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@delete
-            }
-            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ANNOUNCEMENTS)) {
-                call.respond(HttpStatusCode.Forbidden)
-                return@delete
-            }
-            val announcementId = call.request.queryParameters["id"]
-            if (announcementId != null) {
-                val status = announcements.deleteAnnouncement(announcementId)
-                call.respond(
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "announcement deleted" else "error while deleting the announcement",
-                        data = Unit
-                    )
-                )
-            } else {
-                call.respond(HttpStatusCode.BadRequest)
-            }
+            call.respond(HttpStatusCode.MethodNotAllowed)
+            return@delete
+//            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+//                call.respond(HttpStatusCode.BadRequest)
+//                return@delete
+//            }
+//            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ANNOUNCEMENTS)) {
+//                call.respond(HttpStatusCode.Forbidden)
+//                return@delete
+//            }
+//            val announcementId = call.request.queryParameters["id"]
+//            if (announcementId != null) {
+//                val status = announcements.deleteAnnouncement(announcementId)
+//                call.respond(
+//                    SimpleResponse(
+//                        status = status,
+//                        message = if (status) "announcement deleted" else "error while deleting the announcement",
+//                        data = Unit
+//                    )
+//                )
+//            } else {
+//                call.respond(HttpStatusCode.BadRequest)
+//            }
         }
 
         put("$PATH/edit") {
-            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ANNOUNCEMENTS)) {
-                call.respond(HttpStatusCode.Forbidden)
-                return@put
-            }
-            val newAnnouncement = try {
-                call.receive<AnnouncementModel>()
-            } catch (e: ContentTransformationException) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            val status = announcements.updateAnnouncement(newAnnouncement)
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = if (status) "announcement updated" else "error while updating announcement",
-                    data = status
-                )
-            )
+            call.respond(HttpStatusCode.MethodNotAllowed)
+            return@put
+//            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+//                call.respond(HttpStatusCode.BadRequest)
+//                return@put
+//            }
+//            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.ANNOUNCEMENTS)) {
+//                call.respond(HttpStatusCode.Forbidden)
+//                return@put
+//            }
+//            val newAnnouncement = try {
+//                call.receive<AnnouncementModel>()
+//            } catch (e: ContentTransformationException) {
+//                call.respond(HttpStatusCode.BadRequest)
+//                return@put
+//            }
+//            val status = announcements.updateAnnouncement(newAnnouncement)
+//            call.respond(
+//                SimpleResponse(
+//                    status = true,
+//                    message = if (status) "announcement updated" else "error while updating announcement",
+//                    data = status
+//                )
+//            )
         }
     }
 }
