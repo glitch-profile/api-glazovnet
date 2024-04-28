@@ -11,6 +11,7 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
+import net.glazov.data.datasourceimpl.RequestNotFoundException
 import net.glazov.data.model.requests.IncomingSupportRequestModel
 import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.response.SimpleResponse
@@ -45,7 +46,7 @@ fun Route.requestsRoute(
             } catch (e: MemberAlreadyExistException) {
                 call.respond(HttpStatusCode.Conflict)
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.ServiceUnavailable)
+                call.respond(HttpStatusCode.InternalServerError)
             } finally {
                 requestsRoomController.tryDisconnect(personId)
             }
@@ -83,7 +84,7 @@ fun Route.requestsRoute(
             } catch (e: MemberAlreadyExistException) {
                 call.respond(HttpStatusCode.Conflict)
             } catch (e: Exception) {
-                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError)
             } finally {
                 requestChatRoomController.tryDisconnect(
                     requestId = requestId,
@@ -99,20 +100,22 @@ fun Route.requestsRoute(
             call.request.headers["employee_Id"]?.let {
                 isEmployeeWithRole = employees.checkEmployeeRole(it, EmployeeRoles.SUPPORT_CHAT)
             }
-            val request = chat.getRequestById(requestId) ?: kotlin.run {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
-            if (isEmployeeWithRole || clientId == request.creatorClientId) {
-                val requestToRespond = request.copy(messages = emptyList())
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "request retrieved",
-                        data = requestToRespond
+            try {
+                val request = chat.getRequestById(requestId)
+                if (isEmployeeWithRole || clientId == request.creatorClientId) {
+                    val requestToRespond = request.copy(messages = emptyList())
+                    call.respond(
+                        SimpleResponse(
+                            status = true,
+                            message = "request retrieved",
+                            data = requestToRespond
+                        )
                     )
-                )
-            } else call.respond(HttpStatusCode.Forbidden)
+                } else call.respond(HttpStatusCode.Forbidden)
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
+            }
+
         }
 
         get("$PATH/requests/{request_id}/messages") {
@@ -122,20 +125,21 @@ fun Route.requestsRoute(
             call.request.headers["employee_Id"]?.let {
                 isEmployeeWithRole = employees.checkEmployeeRole(it, EmployeeRoles.SUPPORT_CHAT)
             }
-            val request = chat.getRequestById(requestId) ?: kotlin.run {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
-            if (isEmployeeWithRole || clientId == request.creatorClientId) {
-                val messages = request.messages.sortedByDescending { it.timestamp }
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "${messages.size} messages retrieved",
-                        data = messages
+            try {
+                val request = chat.getRequestById(requestId)
+                if (isEmployeeWithRole || clientId == request.creatorClientId) {
+                    val messages = request.messages.sortedByDescending { it.timestamp }
+                    call.respond(
+                        SimpleResponse(
+                            status = true,
+                            message = "${messages.size} messages retrieved",
+                            data = messages
+                        )
                     )
-                )
-            } else call.respond(HttpStatusCode.Forbidden)
+                } else call.respond(HttpStatusCode.Forbidden)
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
     }
 
@@ -190,24 +194,25 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val request = chat.getRequestById(requestId) ?: kotlin.run {
-                call.respond(HttpStatusCode.NotFound)
-                return@put
-            }
-            if (request.creatorClientId == clientId) {
-                val status = chat.reopenRequest(requestId)
-                call.respond(
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "request re-opened" else "unable to re-open request",
-                        data = Unit
+            try {
+                val request = chat.getRequestById(requestId)
+                if (request.creatorClientId == clientId) {
+                    val status = chat.reopenRequest(requestId)
+                    call.respond(
+                        SimpleResponse(
+                            status = status,
+                            message = if (status) "request re-opened" else "unable to re-open request",
+                            data = Unit
+                        )
                     )
-                )
-                if (status) {
-                    val requestToSend = chat.getRequestById(requestId)
-                    requestsRoomController.sendRequestToSocket(requestToSend!!)
-                    requestChatRoomController.sendAlarmMessage(requestId, AlarmMessageTextCode.RequestReopened)
+                    if (status) {
+                        val requestToSend = chat.getRequestById(requestId)
+                        requestsRoomController.sendRequestToSocket(requestToSend)
+                        requestChatRoomController.sendAlarmMessage(requestId, AlarmMessageTextCode.RequestReopened)
+                    }
                 }
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
             }
         }
     }
@@ -246,24 +251,25 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val request = chat.getRequestById(requestId) ?: kotlin.run {
-                call.respond(HttpStatusCode.NotFound)
-                return@put
-            }
-            if (request.associatedSupportId == null) {
-                val status = chat.changeRequestHelper(requestId, employeeId)
-                call.respond(
-                    SimpleResponse(
-                        status = status,
-                        message = if (status) "request updated" else "failed to update request",
-                        data = Unit
+            try {
+                val request = chat.getRequestById(requestId)
+                if (request.associatedSupportId == null) {
+                    val status = chat.changeRequestHelper(requestId, employeeId)
+                    call.respond(
+                        SimpleResponse(
+                            status = status,
+                            message = if (status) "request updated" else "failed to update request",
+                            data = Unit
+                        )
                     )
-                )
-                if (status) {
-                    val requestToSend = chat.getRequestById(requestId)
-                    requestsRoomController.sendRequestToSocket(requestToSend!!)
-                }
-            } else call.respond(HttpStatusCode.Conflict)
+                    if (status) {
+                        val requestToSend = chat.getRequestById(requestId)
+                        requestsRoomController.sendRequestToSocket(requestToSend)
+                    }
+                } else call.respond(HttpStatusCode.Conflict)
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
 
         put("$PATH/requests/{request_id}/close") {
@@ -279,22 +285,22 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val request = chat.getRequestById(requestId) ?: kotlin.run {
-                call.respond(HttpStatusCode.NotFound)
-                return@put
-            }
-            val status = chat.closeRequest(requestId)
-            call.respond(
-                SimpleResponse(
-                    status = status,
-                    message = if (status) "request updated" else "failed to close request",
-                    data = Unit
+            try {
+                val status = chat.closeRequest(requestId)
+                call.respond(
+                    SimpleResponse(
+                        status = status,
+                        message = if (status) "request updated" else "failed to close request",
+                        data = Unit
+                    )
                 )
-            )
-            if (status) {
-                val requestToSend = chat.getRequestById(requestId)
-                requestsRoomController.sendRequestToSocket(requestToSend!!)
-                requestChatRoomController.sendAlarmMessage(requestId, AlarmMessageTextCode.RequestClosed)
+                if (status) {
+                    val requestToSend = chat.getRequestById(requestId)
+                    requestsRoomController.sendRequestToSocket(requestToSend)
+                    requestChatRoomController.sendAlarmMessage(requestId, AlarmMessageTextCode.RequestClosed)
+                }
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
             }
         }
     }

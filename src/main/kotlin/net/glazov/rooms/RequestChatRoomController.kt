@@ -61,14 +61,12 @@ class RequestChatRoomController(
             )
         )
         requests[requestId]?.let { request ->
-            if (messageToSend != null) {
-                val json = Json {
-                    encodeDefaults = true
-                }
-                val encodedMessage = json.encodeToString(messageToSend)
-                request.values.forEach { member ->
-                    member.socket.send(Frame.Text(encodedMessage))
-                }
+            val json = Json {
+                encodeDefaults = true
+            }
+            val encodedMessage = json.encodeToString(messageToSend)
+            request.values.forEach { member ->
+                member.socket.send(Frame.Text(encodedMessage))
             }
         }
     }
@@ -89,21 +87,19 @@ class RequestChatRoomController(
                         timestamp = 0L
                     )
                 )
-                if (messageToSend != null) {
-                    val json = Json {
-                        encodeDefaults = true
-                    }
-                    val encodedMessage = json.encodeToString(messageToSend)
-                    request.values.forEach { member ->
-                        member.socket.send(Frame.Text(encodedMessage))
-                    }
-                    sendPushNotification(
-                        requestId = requestId,
-                        senderId = senderId,
-                        messageText = message,
-                        currentMembersInChat = request.map { it.key }
-                    )
+                val json = Json {
+                    encodeDefaults = true
                 }
+                val encodedMessage = json.encodeToString(messageToSend)
+                request.values.forEach { member ->
+                    member.socket.send(Frame.Text(encodedMessage))
+                }
+                sendPushNotification(
+                    requestId = requestId,
+                    senderId = senderId,
+                    messageText = message,
+                    currentMembersInChat = request.map { it.key }
+                )
             }
         }
     }
@@ -130,7 +126,7 @@ class RequestChatRoomController(
         messageText: String,
         currentMembersInChat: List<String>
     ) {
-        val request = chat.getRequestById(requestId) ?: return
+        val request = chat.getRequestById(requestId)
         val isNotificationsEnabled = request.isNotificationsEnabled
         val isSendByRequestCreator = request.creatorPersonId == senderId
         val isOwnerOnline = currentMembersInChat.contains(request.creatorPersonId)
