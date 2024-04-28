@@ -8,7 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
-import net.glazov.data.model.posts.PostModel
+import net.glazov.data.model.posts.IncomingPostModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.UrlChanger
 import net.glazov.data.utils.employeesroles.EmployeeRoles
@@ -89,11 +89,22 @@ fun Route.postRoutes(
                 call.respond(HttpStatusCode.Forbidden)
                 return@put
             }
-            val newPost = call.receiveNullable<PostModel>() ?: kotlin.run {
+            val newPost = call.receiveNullable<IncomingPostModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val status = posts.updatePost(newPost)
+            newPost.let {
+                if (it.id == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@put
+                }
+            }
+            val status = posts.updatePost(
+                id = newPost.id!!,
+                title = newPost.title,
+                text = newPost.text,
+                image = newPost.image
+            )
             call.respond(
                 SimpleResponse(
                     status = status,
@@ -112,11 +123,15 @@ fun Route.postRoutes(
                 call.respond(HttpStatusCode.Forbidden)
                 return@post
             }
-            val newPost = call.receiveNullable<PostModel>() ?: kotlin.run {
+            val newPost = call.receiveNullable<IncomingPostModel>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val post = posts.addNewPost(newPost)
+            val post = posts.addNewPost(
+                title = newPost.title,
+                text = newPost.text,
+                image = newPost.image
+            )
             val status = post != null
             call.respond(
                 SimpleResponse(

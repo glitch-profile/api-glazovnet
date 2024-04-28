@@ -1,9 +1,11 @@
 package net.glazov.data.datasourceimpl
 
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.PostsDataSource
+import net.glazov.data.model.ImageModel
 import net.glazov.data.model.posts.PostModel
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
@@ -11,7 +13,7 @@ import java.time.ZoneId
 import kotlin.math.min
 
 class PostsDataSourceImpl(
-    private val db: MongoDatabase
+    db: MongoDatabase
 ): PostsDataSource {
 
     private val posts = db.getCollection<PostModel>("Posts")
@@ -33,19 +35,27 @@ class PostsDataSourceImpl(
         return posts.find(filter).toList().firstOrNull()
     }
 
-    override suspend fun updatePost(newPost: PostModel): Boolean {
-        val editedPost = newPost.copy(
-            lastEditDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
+    override suspend fun updatePost(id: String, title: String, text: String, image: ImageModel?): Boolean {
+        val lastEditDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
+        val filter = Filters.eq("_id", id)
+        val update = Updates.combine(
+            Updates.set(PostModel::title.name, title),
+            Updates.set(PostModel::text.name, text),
+            Updates.set(PostModel::image.name, image),
+            Updates.set(PostModel::lastEditDate.name, lastEditDate)
         )
-        val filter = Filters.eq("_id", newPost.id)
-        val post = posts.findOneAndReplace(filter, editedPost)
-        return post != null
+        val status = posts.updateOne(filter, update)
+        return status.modifiedCount != 0L
     }
 
-    override suspend fun addNewPost(newPost: PostModel): PostModel? {
-        val post = newPost.copy(
+    override suspend fun addNewPost(title: String, text: String, image: ImageModel?): PostModel? {
+        val post = PostModel(
             id = ObjectId.get().toString(),
-            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
+            title = title,
+            text = text,
+            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
+            lastEditDate = null,
+            image = image
         )
         val status = posts.insertOne(post).wasAcknowledged()
         return if (status)

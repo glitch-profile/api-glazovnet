@@ -1,5 +1,6 @@
 package net.glazov.data.datasource
 
+import net.glazov.data.model.ImageModel
 import net.glazov.data.model.posts.PostModel
 
 interface PostsDataSource {
@@ -16,11 +17,16 @@ interface PostsDataSource {
     ): PostModel?
 
     suspend fun updatePost(
-        newPost: PostModel
+        id: String,
+        title: String,
+        text: String,
+        image: ImageModel?
     ): Boolean
 
     suspend fun addNewPost(
-        newPost: PostModel
+        title: String,
+        text: String,
+        image: ImageModel?
     ): PostModel?
 
     suspend fun deletePost(
