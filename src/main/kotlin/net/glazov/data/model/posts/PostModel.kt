@@ -14,4 +14,4 @@ data class PostModel(
     val lastEditDate: Long? = null,
     val text: String,
     val image: ImageModel? = null
-    )
+)

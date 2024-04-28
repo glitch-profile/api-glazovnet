@@ -12,7 +12,6 @@ import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.TariffModel
 import net.glazov.data.model.response.SimpleResponse
-import net.glazov.data.model.response.SimpleTariffResponse
 import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.data.utils.notificationsmanager.*
 
@@ -99,10 +98,10 @@ fun Route.tariffsRoutes(
             val tariff = tariffs.addTariff(newTariff)
             val status = tariff != null
             call.respond(
-                SimpleTariffResponse(
+                SimpleResponse(
                     status = status,
                     message = if (status) "tariff added" else "error while adding the tariff",
-                    data = if (status) listOf(tariff!!) else emptyList()
+                    data = tariff
                 )
             )
             if (tariff !== null) {
@@ -129,10 +128,10 @@ fun Route.tariffsRoutes(
             val tariffId = call.request.queryParameters["tariff_id"]
             val status = tariffs.deleteTariff(tariffId = tariffId.toString())
             call.respond(
-                SimpleTariffResponse(
+                SimpleResponse(
                     status = status,
                     message = if (status) "tariff deleted" else "no tariff found",
-                    data = emptyList()
+                    data = Unit
                 )
             )
         }
@@ -152,10 +151,10 @@ fun Route.tariffsRoutes(
             }
             val status = tariffs.updateTariff(newTariff)
             call.respond(
-                SimpleTariffResponse(
+                SimpleResponse(
                     status = status,
                     message = if (status) "tariff updated" else "error while updating the tariff",
-                    data = emptyList()
+                    data = Unit
                 )
             )
         }

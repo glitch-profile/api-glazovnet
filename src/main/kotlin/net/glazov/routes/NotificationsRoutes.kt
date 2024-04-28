@@ -90,7 +90,6 @@ fun Route.notificationsRoutes(
             }
             val topics = call.request.queryParameters["topics"]
             val topicsList = topics?.split(',') ?: emptyList()
-            println("topics list - ${topicsList.size}")
             val result = persons.updateNotificationTopics(personId, topicsList)
             call.respond(
                 SimpleResponse(

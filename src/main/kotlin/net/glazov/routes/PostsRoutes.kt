@@ -24,7 +24,7 @@ fun Route.postRoutes(
 
     authenticate {
 
-        get("$PATH/") {
+        get(PATH) {
             val postsList = posts.getAllPosts()
 
             //TODO: remove after set up stable server
@@ -72,7 +72,7 @@ fun Route.postRoutes(
                 SimpleResponse(
                     status = true,
                     message = if (status) "post retrieved" else "no post with id found",
-                    data = if (status) listOf(postWithLocalImage!!) else emptyList()
+                    data = if (status) postWithLocalImage!! else null
                 )
             )
         }
@@ -122,7 +122,7 @@ fun Route.postRoutes(
                 SimpleResponse(
                     status = status,
                     message = if (status) "post added" else "error while adding the post",
-                    data = if (status) listOf(post) else emptyList()
+                    data = post
                 )
             )
             if (post != null) {

@@ -50,8 +50,8 @@ fun Route.addressRoutes(
                 return@get
             }
             val city = call.request.queryParameters["city"]
-            val street = call.request.queryParameters["street"]
-            if (city !== null && street !== null) {
+            val street = call.request.queryParameters["street"] ?: ""
+            if (city !== null) {
                 val streetsList = addresses.getStreetsForCity(city, street)
                 val formattedStreetsNames = streetsList.map {
                     it.street.replaceFirstChar { it.uppercaseChar() }
@@ -78,8 +78,8 @@ fun Route.addressRoutes(
                 return@get
             }
             val city = call.request.queryParameters["city"]
-            val street = call.request.queryParameters["street"]
-            if (city != null && street != null) {
+            val street = call.request.queryParameters["street"] ?: ""
+            if (city != null) {
                 val addressesList = addresses.getAddresses(city, street)
                 val formattedAddresses = addressesList.map {
                     it.copy(
@@ -88,15 +88,14 @@ fun Route.addressRoutes(
                     )
                 }
                 call.respond(
-                    message = SimpleResponse(
+                    SimpleResponse(
                         status = true,
                         message = "addresses retrieved",
                         data = formattedAddresses
-                    ),
-                    status = HttpStatusCode.OK
+                    )
                 )
             } else call.respond(
-                message = SimpleResponse(
+                SimpleResponse(
                     status = true,
                     message = "addresses retrieved",
                     data = emptyList<List<RegisteredAddressesModel>>()
