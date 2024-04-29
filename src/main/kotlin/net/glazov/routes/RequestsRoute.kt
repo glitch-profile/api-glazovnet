@@ -30,7 +30,7 @@ fun Route.requestsRoute(
     employees: EmployeesDataSource
 ) {
 
-    authenticate("client", "employee") {
+    authenticate("employee") {
 
         webSocket("$PATH/requests-socket") {
             val personId = call.request.headers["person_id"] ?: kotlin.run {
@@ -51,6 +51,10 @@ fun Route.requestsRoute(
                 requestsRoomController.tryDisconnect(personId)
             }
         }
+
+    }
+
+    authenticate("client", "employee") {
 
         webSocket("$PATH/requests/{request_id}/chat-socket") {
             val personId = call.request.headers["person_id"] ?: kotlin.run {
@@ -94,7 +98,10 @@ fun Route.requestsRoute(
         }
 
         get("$PATH/requests/{request_id}") {
-            val requestId = call.parameters["request_id"] ?: ""
+            val requestId = call.parameters["request_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
             val clientId = call.request.headers["client_id"]
             var isEmployeeWithRole = false
             call.request.headers["employee_Id"]?.let {
@@ -103,12 +110,11 @@ fun Route.requestsRoute(
             try {
                 val request = chat.getRequestById(requestId)
                 if (isEmployeeWithRole || clientId == request.creatorClientId) {
-                    val requestToRespond = request.copy(messages = emptyList())
                     call.respond(
                         SimpleResponse(
                             status = true,
                             message = "request retrieved",
-                            data = requestToRespond
+                            data = request
                         )
                     )
                 } else call.respond(HttpStatusCode.Forbidden)
@@ -119,7 +125,10 @@ fun Route.requestsRoute(
         }
 
         get("$PATH/requests/{request_id}/messages") {
-            val requestId = call.parameters["request_id"] ?: ""
+            val requestId = call.parameters["request_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
             val clientId = call.request.headers["client_id"]
             var isEmployeeWithRole = false
             call.request.headers["employee_Id"]?.let {
@@ -210,6 +219,9 @@ fun Route.requestsRoute(
                         requestsRoomController.sendRequestToSocket(requestToSend)
                         requestChatRoomController.sendAlarmMessage(requestId, AlarmMessageTextCode.RequestReopened)
                     }
+                } else {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@put
                 }
             } catch (e: RequestNotFoundException) {
                 call.respond(HttpStatusCode.NotFound)

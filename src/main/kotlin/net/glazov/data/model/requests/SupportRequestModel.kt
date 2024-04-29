@@ -1,6 +1,7 @@
 package net.glazov.data.model.requests
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
@@ -16,6 +17,7 @@ data class SupportRequestModel(
     val associatedSupportId: String? = null,
     val title: String,
     val description: String,
+    @Transient
     val messages: List<MessageModel> = emptyList(),
     val creationDate: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
     val reopenDate: Long? = null,
