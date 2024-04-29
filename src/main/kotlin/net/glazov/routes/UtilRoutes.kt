@@ -23,13 +23,14 @@ fun Routing.utilRoutes(
     authenticate {
 
         get("$PATH/get-file") {
-            val filePath = call.request.queryParameters["path"]
-            if (filePath != null) {
-                val file = fileManager.getFile(localStaticPath = filePath)
-                if (file != null) {
-                    call.respondFile(file)
-                } else call.respond(HttpStatusCode.NotFound)
-            } else call.respond(HttpStatusCode.BadRequest)
+            val filePath = call.request.queryParameters["path"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val file = fileManager.getFile(localStaticPath = filePath)
+            if (file != null) {
+                call.respondFile(file)
+            } else call.respond(HttpStatusCode.NotFound)
         }
     }
 

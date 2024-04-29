@@ -5,20 +5,40 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.users.ClientsDataSource
+import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.notificationsmanager.NotificationTopic
+import net.glazov.data.utils.notificationsmanager.NotificationsTopicsCodes
 
 private const val PATH = "/api/notifications"
 
 fun Route.notificationsRoutes(
-    persons: PersonsDataSource
+    persons: PersonsDataSource,
+    clients: ClientsDataSource,
+    employees: EmployeesDataSource
 ) {
     authenticate {
 
-        get("$PATH/get-topics") {
-            val includeClientTopics = call.request.headers["include_client"].toBoolean()
-            val includeEmployeeTopics = call.request.headers["include_employee"].toBoolean()
+        get("$PATH/topics") {
+            val clientId = call.request.headers["client_id"]
+            val employeeId = call.request.headers["employee_id"]
+            val includeClientTopics = if (clientId != null) {
+                clients.getClientById(clientId) ?: kotlin.run {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@get
+                }
+                true
+            } else false
+            val includeEmployeeTopics = if (employeeId != null) {
+                employees.getEmployeeById(employeeId) ?: kotlin.run {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@get
+
+                }
+                true
+            } else false
             call.respond(
                 SimpleResponse(
                     data = NotificationTopic.all(
@@ -63,7 +83,7 @@ fun Route.notificationsRoutes(
             )
         }
 
-        put("$PATH/set-person-notification-status") {
+        put("$PATH/set-person-notifications-status") {
             val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
@@ -89,15 +109,40 @@ fun Route.notificationsRoutes(
                 return@put
             }
             val topics = call.request.queryParameters["topics"]
+            val clientId = call.request.headers["client_id"]
+            val employeeId = call.request.headers["employee_id"]
+            val includeClientTopics = if (clientId != null) {
+                clients.getClientById(clientId) ?: kotlin.run {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@put
+                }
+                true
+            } else false
+            val includeEmployeeTopics = if (employeeId != null) {
+                employees.getEmployeeById(employeeId) ?: kotlin.run {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@put
+
+                }
+                true
+            } else false
             val topicsList = topics?.split(',') ?: emptyList()
-            val result = persons.updateNotificationTopics(personId, topicsList)
-            call.respond(
-                SimpleResponse(
-                    status = result,
-                    message = if (result) "topics updated" else "failed to update topics",
-                    data = Unit
+            try {
+                val topicsFormatted = topicsList.map { NotificationsTopicsCodes.valueOf(it) }
+                val availableTopics = NotificationTopic.all(includeClientTopics, includeEmployeeTopics).map { it.topicCode }
+                val topicsToSet = topicsFormatted.filter { availableTopics.contains(it) }
+                val result = persons.updateNotificationTopics(personId, topicsToSet)
+                call.respond(
+                    SimpleResponse(
+                        status = result,
+                        message = if (result) "topics updated" else "failed to update topics",
+                        data = Unit
+                    )
                 )
-            )
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
         }
 
         put("$PATH/update-person-fcm-token") {
@@ -109,7 +154,10 @@ fun Route.notificationsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val isExclude = call.request.queryParameters["exclude"].toBoolean()
+            val isExclude = call.request.queryParameters["exclude"]?.toBooleanStrictOrNull() ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
             val status = if (isExclude) {
                 persons.removeFcmToken(personId, tokenToRemove = token)
             } else {

@@ -41,7 +41,7 @@ interface PersonsDataSource {
 
     suspend fun updateNotificationTopics(
         personId: String,
-        newTopicsList: List<String>
+        newTopicsList: List<NotificationsTopicsCodes>
     ): Boolean
 
     suspend fun updateNotificationsStatus(

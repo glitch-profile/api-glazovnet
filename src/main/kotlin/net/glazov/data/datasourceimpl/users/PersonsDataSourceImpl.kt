@@ -71,9 +71,10 @@ class PersonsDataSourceImpl(
         return result.upsertedId != null
     }
 
-    override suspend fun updateNotificationTopics(personId: String, newTopicsList: List<String>): Boolean {
+    override suspend fun updateNotificationTopics(personId: String, newTopicsList: List<NotificationsTopicsCodes>): Boolean {
         val filter = Filters.eq("_id", personId)
-        val update = Updates.set(PersonModel::selectedNotificationsTopics.name, newTopicsList)
+        val topicsListFormatted = newTopicsList.map { it }
+        val update = Updates.set(PersonModel::selectedNotificationsTopics.name, topicsListFormatted)
         return persons.updateOne(filter, update).upsertedId != null
     }
 
