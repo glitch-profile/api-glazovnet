@@ -45,6 +45,9 @@ val dataSourcesModule = module {
     single<PostsDataSource> {
         PostsDataSourceImpl(db = get())
     }
+    single<InnerPostsDataSource> {
+        InnerPostsDataSourceImpl(db = get())
+    }
     single<TransactionsDataSource> {
         TransactionsDataSourceImpl(db = get())
     }

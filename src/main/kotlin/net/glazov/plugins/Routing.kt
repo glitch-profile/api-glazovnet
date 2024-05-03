@@ -30,6 +30,7 @@ fun Application.configureRouting() {
     val chatDataSource by inject<ChatDataSource>()
     val fileManager by inject<FileManager>()
     val notificationManager by inject<NotificationsManager>()
+    val innerPostsDataSource by inject<InnerPostsDataSource>()
     //RAW DATA
     val innerDataSource by inject<InnerDataSource>()
 
@@ -48,8 +49,9 @@ fun Application.configureRouting() {
         utilRoutes(fileManager)
         notificationsRoutes(personsDataSource, clientsDataSource, employeesDataSource)
         personalAccountRoutes(personsDataSource, clientsDataSource, employeesDataSource)
-        //testRoutes()
-        innerRoutes(innerData = innerDataSource)
+        innerPostsRoutes(innerDataSource, innerPostsDataSource)
+//        testRoutes()
+//        innerRoutes(innerData = innerDataSource)
     }
 
 //    val scope = CoroutineScope(Dispatchers.Default)
