@@ -1,6 +1,7 @@
 package net.glazov.routes
 
 import io.ktor.client.plugins.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -51,13 +52,7 @@ fun Route.innerRoutes(
                 )
             } catch (e: ResponseException) {
                 println("ERROR - ${e.stackTrace}")
-                call.respond(
-                    SimpleResponse(
-                        status = false,
-                        message = e.response.status.toString(),
-                        data = null
-                    )
-                )
+                call.respond(HttpStatusCode.InternalServerError)
             }
         }
 

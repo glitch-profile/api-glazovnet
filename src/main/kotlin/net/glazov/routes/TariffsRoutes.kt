@@ -1,5 +1,6 @@
 package net.glazov.routes
 
+import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -16,7 +17,7 @@ import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/tariffs"
-private val useInnerTariffs = ApplicationConfig(null).tryGetString("tariffs.use_inner_tariffs").toBoolean()
+private val useInnerTariffs = ApplicationConfig(null).tryGetString("inner_data.use_protected_tariffs").toBoolean()
 
 fun Route.tariffsRoutes(
     tariffs: TariffsDataSource,
@@ -26,43 +27,62 @@ fun Route.tariffsRoutes(
 ) {
 
     authenticate {
+
         get(PATH) {
-            val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
-            val result = if (useInnerTariffs) innerDataSource.getAllInnerTariffs(isShowOrganizationTariffs)
-            else tariffs.getAllTariffs(isShowOrganizationTariffs)
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = "all tariffs received",
-                    data = result
+            try {
+                val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
+                val result = if (useInnerTariffs) innerDataSource.getAllInnerTariffs(isShowOrganizationTariffs)
+                else tariffs.getAllTariffs(isShowOrganizationTariffs)
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "all tariffs received",
+                        data = result
+                    )
                 )
-            )
+            } catch (e: ResponseException) {
+                println("tariffs receive error - ${e.stackTrace}")
+                call.respond(HttpStatusCode.InternalServerError)
+            }
+
         }
 
         get("$PATH/active") {
-            val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
-            val result = if (useInnerTariffs) innerDataSource.getActiveInnerTariffs(isShowOrganizationTariffs)
-            else tariffs.getActiveTariffs(isShowOrganizationTariffs)
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = "active tariffs received",
-                    data = result
+            try {
+                val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
+                val result = if (useInnerTariffs) innerDataSource.getActiveInnerTariffs(isShowOrganizationTariffs)
+                else tariffs.getActiveTariffs(isShowOrganizationTariffs)
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "active tariffs received",
+                        data = result
+                    )
                 )
-            )
+            } catch (e: ResponseException) {
+                println("tariffs receive error - ${e.stackTrace}")
+                call.respond(HttpStatusCode.InternalServerError)
+            }
+
         }
 
         get("$PATH/archive") {
-            val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
-            val result = if (useInnerTariffs) innerDataSource.getArchiveInnerTariffs(isShowOrganizationTariffs)
-            else tariffs.getArchiveTariffs(isShowOrganizationTariffs)
-            call.respond(
-                SimpleResponse(
-                    status = true,
-                    message = "archive tariffs received",
-                    data = result
+            try {
+                val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
+                val result = if (useInnerTariffs) innerDataSource.getArchiveInnerTariffs(isShowOrganizationTariffs)
+                else tariffs.getArchiveTariffs(isShowOrganizationTariffs)
+                call.respond(
+                    SimpleResponse(
+                        status = true,
+                        message = "archive tariffs received",
+                        data = result
+                    )
                 )
-            )
+            } catch (e: ResponseException) {
+                println("tariffs receive error - ${e.stackTrace}")
+                call.respond(HttpStatusCode.InternalServerError)
+            }
+
         }
 
         get("$PATH/{tariff_id}") {
