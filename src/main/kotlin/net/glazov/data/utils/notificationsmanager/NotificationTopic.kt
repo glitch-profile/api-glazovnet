@@ -23,9 +23,9 @@ data class NotificationTopic(
     @Transient
     val visibility: NotificationTopicVisibility = NotificationTopicVisibility.DEFAULT,
     val name: String,
-    val nameEn: String? = null,
+    val nameEn: String,
     val description: String,
-    val descriptionEn: String? = null
+    val descriptionEn: String
 ) {
 
     companion object {

@@ -43,4 +43,15 @@ interface ClientsDataSource {
         note: String? = null
     )
 
+    suspend fun connectService(
+        clientId: String,
+        serviceId: String
+    ): Boolean
+
+    suspend fun disconnectService(
+        clientId: String,
+        serviceId: String
+    ): Boolean
+
+
 }

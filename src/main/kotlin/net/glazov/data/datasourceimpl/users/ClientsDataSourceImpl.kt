@@ -131,4 +131,18 @@ class ClientsDataSourceImpl(
             }
         } else throw ClientNotFoundException()
     }
+
+    override suspend fun connectService(clientId: String, serviceId: String): Boolean {
+        val filter = Filters.eq("_id", clientId)
+        val update = Updates.addToSet(ClientModel::connectedServices.name, serviceId)
+        val result = clients.updateOne(filter, update)
+        return result.modifiedCount != 0L
+    }
+
+    override suspend fun disconnectService(clientId: String, serviceId: String): Boolean {
+        val filter = Filters.eq("_id", clientId)
+        val update = Updates.pull(ClientModel::connectedServices.name, serviceId)
+        val result = clients.updateOne(filter, update)
+        return result.modifiedCount != 0L
+    }
 }

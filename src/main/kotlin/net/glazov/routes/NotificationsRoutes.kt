@@ -122,7 +122,6 @@ fun Route.notificationsRoutes(
                 employees.getEmployeeById(employeeId) ?: kotlin.run {
                     call.respond(HttpStatusCode.Forbidden)
                     return@put
-
                 }
                 true
             } else false
