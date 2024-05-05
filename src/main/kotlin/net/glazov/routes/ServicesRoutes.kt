@@ -124,7 +124,7 @@ fun Route.servicesRoutes(
                 call.respond(HttpStatusCode.NotFound)
                 return@put
             } // checking if this service really exists
-            val result = clients.connectService(clientId, serviceId)
+            val result = clients.disconnectService(clientId, serviceId)
             call.respond(
                 SimpleResponse(
                     status = result,
