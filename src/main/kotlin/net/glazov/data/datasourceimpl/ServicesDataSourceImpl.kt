@@ -27,7 +27,8 @@ class ServicesDataSourceImpl(
         description: String,
         nameEn: String,
         descriptionEn: String,
-        costPerMonth: Float,
+        costPerMonth: Int,
+        connectionCost: Int?,
         isActive: Boolean
     ): ServiceModel? {
         val serviceToAdd = ServiceModel(
@@ -36,6 +37,7 @@ class ServicesDataSourceImpl(
             description = description,
             descriptionEn = descriptionEn,
             costPerMonth = costPerMonth,
+            connectionCost = connectionCost,
             isActive = isActive
         )
         val result = services.insertOne(serviceToAdd)

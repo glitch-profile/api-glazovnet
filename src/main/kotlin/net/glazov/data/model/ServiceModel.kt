@@ -12,6 +12,7 @@ data class ServiceModel(
     val nameEn: String,
     val description: String,
     val descriptionEn: String,
-    val costPerMonth: Float,
+    val costPerMonth: Int,
+    val connectionCost: Int?,
     val isActive: Boolean
 )

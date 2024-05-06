@@ -13,7 +13,8 @@ interface ServicesDataSource {
         description: String,
         nameEn: String,
         descriptionEn: String,
-        costPerMonth: Float,
+        costPerMonth: Int,
+        connectionCost: Int? = null,
         isActive: Boolean = true
     ): ServiceModel?
 
