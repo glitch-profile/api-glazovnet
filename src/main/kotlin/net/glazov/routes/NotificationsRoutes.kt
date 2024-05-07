@@ -157,7 +157,6 @@ fun Route.notificationsRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            print(listOf(personId, token, isExclude))
             val status = if (isExclude) {
                 persons.removeFcmToken(personId, tokenToRemove = token)
             } else {
