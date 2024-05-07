@@ -95,16 +95,17 @@ fun Route.announcementsRoutes(
                         deepLink = Deeplink.AnnouncementsList
                     )
                 } else {
-                    val affectedClientsTokens = announcements.getClientsForAnnouncement(announcement)
-                    val mappedPersonFromClients = affectedClientsTokens.map { clients.getAssociatedPerson(it.personId) }
+                    val affectedClients = announcements.getClientsForAnnouncement(announcement)
+                    val affectedPersonsTokens = affectedClients.map { clients.getAssociatedPerson(it.id) }
                         .asSequence()
                         .filter {
                             it?.isNotificationsEnabled == true
                                     && it.selectedNotificationsTopics.contains(NotificationsTopicsCodes.ANNOUNCEMENTS.name)
                         }
                         .mapNotNull { it?.fcmTokensList }
+                        .toList()
                     notificationsManager.sendTranslatableNotificationByTokens(
-                        personsTokensList = mappedPersonFromClients.toList(),
+                        personsTokensList = affectedPersonsTokens,
                         translatableData = TranslatableNotificationData.NewAnnouncements(
                             announcementTitle = announcement.title
                         ),
