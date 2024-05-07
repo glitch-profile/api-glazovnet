@@ -4,6 +4,7 @@ import io.ktor.websocket.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.glazov.data.datasource.ChatDataSource
+import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.requests.MessageModel
 import net.glazov.data.utils.chatrequests.AlarmMessageTextCode
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 class RequestChatRoomController(
     private val chat: ChatDataSource,
     private val persons: PersonsDataSource,
+    private val employees: EmployeesDataSource,
     private val notificationsManager: NotificationsManager
 ) {
 
@@ -127,20 +129,40 @@ class RequestChatRoomController(
         currentMembersInChat: List<String>
     ) {
         val request = chat.getRequestById(requestId)
-        val isNotificationsEnabled = request.isNotificationsEnabled
         val isSendByRequestCreator = request.creatorPersonId == senderId
-        val isOwnerOnline = currentMembersInChat.contains(request.creatorPersonId)
-        if (!isSendByRequestCreator && !isOwnerOnline && isNotificationsEnabled) {
-            val creatorFcmToken = persons.getPersonById(request.creatorPersonId)?.fcmTokensList ?: return
-            notificationsManager.sendTranslatableNotificationByTokens(
-                personsTokensList = listOf(creatorFcmToken),
-                translatableData = TranslatableNotificationData.NewChatMessage(
-                    requestTitle = request.title,
-                    messageText = messageText
-                ),
-                notificationChannel = NotificationChannel.Chat,
-                deepLink = Deeplink.SupportChat(requestId)
-            )
+        if (isSendByRequestCreator) {
+            // should notify associated helper
+            val supporterEmployeeId = request.associatedSupportId ?: return
+            val supportPersonId = employees.getAssociatedPerson(supporterEmployeeId)?.id ?: return
+            val isSupportOnline = currentMembersInChat.contains(supportPersonId)
+            if (!isSupportOnline) {
+                val supporterFcmToken = persons.getPersonById(supportPersonId)?.fcmTokensList ?: return
+                notificationsManager.sendTranslatableNotificationByTokens(
+                    personsTokensList = listOf(supporterFcmToken),
+                    translatableData = TranslatableNotificationData.NewChatMessage(
+                        requestTitle = request.title,
+                        messageText = messageText
+                    ),
+                    notificationChannel = NotificationChannel.Chat,
+                    deepLink = Deeplink.SupportChat(requestId)
+                )
+            }
+        } else {
+            // should notify creator
+            val isNotificationsEnabled = request.isNotificationsEnabled
+            val isOwnerOnline = currentMembersInChat.contains(request.creatorPersonId)
+            if (isNotificationsEnabled && !isOwnerOnline) {
+                val creatorFcmToken = persons.getPersonById(request.creatorPersonId)?.fcmTokensList ?: return
+                notificationsManager.sendTranslatableNotificationByTokens(
+                    personsTokensList = listOf(creatorFcmToken),
+                    translatableData = TranslatableNotificationData.NewChatMessage(
+                        requestTitle = request.title,
+                        messageText = messageText
+                    ),
+                    notificationChannel = NotificationChannel.Chat,
+                    deepLink = Deeplink.SupportChat(requestId)
+                )
+            }
         }
     }
 
