@@ -6,6 +6,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.users.EmployeesDataSource
+import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.users.EmployeeModel
 import net.glazov.data.model.users.PersonModel
 import net.glazov.data.utils.employeesroles.EmployeeRoles
@@ -13,7 +14,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 class EmployeesDataSourceImpl(
-    db: MongoDatabase
+    db: MongoDatabase,
+    private val persons: PersonsDataSource,
 ): EmployeesDataSource {
 
     private val employees = db.getCollection<EmployeeModel>("Employees")
@@ -30,6 +32,11 @@ class EmployeesDataSourceImpl(
     override suspend fun getEmployeeByPersonId(personId: String): EmployeeModel? {
         val filter = Filters.eq(EmployeeModel::personId.name, personId)
         return employees.find(filter).singleOrNull()
+    }
+
+    override suspend fun getAssociatedPerson(employeeId: String): PersonModel? {
+        val employee = getEmployeeById(employeeId) ?: return null
+        return persons.getPersonById(employee.personId)
     }
 
     override suspend fun addEmployee(associatedPersonId: String, roles: List<EmployeeRoles>): EmployeeModel? {

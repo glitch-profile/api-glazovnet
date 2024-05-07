@@ -28,7 +28,7 @@ val dataSourcesModule = module {
         )
     }
     single<EmployeesDataSource> {
-        EmployeesDataSourceImpl(get())
+        EmployeesDataSourceImpl(db = get(), persons = get())
     }
     single<AnnouncementsDataSource> {
         AnnouncementsDataSourceImpl(

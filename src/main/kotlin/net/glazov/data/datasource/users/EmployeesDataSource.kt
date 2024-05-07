@@ -1,6 +1,7 @@
 package net.glazov.data.datasource.users
 
 import net.glazov.data.model.users.EmployeeModel
+import net.glazov.data.model.users.PersonModel
 import net.glazov.data.utils.employeesroles.EmployeeRoles
 
 interface EmployeesDataSource {
@@ -10,6 +11,8 @@ interface EmployeesDataSource {
     suspend fun getEmployeeById(employeeId: String): EmployeeModel?
 
     suspend fun getEmployeeByPersonId(personId: String): EmployeeModel?
+
+    suspend fun getAssociatedPerson(employeeId: String): PersonModel?
 
     suspend fun addEmployee(
         associatedPersonId: String,
