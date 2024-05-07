@@ -61,27 +61,27 @@ class PersonsDataSourceImpl(
         val filter = Filters.eq("_id", personId)
         val update = Updates.addToSet(PersonModel::fcmTokensList.name, newToken)
         val result = persons.updateOne(filter, update)
-        return result.upsertedId != null
+        return result.modifiedCount != 0L
     }
 
     override suspend fun removeFcmToken(personId: String, tokenToRemove: String): Boolean {
         val filter = Filters.eq("_id", personId)
         val update = Updates.pull(PersonModel::fcmTokensList.name, tokenToRemove)
         val result = persons.updateOne(filter, update)
-        return result.upsertedId != null
+        return result.modifiedCount != 0L
     }
 
     override suspend fun updateNotificationTopics(personId: String, newTopicsList: List<NotificationsTopicsCodes>): Boolean {
         val filter = Filters.eq("_id", personId)
         val topicsListFormatted = newTopicsList.map { it }
         val update = Updates.set(PersonModel::selectedNotificationsTopics.name, topicsListFormatted)
-        return persons.updateOne(filter, update).upsertedId != null
+        return persons.updateOne(filter, update).modifiedCount != 0L
     }
 
     override suspend fun updateNotificationsStatus(personId: String, newStatus: Boolean): Boolean {
         val filter = Filters.eq("_id", personId)
         val update = Updates.set(PersonModel::isNotificationsEnabled.name, newStatus)
-        return persons.updateOne(filter, update).upsertedId != null
+        return persons.updateOne(filter, update).modifiedCount != 0L
     }
 
     override suspend fun getPersonTokensWithSelectedTopic(topic: NotificationsTopicsCodes): List<List<String>> {
@@ -104,6 +104,6 @@ class PersonsDataSourceImpl(
         )
         val update = Updates.set(PersonModel::password.name, newPassword)
         val result = persons.updateOne(filter,update)
-        return result.upsertedId != null
+        return result.modifiedCount != 0L
     }
 }
