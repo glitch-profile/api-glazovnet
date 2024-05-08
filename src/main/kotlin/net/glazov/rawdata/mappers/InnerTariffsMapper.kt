@@ -1,6 +1,6 @@
 package net.glazov.rawdata.mappers
 
-import net.glazov.data.model.TariffModel
+import net.glazov.data.model.tariffs.TariffModel
 import net.glazov.rawdata.dto.InnerTariffDto
 
 fun InnerTariffDto.toTariffModel(): TariffModel {

@@ -5,8 +5,8 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.server.config.*
 import net.glazov.data.datasource.InnerDataSource
-import net.glazov.data.model.TariffModel
 import net.glazov.data.model.posts.InnerPostModel
+import net.glazov.data.model.tariffs.TariffModel
 import net.glazov.rawdata.dto.InnerNewsDto
 import net.glazov.rawdata.dto.InnerTariffDto
 import net.glazov.rawdata.mappers.toInnerPostModel

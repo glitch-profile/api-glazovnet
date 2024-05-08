@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.TariffsDataSource
-import net.glazov.data.model.TariffModel
+import net.glazov.data.model.tariffs.TariffModel
 import org.bson.types.ObjectId
 
 class TariffsDataSourceImpl(

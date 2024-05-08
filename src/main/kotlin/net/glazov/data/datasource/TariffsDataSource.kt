@@ -1,6 +1,6 @@
 package net.glazov.data.datasource
 
-import net.glazov.data.model.TariffModel
+import net.glazov.data.model.tariffs.TariffModel
 
 interface TariffsDataSource {
 

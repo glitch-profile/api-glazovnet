@@ -11,8 +11,8 @@ import io.ktor.server.routing.*
 import net.glazov.data.datasource.InnerDataSource
 import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
-import net.glazov.data.model.TariffModel
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.model.tariffs.TariffModel
 import net.glazov.data.utils.employeesroles.EmployeeRoles
 import net.glazov.data.utils.notificationsmanager.*
 

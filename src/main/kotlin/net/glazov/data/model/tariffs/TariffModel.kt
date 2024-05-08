@@ -1,4 +1,4 @@
-package net.glazov.data.model
+package net.glazov.data.model.tariffs
 
 import kotlinx.serialization.Serializable
 import org.bson.codecs.pojo.annotations.BsonId
