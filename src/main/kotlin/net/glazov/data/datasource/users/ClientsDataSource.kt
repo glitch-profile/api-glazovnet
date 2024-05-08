@@ -23,7 +23,7 @@ interface ClientsDataSource {
 
     suspend fun changeTariff(
         clientId: String,
-        newTariffId: String
+        newTariffId: String?
     ): Boolean
 
     suspend fun setIsAccountActive(

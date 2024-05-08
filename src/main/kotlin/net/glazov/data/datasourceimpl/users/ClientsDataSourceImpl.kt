@@ -79,18 +79,18 @@ class ClientsDataSourceImpl(
         } else null
     }
 
-    override suspend fun changeTariff(clientId: String, newTariffId: String): Boolean {
+    override suspend fun changeTariff(clientId: String, newTariffId: String?): Boolean {
         val filter = Filters.eq("_id", clientId)
-        val update = Updates.set(ClientModel::tariffId.name, newTariffId)
+        val update = Updates.set(ClientModel::pendingTariffId.name, newTariffId)
         val result = clients.updateOne(filter, update)
-        return result.upsertedId != null
+        return result.modifiedCount != 0L
     }
 
     override suspend fun setIsAccountActive(clientId: String, newStatus: Boolean): Boolean {
         val filter = Filters.eq("_id", clientId)
         val update = Updates.set(ClientModel::isAccountActive.name, newStatus)
         val result = clients.updateOne(filter, update)
-        return result.upsertedId != null
+        return result.modifiedCount != 0L
     }
 
     override suspend fun addPositiveTransaction(clientId: String, amount: Float, note: String?) {

@@ -92,10 +92,7 @@ fun Route.personalAccountRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val tariffId = call.request.headers["tariff_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
+            val tariffId = call.request.headers["tariff_id"]
             val result = clients.changeTariff(clientId = clientId, newTariffId = tariffId)
             call.respond(
                 SimpleResponse(
