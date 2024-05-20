@@ -2,7 +2,7 @@ package net.glazov.data.datasource.users
 
 import net.glazov.data.model.users.EmployeeModel
 import net.glazov.data.model.users.PersonModel
-import net.glazov.data.utils.employeesroles.EmployeeRoles
+import net.glazov.data.utils.EmployeeRoles
 
 interface EmployeesDataSource {
 

@@ -7,6 +7,7 @@ import io.ktor.server.config.*
 import net.glazov.data.datasource.InnerDataSource
 import net.glazov.data.model.posts.InnerPostModel
 import net.glazov.data.model.tariffs.TariffModel
+import net.glazov.data.utils.RequestTariffsAccess
 import net.glazov.rawdata.dto.InnerNewsDto
 import net.glazov.rawdata.dto.InnerTariffDto
 import net.glazov.rawdata.mappers.toInnerPostModel
@@ -28,37 +29,52 @@ class InnerDataSourceImpl(
         return mappedPosts.reversed()
     }
 
-    override suspend fun getAllInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
+    override suspend fun getAllInnerTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel> {
         val innerTariffs: List<InnerTariffDto> = client.get("$PATH_TEST/$TARIFFS_PATH").body()
         val filteredTariffs = innerTariffs.asSequence()
             .filter { it.name.isNotEmpty() }
-            .filter { if (!includeOrganizationTariffs) it.forOrg == "no" else true }
+            .filter(getFilterByAccessLevel(tariffsAccessLevel))
             .map { it.toTariffModel() }
             .toList()
         return filteredTariffs.reversed()
     }
 
-    override suspend fun getActiveInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
+    override suspend fun getActiveInnerTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel> {
         val innerTariffs: List<InnerTariffDto> = client.get("$PATH_TEST/$TARIFFS_PATH").body()
         val filteredTariffs = innerTariffs.asSequence()
             .filter { it.name.isNotEmpty() }
             .filter { it.active == "yes" }
-            .filter { if (!includeOrganizationTariffs) it.forOrg == "no" else true }
+            .filter(getFilterByAccessLevel(tariffsAccessLevel))
             .map { it.toTariffModel() }
             .toList()
         return filteredTariffs.reversed()
     }
 
-    override suspend fun getArchiveInnerTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
+    override suspend fun getArchiveInnerTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel> {
         val innerTariffs: List<InnerTariffDto> = client.get("$PATH_TEST/$TARIFFS_PATH").body()
         val filteredTariffs = innerTariffs.asSequence()
             .filter { it.name.isNotEmpty() }
             .filter { it.active == "no" }
-            .filter { if (!includeOrganizationTariffs) it.forOrg == "no" else true }
+            .filter( getFilterByAccessLevel(tariffsAccessLevel) )
             .map { it.toTariffModel() }
             .toList()
         return filteredTariffs.reversed()
     }
 
+    private fun getFilterByAccessLevel(
+        tariffsAccessLevel: RequestTariffsAccess
+    ): (InnerTariffDto) -> Boolean {
+        return when (tariffsAccessLevel) {
+            RequestTariffsAccess.Default -> {
+                { it.forOrg == "no" }
+            }
+            RequestTariffsAccess.Organization -> {
+                { it.forOrg == "yes" }
+            }
+            RequestTariffsAccess.Employee -> {
+                { true }
+            }
+        }
+    }
 
 }

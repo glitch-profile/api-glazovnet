@@ -1,4 +1,4 @@
-package net.glazov.data.utils.employeesroles
+package net.glazov.data.utils
 
 enum class EmployeeRoles {
     NEWS,

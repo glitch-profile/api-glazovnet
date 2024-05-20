@@ -10,7 +10,7 @@ import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.users.ClientModel
 
-private const val PATH = "/api/clients"
+private const val PATH = "/api/clients-management"
 
 fun Route.clientsRoutes(
     clients: ClientsDataSource

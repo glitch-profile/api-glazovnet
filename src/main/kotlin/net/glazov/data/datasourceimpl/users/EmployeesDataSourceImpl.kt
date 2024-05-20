@@ -9,7 +9,7 @@ import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.users.EmployeeModel
 import net.glazov.data.model.users.PersonModel
-import net.glazov.data.utils.employeesroles.EmployeeRoles
+import net.glazov.data.utils.EmployeeRoles
 import kotlin.math.max
 import kotlin.math.min
 

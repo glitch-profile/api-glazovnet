@@ -11,7 +11,7 @@ import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.AnnouncementModel
 import net.glazov.data.model.response.SimpleResponse
-import net.glazov.data.utils.employeesroles.EmployeeRoles
+import net.glazov.data.utils.EmployeeRoles
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/announcements"

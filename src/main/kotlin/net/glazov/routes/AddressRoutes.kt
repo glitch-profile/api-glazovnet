@@ -9,7 +9,7 @@ import net.glazov.data.datasource.AddressesDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.RegisteredAddressesModel
 import net.glazov.data.model.response.SimpleResponse
-import net.glazov.data.utils.employeesroles.EmployeeRoles
+import net.glazov.data.utils.EmployeeRoles
 
 private const val PATH = "/api/address-info"
 
