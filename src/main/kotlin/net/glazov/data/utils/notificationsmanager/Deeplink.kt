@@ -15,4 +15,5 @@ sealed class Deeplink(
     data class SupportRequest(val requestId: String) : Deeplink("$BASE_ROUTE/requests/$requestId")
     data class SupportChat(val requestId: String) : Deeplink("$BASE_ROUTE/requests/$requestId/chat")
     data object PersonalAccount: Deeplink("$BASE_ROUTE/personal-account")
+    data object ServicePosts: Deeplink("$BASE_ROUTE/service-posts")
 }

@@ -12,13 +12,15 @@ import net.glazov.data.datasource.InnerDataSource
 import net.glazov.data.datasource.InnerPostsDataSource
 import net.glazov.data.model.posts.IncomingInnerPostData
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.notificationsmanager.*
 
 private val PATH = "/api/inner-posts"
 private val useProtectedInnerPosts = ApplicationConfig(null).tryGetString("inner_data.use_protected_inner_posts").toBoolean()
 
 fun Route.innerPostsRoutes(
     innerDataSource: InnerDataSource,
-    innerPostsDataSource: InnerPostsDataSource
+    innerPostsDataSource: InnerPostsDataSource,
+    notificationsManager: NotificationsManager
 ) {
 
     authenticate("employee") {
@@ -73,6 +75,17 @@ fun Route.innerPostsRoutes(
                     data = result
                 )
             )
+            if (status) {
+                notificationsManager.sendTranslatableNotificationByTopic(
+                    topic = NotificationsTopicsCodes.SERVICE_NEWS,
+                    translatableData = TranslatableNotificationData.NewServicePost(
+                        postTitle = result!!.title,
+                        postBody = result!!.text
+                    ),
+                    notificationChannel = NotificationChannel.ServiceNews,
+                    deepLink = Deeplink.ServicePosts
+                )
+            }
         }
     }
 

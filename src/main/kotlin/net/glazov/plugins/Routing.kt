@@ -51,7 +51,7 @@ fun Application.configureRouting() {
         notificationsRoutes(personsDataSource, clientsDataSource, employeesDataSource)
         usersRoutes(personsDataSource, clientsDataSource, employeesDataSource)
         servicesRoutes(servicesDataSource, clientsDataSource)
-        innerPostsRoutes(innerDataSource, innerPostsDataSource)
+        innerPostsRoutes(innerDataSource, innerPostsDataSource, notificationManager)
 //        testRoutes()
 //        innerRoutes(innerData = innerDataSource)
     }
