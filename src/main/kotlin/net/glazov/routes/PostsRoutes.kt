@@ -10,8 +10,8 @@ import net.glazov.data.datasource.PostsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.posts.IncomingPostModel
 import net.glazov.data.model.response.SimpleResponse
-import net.glazov.data.utils.UrlChanger
 import net.glazov.data.utils.EmployeeRoles
+import net.glazov.data.utils.UrlChanger
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/posts"
