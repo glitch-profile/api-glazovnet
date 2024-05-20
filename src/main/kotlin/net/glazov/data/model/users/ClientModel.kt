@@ -15,6 +15,7 @@ data class ClientModel(
     val id: String = ObjectId().toString(),
     val personId: String,
     val accountNumber: String, //Номер лицевого счёта
+    val connectedOrganizationName: String? = null, // Название связанной организации
     val address: AddressModel,
     val tariffId: String, //ID подключенного тарифа
     val pendingTariffId: String? = null,

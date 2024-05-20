@@ -10,10 +10,12 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.InnerDataSource
 import net.glazov.data.datasource.TariffsDataSource
+import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.model.tariffs.TariffModel
-import net.glazov.data.utils.employeesroles.EmployeeRoles
+import net.glazov.data.utils.EmployeeRoles
+import net.glazov.data.utils.RequestTariffsAccess
 import net.glazov.data.utils.notificationsmanager.*
 
 private const val PATH = "/api/tariffs"
@@ -23,16 +25,27 @@ fun Route.tariffsRoutes(
     tariffs: TariffsDataSource,
     innerDataSource: InnerDataSource,
     notificationsManager: NotificationsManager,
-    employees: EmployeesDataSource
+    employees: EmployeesDataSource,
+    clients: ClientsDataSource
 ) {
 
     authenticate {
 
         get(PATH) {
             try {
-                val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
-                val result = if (useInnerTariffs) innerDataSource.getAllInnerTariffs(isShowOrganizationTariffs)
-                else tariffs.getAllTariffs(isShowOrganizationTariffs)
+                val clientId = call.request.headers["client_id"]
+                val employeeId = call.request.headers["employee_id"]
+                var tariffsAccessLevel: RequestTariffsAccess = RequestTariffsAccess.Default
+                if (employeeId != null) {
+                    val employee = employees.getEmployeeById(employeeId)
+                    if (employee != null) tariffsAccessLevel = RequestTariffsAccess.Employee
+                } else if (clientId != null) {
+                    val client = clients.getClientById(clientId)
+                    val isClientAsOrganization = client?.connectedOrganizationName != null
+                    if (isClientAsOrganization) tariffsAccessLevel = RequestTariffsAccess.Organization
+                }
+                val result = if (useInnerTariffs) innerDataSource.getAllInnerTariffs(tariffsAccessLevel)
+                else tariffs.getAllTariffs(tariffsAccessLevel)
                 call.respond(
                     SimpleResponse(
                         status = true,
@@ -49,9 +62,19 @@ fun Route.tariffsRoutes(
 
         get("$PATH/active") {
             try {
-                val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
-                val result = if (useInnerTariffs) innerDataSource.getActiveInnerTariffs(isShowOrganizationTariffs)
-                else tariffs.getActiveTariffs(isShowOrganizationTariffs)
+                val clientId = call.request.headers["client_id"]
+                val employeeId = call.request.headers["employee_id"]
+                var tariffsAccessLevel: RequestTariffsAccess = RequestTariffsAccess.Default
+                if (employeeId != null) {
+                    val employee = employees.getEmployeeById(employeeId)
+                    if (employee != null) tariffsAccessLevel = RequestTariffsAccess.Employee
+                } else if (clientId != null) {
+                    val client = clients.getClientById(clientId)
+                    val isClientAsOrganization = client?.connectedOrganizationName != null
+                    if (isClientAsOrganization) tariffsAccessLevel = RequestTariffsAccess.Organization
+                }
+                val result = if (useInnerTariffs) innerDataSource.getActiveInnerTariffs(tariffsAccessLevel)
+                else tariffs.getActiveTariffs(tariffsAccessLevel)
                 call.respond(
                     SimpleResponse(
                         status = true,
@@ -68,9 +91,19 @@ fun Route.tariffsRoutes(
 
         get("$PATH/archive") {
             try {
-                val isShowOrganizationTariffs = call.request.headers["is_for_organization"]?.toBoolean() ?: false
-                val result = if (useInnerTariffs) innerDataSource.getArchiveInnerTariffs(isShowOrganizationTariffs)
-                else tariffs.getArchiveTariffs(isShowOrganizationTariffs)
+                val clientId = call.request.headers["client_id"]
+                val employeeId = call.request.headers["employee_id"]
+                var tariffsAccessLevel: RequestTariffsAccess = RequestTariffsAccess.Default
+                if (employeeId != null) {
+                    val employee = employees.getEmployeeById(employeeId)
+                    if (employee != null) tariffsAccessLevel = RequestTariffsAccess.Employee
+                } else if (clientId != null) {
+                    val client = clients.getClientById(clientId)
+                    val isClientAsOrganization = client?.connectedOrganizationName != null
+                    if (isClientAsOrganization) tariffsAccessLevel = RequestTariffsAccess.Organization
+                }
+                val result = if (useInnerTariffs) innerDataSource.getArchiveInnerTariffs(tariffsAccessLevel)
+                else tariffs.getArchiveTariffs(tariffsAccessLevel)
                 call.respond(
                     SimpleResponse(
                         status = true,
@@ -98,6 +131,42 @@ fun Route.tariffsRoutes(
                 )
             } else call.respond(HttpStatusCode.BadRequest)
         }
+    }
+
+    authenticate("client") {
+
+        put("$PATH/update-tariff-for-client") {
+            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val tariffId = call.request.headers["tariff_id"]
+            if (tariffId != null) {
+                val isClientAsOrganization = clients.getClientById(clientId)?.connectedOrganizationName != null
+                val tariff = tariffs.getTariffById(tariffId) ?: kotlin.run {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@put
+                }
+                if (tariff.isActive) {
+                    if (tariff.isForOrganization != isClientAsOrganization) {
+                        call.respond(HttpStatusCode.Forbidden)
+                        return@put
+                    }
+                } else {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@put
+                }
+            }
+            val result = clients.changeTariff(clientId = clientId, newTariffId = tariffId)
+            call.respond(
+                SimpleResponse(
+                    status = result,
+                    message = if (result) "tariff updated" else "unable to update tariff",
+                    data = Unit
+                )
+            )
+        }
+
     }
 
     authenticate("employee") {

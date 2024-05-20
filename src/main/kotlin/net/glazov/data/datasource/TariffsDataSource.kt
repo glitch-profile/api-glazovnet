@@ -1,14 +1,15 @@
 package net.glazov.data.datasource
 
 import net.glazov.data.model.tariffs.TariffModel
+import net.glazov.data.utils.RequestTariffsAccess
 
 interface TariffsDataSource {
 
-    suspend fun getAllTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
+    suspend fun getAllTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel>
 
-    suspend fun getActiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
+    suspend fun getActiveTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel>
 
-    suspend fun getArchiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel>
+    suspend fun getArchiveTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel>
 
     suspend fun getTariffById(tariffId: String): TariffModel?
 

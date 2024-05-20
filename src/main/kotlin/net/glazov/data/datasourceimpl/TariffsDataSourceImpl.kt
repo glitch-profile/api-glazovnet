@@ -5,6 +5,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.model.tariffs.TariffModel
+import net.glazov.data.utils.RequestTariffsAccess
 import org.bson.types.ObjectId
 
 class TariffsDataSourceImpl(
@@ -13,33 +14,61 @@ class TariffsDataSourceImpl(
 
     private val tariffs = db.getCollection<TariffModel>("Tariffs")
 
-    override suspend fun getAllTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
-        return if (includeOrganizationTariffs) {
-            tariffs.find().toList().reversed()
-        } else {
-            val filter = Filters.eq(TariffModel::isForOrganization.name, false)
-            tariffs.find(filter).toList().reversed()
+    override suspend fun getAllTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel> {
+        val filter = when (tariffsAccessLevel) {
+            RequestTariffsAccess.Default -> {
+                Filters.eq(TariffModel::isForOrganization.name, false)
+
+            }
+            RequestTariffsAccess.Organization -> {
+                Filters.eq(TariffModel::isForOrganization.name, true)
+
+            }
+            RequestTariffsAccess.Employee -> {
+                Filters.empty()
+            }
         }
+        return tariffs.find(filter).toList().reversed()
     }
 
-    override suspend fun getActiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
-        val filter = Filters.eq(TariffModel::isActive.name, true)
-        val organisationFilter = Filters.and(
-            filter, Filters.eq(TariffModel::isForOrganization.name, false)
-        )
-        return if (includeOrganizationTariffs) {
-            tariffs.find(filter).toList().reversed()
-        } else tariffs.find(organisationFilter).toList().reversed()
+    override suspend fun getActiveTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel> {
+        val isActiveFilter = Filters.eq(TariffModel::isActive.name, true)
+        val filter =  when (tariffsAccessLevel) {
+            RequestTariffsAccess.Default -> {
+                Filters.and(
+                    isActiveFilter, Filters.eq(TariffModel::isForOrganization.name, false)
+                )
+            }
+            RequestTariffsAccess.Organization -> {
+                Filters.and(
+                    isActiveFilter, Filters.eq(TariffModel::isForOrganization.name, true)
+                )
+            }
+            RequestTariffsAccess.Employee -> {
+                isActiveFilter
+            }
+        }
+        return tariffs.find(filter).toList().reversed()
     }
 
-    override suspend fun getArchiveTariffs(includeOrganizationTariffs: Boolean): List<TariffModel> {
-        val filter = Filters.eq(TariffModel::isActive.name, false)
-        val organisationFilter = Filters.and(
-            filter, Filters.eq(TariffModel::isForOrganization.name, false)
-        )
-        return if (includeOrganizationTariffs) {
-            tariffs.find(filter).toList().reversed()
-        } else tariffs.find(organisationFilter).toList().reversed()
+    override suspend fun getArchiveTariffs(tariffsAccessLevel: RequestTariffsAccess): List<TariffModel> {
+        val isActiveFilter = Filters.eq(TariffModel::isActive.name, false)
+        val filter =  when (tariffsAccessLevel) {
+            RequestTariffsAccess.Default -> {
+                Filters.and(
+                    isActiveFilter, Filters.eq(TariffModel::isForOrganization.name, false)
+                )
+            }
+            RequestTariffsAccess.Organization -> {
+                Filters.and(
+                    isActiveFilter, Filters.eq(TariffModel::isForOrganization.name, true)
+                )
+            }
+            RequestTariffsAccess.Employee -> {
+                isActiveFilter
+            }
+        }
+        return tariffs.find(filter).toList().reversed()
     }
 
     override suspend fun getTariffById(tariffId: String): TariffModel? {

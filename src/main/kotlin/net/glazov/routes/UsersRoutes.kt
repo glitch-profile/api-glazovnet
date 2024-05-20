@@ -10,9 +10,11 @@ import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.response.SimpleResponse
 
-private const val PATH = "/api/account"
+private const val PERSONS_PATH = "/api/persons"
+private const val CLIENTS_PATH = "/api/clients"
+private const val EMPLOYEES_PATH = "/api/employees"
 
-fun Route.personalAccountRoutes(
+fun Route.usersRoutes(
     persons: PersonsDataSource,
     clients: ClientsDataSource,
     employees: EmployeesDataSource,
@@ -20,7 +22,7 @@ fun Route.personalAccountRoutes(
 
     authenticate {
 
-        put("$PATH/update-password") {
+        put("$PERSONS_PATH/update-password") {
             val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
@@ -47,7 +49,7 @@ fun Route.personalAccountRoutes(
             )
         }
 
-        get("$PATH/person-info") {
+        get("$PERSONS_PATH/info") {
             val personId = call.request.headers["person_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
@@ -69,7 +71,7 @@ fun Route.personalAccountRoutes(
 
     authenticate("client") {
 
-        get("$PATH/client-info") {
+        get("$CLIENTS_PATH/info") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
@@ -87,23 +89,7 @@ fun Route.personalAccountRoutes(
             )
         }
 
-        put("$PATH/update-tariff") {
-            val clientId = call.request.headers["client_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
-            }
-            val tariffId = call.request.headers["tariff_id"]
-            val result = clients.changeTariff(clientId = clientId, newTariffId = tariffId)
-            call.respond(
-                SimpleResponse(
-                    status = result,
-                    message = if (result) "tariff updated" else "unable to update tariff",
-                    data = Unit
-                )
-            )
-        }
-
-        put("$PATH/block") {
+        put("$CLIENTS_PATH/block") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
@@ -122,7 +108,7 @@ fun Route.personalAccountRoutes(
 
         }
 
-        put("$PATH/add-funds") {
+        put("$CLIENTS_PATH/add-funds") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
@@ -160,7 +146,7 @@ fun Route.personalAccountRoutes(
 
     authenticate("employee") {
 
-        get("$PATH/employee-info") {
+        get("$EMPLOYEES_PATH/info") {
             val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
