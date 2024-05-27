@@ -22,6 +22,11 @@ class ServicesDataSourceImpl(
         return services.find(filter).singleOrNull()
     }
 
+    override suspend fun getMultipleServicesById(servicesId: List<String>): List<ServiceModel> {
+        val filter = Filters.`in`("_id", servicesId)
+        return services.find(filter).toList().sortedBy { it.name }
+    }
+
     override suspend fun addService(
         name: String,
         description: String,

@@ -26,9 +26,12 @@ interface ClientsDataSource {
         newTariffId: String?
     ): Boolean
 
-    suspend fun setIsAccountActive(
-        clientId: String,
-        newStatus: Boolean
+    suspend fun blockClientAccount(
+        clientId: String
+    ): Boolean
+
+    suspend fun unblockClientAccount(
+        clientId: String
     ): Boolean
 
     suspend fun addPositiveTransaction(
@@ -53,5 +56,14 @@ interface ClientsDataSource {
         serviceId: String
     ): Boolean
 
+    // FOR MONTHLY PAYMENTS
+
+    suspend fun getClientsForBillingDate(dateSeconds: Long): List<ClientModel>
+
+    suspend fun initStartOfBillingMonth(
+        clientId: String,
+        nextBillingDate: Long,
+        paymentAmount: Int
+    )
 
 }

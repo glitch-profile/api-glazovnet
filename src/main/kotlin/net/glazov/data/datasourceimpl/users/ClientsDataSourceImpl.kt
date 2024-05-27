@@ -16,6 +16,11 @@ import net.glazov.data.utils.paymentmanager.ClientNotFoundException
 import net.glazov.data.utils.paymentmanager.InsufficientFundsException
 import net.glazov.data.utils.paymentmanager.TransactionErrorException
 import net.glazov.data.utils.paymentmanager.TransactionManager
+import java.time.Duration
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.Period
+import java.time.ZoneId
 
 class ClientsDataSourceImpl(
     db: MongoDatabase,
@@ -86,11 +91,38 @@ class ClientsDataSourceImpl(
         return result.modifiedCount != 0L
     }
 
-    override suspend fun setIsAccountActive(clientId: String, newStatus: Boolean): Boolean {
+    override suspend fun blockClientAccount(clientId: String): Boolean {
         val filter = Filters.eq("_id", clientId)
-        val update = Updates.set(ClientModel::isAccountActive.name, newStatus)
+        val currentTimestamp = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
+        val update = Updates.combine(
+            Updates.set(ClientModel::isAccountActive.name, true),
+            Updates.set(ClientModel::accountLockTimestamp.name, currentTimestamp)
+        )
         val result = clients.updateOne(filter, update)
         return result.modifiedCount != 0L
+    }
+
+    override suspend fun unblockClientAccount(clientId: String): Boolean {
+        val filter = Filters.eq("_id", clientId)
+        val client = clients.find(filter).singleOrNull() ?: return false
+        if (!client.isAccountActive && client.balance > 0) {
+            val currentTimestamp = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
+            val lastBlockTimestamp = client.accountLockTimestamp ?: currentTimestamp
+            val lockDuration = Duration.ofSeconds(currentTimestamp - lastBlockTimestamp).toDays()
+            val update = if (lockDuration == 0L) {
+                Updates.set(ClientModel::isAccountActive.name, true)
+            } else {
+                val newClientDebitDate = OffsetDateTime.ofInstant(
+                    Instant.ofEpochSecond(client.debitDate), ZoneId.systemDefault()
+                ).plusDays(lockDuration)
+                Updates.combine(
+                    Updates.set(ClientModel::isAccountActive.name, true),
+                    Updates.set(ClientModel::debitDate.name, newClientDebitDate)
+                )
+            }
+            val result = clients.updateOne(filter, update)
+            return result.modifiedCount != 0L
+        } else return false
     }
 
     override suspend fun addPositiveTransaction(clientId: String, amount: Float, note: String?) {
@@ -144,5 +176,38 @@ class ClientsDataSourceImpl(
         val update = Updates.pull(ClientModel::connectedServices.name, serviceId)
         val result = clients.updateOne(filter, update)
         return result.modifiedCount != 0L
+    }
+
+    // FOR MONTHLY PAYMENTS
+
+    override suspend fun getClientsForBillingDate(dateSeconds: Long): List<ClientModel> {
+        val filter = Filters.and(
+            Filters.lte(ClientModel::debitDate.name, dateSeconds),
+            Filters.eq(ClientModel::isAccountActive.name, true)
+        )
+        return clients.find(filter).toList()
+    }
+
+    override suspend fun initStartOfBillingMonth(
+        clientId: String,
+        nextBillingDate: Long,
+        paymentAmount: Int
+    ) {
+        val filter = Filters.eq("_id", clientId)
+        val client = clients.find(filter).singleOrNull() ?: return
+        val newBalance = client.balance - paymentAmount
+        var update = Updates.combine(
+            Updates.set(ClientModel::balance.name, newBalance),
+            Updates.set(ClientModel::debitDate.name, nextBillingDate)
+        )
+        if (newBalance < 0) blockClientAccount(clientId)
+        if (client.pendingTariffId != null) {
+            update = Updates.combine(
+                update,
+                Updates.set(ClientModel::tariffId.name, client.pendingTariffId),
+                Updates.set(ClientModel::pendingTariffId.name, null)
+            )
+        }
+        val result = clients.updateOne(filter, update)
     }
 }

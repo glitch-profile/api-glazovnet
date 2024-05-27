@@ -8,6 +8,8 @@ interface ServicesDataSource {
 
     suspend fun getServiceById(serviceId: String): ServiceModel?
 
+    suspend fun getMultipleServicesById(servicesId: List<String>): List<ServiceModel>
+
     suspend fun addService(
         name: String,
         description: String,

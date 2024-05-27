@@ -17,4 +17,5 @@ fun Application.module() {
     configureSockets()
     configureRouting()
     configureFirebase()
+    configureBillingSimulation()
 }
