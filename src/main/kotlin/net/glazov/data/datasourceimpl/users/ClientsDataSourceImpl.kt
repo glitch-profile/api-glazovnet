@@ -19,7 +19,6 @@ import net.glazov.data.utils.paymentmanager.TransactionManager
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.Period
 import java.time.ZoneId
 
 class ClientsDataSourceImpl(
@@ -208,6 +207,6 @@ class ClientsDataSourceImpl(
                 Updates.set(ClientModel::pendingTariffId.name, null)
             )
         }
-        val result = clients.updateOne(filter, update)
+        clients.updateOne(filter, update)
     }
 }
