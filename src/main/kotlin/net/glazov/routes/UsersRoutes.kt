@@ -94,9 +94,8 @@ fun Route.usersRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
-            val result = clients.setIsAccountActive(
-                clientId = clientId,
-                newStatus = false
+            val result = clients.blockClientAccount(
+                clientId = clientId
             )
             call.respond(
                 SimpleResponse(

@@ -23,5 +23,6 @@ data class ClientModel(
     val accountCreationDate: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(),
     val debitDate: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond(), //Дата списания средств
     val isAccountActive: Boolean = true,
+    val accountLockTimestamp: Long? = null, //Дата, когда был заблокирован аккаунт
     val connectedServices: List<String> = emptyList()
 )

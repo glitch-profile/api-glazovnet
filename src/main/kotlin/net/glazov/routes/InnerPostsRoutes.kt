@@ -80,7 +80,7 @@ fun Route.innerPostsRoutes(
                     topic = NotificationsTopicsCodes.SERVICE_NEWS,
                     translatableData = TranslatableNotificationData.NewServicePost(
                         postTitle = result!!.title,
-                        postBody = result!!.text
+                        postBody = result.text
                     ),
                     notificationChannel = NotificationChannel.ServiceNews,
                     deepLink = Deeplink.ServicePosts
