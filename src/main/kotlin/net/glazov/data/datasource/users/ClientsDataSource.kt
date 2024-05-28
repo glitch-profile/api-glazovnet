@@ -3,6 +3,7 @@ package net.glazov.data.datasource.users
 import net.glazov.data.model.AddressModel
 import net.glazov.data.model.users.ClientModel
 import net.glazov.data.model.users.PersonModel
+import net.glazov.data.utils.paymentmanager.TransactionNoteTextCode
 
 interface ClientsDataSource {
 
@@ -37,13 +38,19 @@ interface ClientsDataSource {
     suspend fun addPositiveTransaction(
         clientId: String,
         amount: Float,
-        note: String? = null
+        note: TransactionNoteTextCode? = null
     )
 
-    suspend fun addNegativeTransaction(
+    suspend fun addSoftNegativeTransaction(
         clientId: String,
         amount: Float,
-        note: String? = null
+        note: TransactionNoteTextCode? = null
+    )
+
+    suspend fun addStrictNegativeTransaction(
+        clientId: String,
+        amount: Float,
+        note: TransactionNoteTextCode? = null
     )
 
     suspend fun connectService(

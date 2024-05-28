@@ -23,6 +23,8 @@ val dataSourcesModule = module {
             db = get(),
             persons = get(),
             addresses = get(),
+            tariffs = get(),
+            services = get(),
             transactions = get(),
             transactionManager = get()
         )

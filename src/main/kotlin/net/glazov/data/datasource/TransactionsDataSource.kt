@@ -1,6 +1,7 @@
 package net.glazov.data.datasource
 
 import net.glazov.data.model.TransactionModel
+import net.glazov.data.utils.paymentmanager.TransactionNoteTextCode
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -10,7 +11,7 @@ interface TransactionsDataSource {
         clientId: String,
         amount: Float,
         isIncoming: Boolean,
-        note: String? = null,
+        note: TransactionNoteTextCode? = null,
         transactionTimestamp: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
     ): TransactionModel?
 

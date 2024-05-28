@@ -6,6 +6,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.AddressesDataSource
+import net.glazov.data.datasource.ServicesDataSource
 import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.datasource.users.ClientsDataSource
@@ -13,10 +14,7 @@ import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.AddressModel
 import net.glazov.data.model.users.ClientModel
 import net.glazov.data.model.users.PersonModel
-import net.glazov.data.utils.paymentmanager.ClientNotFoundException
-import net.glazov.data.utils.paymentmanager.InsufficientFundsException
-import net.glazov.data.utils.paymentmanager.TransactionErrorException
-import net.glazov.data.utils.paymentmanager.TransactionManager
+import net.glazov.data.utils.paymentmanager.*
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -27,6 +25,7 @@ class ClientsDataSourceImpl(
     private val persons: PersonsDataSource,
     private val addresses: AddressesDataSource,
     private val tariffs: TariffsDataSource,
+    private val services: ServicesDataSource,
     private val transactions: TransactionsDataSource,
     private val transactionManager: TransactionManager
 ): ClientsDataSource {
@@ -132,46 +131,63 @@ class ClientsDataSourceImpl(
         } else return false
     }
 
-    override suspend fun addPositiveTransaction(clientId: String, amount: Float, note: String?) {
-        val client = getClientById(clientId)
-        if (client !== null) {
-            val transactionResult = transactionManager.makeTransaction()
-            if (transactionResult) {
-                val newBalance = client.balance + amount
-                val filter = Filters.eq("_id", clientId)
-                val update = Updates.set(ClientModel::balance.name, newBalance)
-                clients.updateOne(filter, update)
-                transactions.addTransaction(
-                    clientId = clientId,
-                    amount = amount,
-                    isIncoming = true,
-                    note = note
-                )
-            } else throw TransactionErrorException()
-        } else throw ClientNotFoundException()
+    override suspend fun addPositiveTransaction(clientId: String, amount: Float, note: TransactionNoteTextCode?) {
+        getClientById(clientId) ?: kotlin.run {
+            throw ClientNotFoundException()
+        }
+        val isTransactionSuccessful = transactionManager.makeTransaction()
+        if (isTransactionSuccessful) {
+            val filter = Filters.eq("_id", clientId)
+            val update = Updates.inc(ClientModel::balance.name, amount)
+            clients.updateOne(filter, update)
+            transactions.addTransaction(
+                clientId = clientId,
+                amount = amount,
+                isIncoming = true,
+                note = note
+            )
+        } else throw TransactionErrorException()
     }
 
-    override suspend fun addNegativeTransaction(clientId: String, amount: Float, note: String?) {
-        val client = getClientById(clientId)
-        if (client !== null) {
-            val newBalance = client.balance - amount
-            if (newBalance < 0) {
-                throw InsufficientFundsException()
-            } else {
-                val filter = Filters.eq("_id", clientId)
-                val update = Updates.set(ClientModel::balance.name, newBalance)
-                clients.updateOne(filter, update)
-                transactions.addTransaction(
-                    clientId = clientId,
-                    amount = amount,
-                    isIncoming = false,
-                    note = note
-                )
-            }
-        } else throw ClientNotFoundException()
+    override suspend fun addSoftNegativeTransaction(clientId: String, amount: Float, note: TransactionNoteTextCode?) {
+        val filter = Filters.eq("_id", clientId)
+        val update = Updates.inc(ClientModel::balance.name, -amount)
+        clients.updateOne(filter, update)
+        transactions.addTransaction(
+            clientId = clientId,
+            amount = amount,
+            isIncoming = false,
+            note = note
+        )
+    }
+
+    override suspend fun addStrictNegativeTransaction(clientId: String, amount: Float, note: TransactionNoteTextCode?) {
+        val client = getClientById(clientId) ?: kotlin.run {
+            throw ClientNotFoundException()
+        }
+        val newClientBalance = client.balance - amount
+        if (newClientBalance >= 0) {
+            val filter = Filters.eq("_id", clientId)
+            val update = Updates.set(ClientModel::balance.name, newClientBalance)
+            clients.updateOne(filter, update)
+            transactions.addTransaction(
+                clientId = clientId,
+                amount = amount,
+                isIncoming = false,
+                note = note
+            )
+        } else throw InsufficientFundsException()
     }
 
     override suspend fun connectService(clientId: String, serviceId: String): Boolean {
+        val service = services.getServiceById(serviceId) ?: return false
+        if (service.connectionCost != null) {
+            addStrictNegativeTransaction(
+                clientId = clientId,
+                amount = service.connectionCost.toFloat(),
+                note = TransactionNoteTextCode.ConnectingNewService
+            )
+        }
         val filter = Filters.eq("_id", clientId)
         val update = Updates.addToSet(ClientModel::connectedServices.name, serviceId)
         val result = clients.updateOne(filter, update)
@@ -206,11 +222,13 @@ class ClientsDataSourceImpl(
         nextBillingDate: Long,
         paymentAmount: Int
     ) {
-        val filter = Filters.eq("_id", clientId)
-        val update = Updates.combine(
-            Updates.inc(ClientModel::balance.name, -paymentAmount),
-            Updates.set(ClientModel::debitDate.name, nextBillingDate)
+        addSoftNegativeTransaction(
+            clientId = clientId,
+            amount = paymentAmount.toFloat(),
+            note = TransactionNoteTextCode.MonthlyPayment
         )
+        val filter = Filters.eq("_id", clientId)
+        val update = Updates.set(ClientModel::debitDate.name, nextBillingDate)
         clients.updateOne(filter, update)
     }
 

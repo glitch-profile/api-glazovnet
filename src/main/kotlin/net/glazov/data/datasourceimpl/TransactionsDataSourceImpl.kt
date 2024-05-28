@@ -5,6 +5,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.model.TransactionModel
+import net.glazov.data.utils.paymentmanager.TransactionNoteTextCode
 import org.bson.types.ObjectId
 
 class TransactionsDataSourceImpl(
@@ -17,7 +18,7 @@ class TransactionsDataSourceImpl(
         clientId: String,
         amount: Float,
         isIncoming: Boolean,
-        note: String?,
+        note: TransactionNoteTextCode?,
         transactionTimestamp: Long
     ): TransactionModel? {
         val transactionModel = TransactionModel(
@@ -26,7 +27,7 @@ class TransactionsDataSourceImpl(
             transactionTimestamp = transactionTimestamp,
             amount = amount,
             isIncoming = isIncoming,
-            note = note
+            note = note?.code
         )
         val addResult = transactions.insertOne(document = transactionModel)
         return if (addResult.insertedId !== null) transactionModel

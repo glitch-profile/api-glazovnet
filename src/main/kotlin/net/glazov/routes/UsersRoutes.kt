@@ -9,6 +9,7 @@ import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.response.SimpleResponse
+import net.glazov.data.utils.paymentmanager.TransactionNoteTextCode
 
 private const val PERSONS_PATH = "/api/persons"
 private const val CLIENTS_PATH = "/api/clients"
@@ -121,7 +122,7 @@ fun Route.usersRoutes(
                 clients.addPositiveTransaction(
                     clientId = clientId,
                     amount = amount,
-                    note = note
+                    note = if (note != null) TransactionNoteTextCode.CustomNote(note) else null
                 )
                 call.respond(
                     SimpleResponse(
