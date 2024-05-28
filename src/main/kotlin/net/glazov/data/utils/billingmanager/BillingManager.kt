@@ -46,23 +46,30 @@ class BillingManager(
         coroutineScope.launch {
             println("$TAG: calculation of monthly bill payments has begun")
             val currentDateTime = LocalDate.now().atTime(12, 0, 0).atZone(ZoneId.systemDefault())
-            val nextBillingDate = currentDateTime.plusMonths(1).toEpochSecond()
-            val clientsForPayment = clients.getClientsForBillingDate(currentDateTime.toEpochSecond())
+            val minLockDateTimestamp = currentDateTime.minusDays(1).toEpochSecond()
+            val nextBillingDateTimestamp = currentDateTime.plusMonths(1).toEpochSecond()
+            val clientsForPayment = clients.getClientsForBillingDate(
+                currentDateTimestamp = currentDateTime.toEpochSecond(),
+                minLockDateTimestamp = minLockDateTimestamp
+            )
             clientsForPayment.forEach { client ->
-                var amountToPay = 0
-                val connectedTariffId = client.pendingTariffId ?: client.tariffId
-                val connectedServices = services.getMultipleServicesById(client.connectedServices)
-                val connectedTariff = tariffs.getTariffById(connectedTariffId)
-                if (connectedTariff != null) amountToPay += connectedTariff.costPerMonth
-                else println("$TAG: unable to find tariff with id: $connectedTariffId")
-                connectedServices.forEach { service ->
-                    if (service.isActive) amountToPay += service.costPerMonth
+                coroutineScope.launch {
+                    var amountToPay = 0
+                    val connectedServices = services.getMultipleServicesById(client.connectedServices)
+                    val connectedTariff = tariffs.getTariffById(client.tariffId)
+                    if (connectedTariff != null) amountToPay += connectedTariff.costPerMonth
+                    else println("$TAG: unable to find tariff with id: ${client.tariffId}")
+                    connectedServices.forEach { service ->
+                        if (service.isActive) amountToPay += service.costPerMonth
+                    }
+                    clients.closeBillingMonth(
+                        clientId = client.id,
+                        nextBillingDate = nextBillingDateTimestamp,
+                        paymentAmount = amountToPay
+                    )
+                    if (client.pendingTariffId != null) clients.connectPendingTariff(client.id)
                 }
-                clients.initStartOfBillingMonth(
-                    clientId = client.id,
-                    nextBillingDate = nextBillingDate,
-                    paymentAmount = amountToPay
-                )
+
             }
             println("$TAG: calculation of monthly bill payments is over")
         }

@@ -6,6 +6,7 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
 import net.glazov.data.datasource.AddressesDataSource
+import net.glazov.data.datasource.TariffsDataSource
 import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
@@ -25,6 +26,7 @@ class ClientsDataSourceImpl(
     db: MongoDatabase,
     private val persons: PersonsDataSource,
     private val addresses: AddressesDataSource,
+    private val tariffs: TariffsDataSource,
     private val transactions: TransactionsDataSource,
     private val transactionManager: TransactionManager
 ): ClientsDataSource {
@@ -66,10 +68,12 @@ class ClientsDataSourceImpl(
                 houseNumber = address.houseNumber
             )
             if (clientAddress != null) {
+                val tariff = tariffs.getTariffById(tariffId) ?: return null
                 val client = ClientModel(
                     personId = associatedPersonId,
                     accountNumber = accountNumber,
                     tariffId = tariffId,
+                    minRequiredBalance = tariff.costPerMonth,
                     address = AddressModel(
                         cityName = clientAddress.city,
                         streetName = clientAddress.street,
@@ -104,18 +108,22 @@ class ClientsDataSourceImpl(
     override suspend fun unblockClientAccount(clientId: String): Boolean {
         val filter = Filters.eq("_id", clientId)
         val client = clients.find(filter).singleOrNull() ?: return false
-        if (!client.isAccountActive && client.balance > 0) {
+        if (!client.isAccountActive) {
             val currentTimestamp = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
             val lastBlockTimestamp = client.accountLockTimestamp ?: currentTimestamp
             val lockDuration = Duration.ofSeconds(currentTimestamp - lastBlockTimestamp).toDays()
             val update = if (lockDuration == 0L) {
-                Updates.set(ClientModel::isAccountActive.name, true)
+                Updates.combine(
+                    Updates.set(ClientModel::isAccountActive.name, true),
+                    Updates.set(ClientModel::accountLockTimestamp.name, null)
+                )
             } else {
                 val newClientDebitDate = OffsetDateTime.ofInstant(
                     Instant.ofEpochSecond(client.debitDate), ZoneId.systemDefault()
                 ).plusDays(lockDuration)
                 Updates.combine(
                     Updates.set(ClientModel::isAccountActive.name, true),
+                    Updates.set(ClientModel::accountLockTimestamp.name, null),
                     Updates.set(ClientModel::debitDate.name, newClientDebitDate)
                 )
             }
@@ -179,34 +187,45 @@ class ClientsDataSourceImpl(
 
     // FOR MONTHLY PAYMENTS
 
-    override suspend fun getClientsForBillingDate(dateSeconds: Long): List<ClientModel> {
+    override suspend fun getClientsForBillingDate(
+        currentDateTimestamp: Long,
+        minLockDateTimestamp: Long
+    ): List<ClientModel> {
         val filter = Filters.and(
-            Filters.lte(ClientModel::debitDate.name, dateSeconds),
-            Filters.eq(ClientModel::isAccountActive.name, true)
+            Filters.lte(ClientModel::debitDate.name, currentDateTimestamp),
+            Filters.or(
+                Filters.ne(ClientModel::accountLockTimestamp.name, null),
+                Filters.gte(ClientModel::accountLockTimestamp.name, minLockDateTimestamp)
+            )
         )
         return clients.find(filter).toList()
     }
 
-    override suspend fun initStartOfBillingMonth(
+    override suspend fun closeBillingMonth(
         clientId: String,
         nextBillingDate: Long,
         paymentAmount: Int
     ) {
         val filter = Filters.eq("_id", clientId)
-        val client = clients.find(filter).singleOrNull() ?: return
-        val newBalance = client.balance - paymentAmount
-        var update = Updates.combine(
-            Updates.set(ClientModel::balance.name, newBalance),
+        val update = Updates.combine(
+            Updates.inc(ClientModel::balance.name, -paymentAmount),
             Updates.set(ClientModel::debitDate.name, nextBillingDate)
         )
-        if (newBalance < 0) blockClientAccount(clientId)
-        if (client.pendingTariffId != null) {
-            update = Updates.combine(
-                update,
-                Updates.set(ClientModel::tariffId.name, client.pendingTariffId),
-                Updates.set(ClientModel::pendingTariffId.name, null)
-            )
-        }
         clients.updateOne(filter, update)
+    }
+
+    override suspend fun connectPendingTariff(clientId: String): Boolean {
+        val filter = Filters.eq("_id", clientId)
+        val client = clients.find(filter).singleOrNull() ?: return false
+        return if (client.pendingTariffId != null) {
+            val newTariff = tariffs.getTariffById(client.pendingTariffId) ?: return false
+            val update = Updates.combine(
+                Updates.set(ClientModel::tariffId.name, client.pendingTariffId),
+                Updates.set(ClientModel::pendingTariffId.name, null),
+                Updates.set(ClientModel::minRequiredBalance.name, newTariff.costPerMonth)
+            )
+            val result = clients.updateOne(filter, update)
+            result.modifiedCount != 0L
+        } else false
     }
 }

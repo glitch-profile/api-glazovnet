@@ -58,12 +58,19 @@ interface ClientsDataSource {
 
     // FOR MONTHLY PAYMENTS
 
-    suspend fun getClientsForBillingDate(dateSeconds: Long): List<ClientModel>
+    suspend fun getClientsForBillingDate(
+        currentDateTimestamp: Long,
+        minLockDateTimestamp: Long,
+    ): List<ClientModel>
 
-    suspend fun initStartOfBillingMonth(
+    suspend fun closeBillingMonth(
         clientId: String,
         nextBillingDate: Long,
         paymentAmount: Int
     )
+
+    suspend fun connectPendingTariff(
+        clientId: String
+    ): Boolean
 
 }
