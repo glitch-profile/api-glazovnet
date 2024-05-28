@@ -210,7 +210,7 @@ class ClientsDataSourceImpl(
         val filter = Filters.and(
             Filters.lte(ClientModel::debitDate.name, currentDateTimestamp),
             Filters.or(
-                Filters.ne(ClientModel::accountLockTimestamp.name, null),
+                Filters.eq(ClientModel::accountLockTimestamp.name, null),
                 Filters.gte(ClientModel::accountLockTimestamp.name, minLockDateTimestamp)
             )
         )
