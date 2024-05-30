@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
@@ -19,6 +20,7 @@ fun Route.usersRoutes(
     persons: PersonsDataSource,
     clients: ClientsDataSource,
     employees: EmployeesDataSource,
+    transactions: TransactionsDataSource
 ) {
 
     authenticate {
@@ -117,6 +119,15 @@ fun Route.usersRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@put
             }
+            if (amount < 0) {
+                call.respond(
+                    SimpleResponse(
+                        status = false,
+                        message = "incorrect amount",
+                        data = Unit
+                    )
+                )
+            }
             val note = call.request.headers["note"]
             try {
                 clients.addPositiveTransaction(
@@ -140,6 +151,21 @@ fun Route.usersRoutes(
                     )
                 )
             }
+        }
+
+        get("$CLIENTS_PATH/balance-history") {
+            val clientId = call.request.headers["client_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val transactionsList = transactions.getTransactionsForClientId(clientId)
+            call.respond(
+                SimpleResponse(
+                    data = transactionsList,
+                    message = "transactions retrieved",
+                    status = true
+                )
+            )
         }
 
     }
