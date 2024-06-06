@@ -20,7 +20,13 @@ class AddressesDataSourceImpl(
         val cityName = city.lowercase()
         val streetName = street.lowercase()
         val addresses = addresses.find().toList()
-        val filteredAddress = addresses.filter { it.doesMatchFilter(cityName, streetName, isHardSearch) }
+        val filteredAddress = if (isHardSearch) {
+            addresses.filter { it.doesMatchFilter(cityName, streetName, isHardSearch = true) }
+        } else {
+            if (city.isNotBlank() && street.isNotBlank())
+                addresses.filter { it.doesMatchFilter(cityName, streetName, isHardSearch = false) }
+            else addresses
+        }
         return filteredAddress.sortedBy { "${it.city}${it.street}" }
     }
 
