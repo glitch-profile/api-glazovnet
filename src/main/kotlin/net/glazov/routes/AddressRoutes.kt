@@ -7,7 +7,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.AddressesDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
-import net.glazov.data.model.RegisteredAddressesModel
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.EmployeeRoles
 
@@ -79,8 +78,8 @@ fun Route.addressRoutes(
             }
             val city = call.request.queryParameters["city"] ?: ""
             val street = call.request.queryParameters["street"] ?: ""
-            val isSoftSearch = call.request.headers["soft_search"]?.toBooleanStrictOrNull() ?: false
-            val addressesList = addresses.getAddresses(city, street, isSoftSearch)
+            val isStrictSearch = call.request.headers["strict_search"]?.toBooleanStrictOrNull() ?: false
+            val addressesList = addresses.getAddresses(city, street, isStrictSearch)
             val formattedAddresses = addressesList.map {
                 it.copy(
                     city = it.city.replaceFirstChar { it.uppercaseChar() },
