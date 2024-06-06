@@ -77,28 +77,21 @@ fun Route.addressRoutes(
                 call.respond(HttpStatusCode.Forbidden)
                 return@get
             }
-            val city = call.request.queryParameters["city"]
+            val city = call.request.queryParameters["city"] ?: ""
             val street = call.request.queryParameters["street"] ?: ""
-            if (city != null) {
-                val addressesList = addresses.getAddresses(city, street)
-                val formattedAddresses = addressesList.map {
-                    it.copy(
-                        city = it.city.replaceFirstChar { it.uppercaseChar() },
-                        street = it.street.replaceFirstChar { it.uppercaseChar() }
-                    )
-                }
-                call.respond(
-                    SimpleResponse(
-                        status = true,
-                        message = "addresses retrieved",
-                        data = formattedAddresses
-                    )
+            val isSoftSearch = call.request.headers["soft_search"]?.toBooleanStrictOrNull() ?: false
+            val addressesList = addresses.getAddresses(city, street, isSoftSearch)
+            val formattedAddresses = addressesList.map {
+                it.copy(
+                    city = it.city.replaceFirstChar { it.uppercaseChar() },
+                    street = it.street.replaceFirstChar { it.uppercaseChar() }
                 )
-            } else call.respond(
+            }
+            call.respond(
                 SimpleResponse(
                     status = true,
                     message = "addresses retrieved",
-                    data = emptyList<List<RegisteredAddressesModel>>()
+                    data = formattedAddresses
                 )
             )
         }
