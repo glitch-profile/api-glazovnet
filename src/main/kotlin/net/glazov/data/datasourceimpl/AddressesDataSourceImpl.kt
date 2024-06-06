@@ -43,8 +43,11 @@ class AddressesDataSourceImpl(
         val streetName = street.lowercase()
         val filter = Filters.eq(RegisteredAddressesModel::city.name, cityName)
         val streetsList = addresses.find(filter).toList()
-        return streetsList
-            .filter { it.street.startsWith(streetName) }
+        return if (street.isNotBlank()) {
+            streetsList
+                .filter { it.street.startsWith(streetName) }
+                .sortedBy { "${it.city}${it.street}" }
+        } else streetsList
             .sortedBy { "${it.city}${it.street}" }
     }
 

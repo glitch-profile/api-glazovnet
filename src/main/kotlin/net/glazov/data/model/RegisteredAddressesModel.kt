@@ -20,7 +20,7 @@ data class RegisteredAddressesModel(
         isHardSearch: Boolean = false
     ): Boolean {
         return if (isHardSearch) (this.city == city && this.street == street)
-        else (this.city == city && this.street.startsWith(street))
+        else (this.city.startsWith(city) && this.street.startsWith(street))
     }
 
 
