@@ -136,9 +136,8 @@ class RequestChatRoomController(
             val supportPersonId = employees.getAssociatedPerson(supporterEmployeeId)?.id ?: return
             val isSupportOnline = currentMembersInChat.contains(supportPersonId)
             if (!isSupportOnline) {
-                val supporterFcmToken = persons.getPersonById(supportPersonId)?.fcmTokensList ?: return
-                notificationsManager.sendTranslatableNotificationByTokens(
-                    personsTokensList = listOf(supporterFcmToken),
+                notificationsManager.sendTranslatableNotificationByPersonsId(
+                    personsId = listOf(supportPersonId),
                     translatableData = TranslatableNotificationData.NewChatMessage(
                         requestTitle = request.title,
                         messageText = messageText
@@ -152,9 +151,8 @@ class RequestChatRoomController(
             val isNotificationsEnabled = request.isNotificationsEnabled
             val isOwnerOnline = currentMembersInChat.contains(request.creatorPersonId)
             if (isNotificationsEnabled && !isOwnerOnline) {
-                val creatorFcmToken = persons.getPersonById(request.creatorPersonId)?.fcmTokensList ?: return
-                notificationsManager.sendTranslatableNotificationByTokens(
-                    personsTokensList = listOf(creatorFcmToken),
+                notificationsManager.sendTranslatableNotificationByPersonsId(
+                    personsId = listOf(request.creatorPersonId),
                     translatableData = TranslatableNotificationData.NewChatMessage(
                         requestTitle = request.title,
                         messageText = messageText
