@@ -110,8 +110,8 @@ class NotificationManagerImpl(
         notificationChannel: NotificationChannel,
         deepLink: Deeplink?
     ) {
-        val personsTokens = personsId.mapNotNull { personId ->
-            persons.getPersonById(personId)?.fcmTokensList
+        val personsTokens = persons.getMultiplePersonsByIds(personsId).map {
+            it.fcmTokensList
         }
         if (personsTokens.isNotEmpty()) {
             val androidConfig = generateAndroidDataConfig(

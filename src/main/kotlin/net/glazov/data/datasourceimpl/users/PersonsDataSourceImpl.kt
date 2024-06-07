@@ -49,6 +49,11 @@ class PersonsDataSourceImpl(
         return persons.find(filter).singleOrNull()
     }
 
+    override suspend fun getMultiplePersonsByIds(personIds: List<String>): List<PersonModel> {
+        val filter = Filters.`in`("_id", personIds)
+        return persons.find(filter).toList()
+    }
+
     override suspend fun getNameById(personId: String, useShortForm: Boolean): String {
         val person = getPersonById(personId)
         return if (person != null) {

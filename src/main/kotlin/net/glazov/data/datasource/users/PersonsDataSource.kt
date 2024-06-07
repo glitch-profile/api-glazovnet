@@ -24,6 +24,10 @@ interface PersonsDataSource {
         personId: String
     ): PersonModel?
 
+    suspend fun getMultiplePersonsByIds(
+        personIds: List<String>
+    ): List<PersonModel>
+
     suspend fun getNameById(
         personId: String,
         useShortForm: Boolean = false
