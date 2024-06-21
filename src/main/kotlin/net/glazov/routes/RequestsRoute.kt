@@ -37,6 +37,14 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.BadRequest)
                 return@webSocket
             }
+            val employee = employees.getEmployeeByPersonId(personId) ?: kotlin.run {
+                call.respond(HttpStatusCode.Forbidden)
+                return@webSocket
+            }
+            if (!employees.checkEmployeeRole(employee, EmployeeRoles.SUPPORT_CHAT)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@webSocket
+            }
             try {
                 requestsRoomController.onJoin(
                     memberId = personId,
@@ -63,6 +71,21 @@ fun Route.requestsRoute(
             }
             val requestId = call.parameters["request_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
+                return@webSocket
+            }
+            val request = chat.getRequestById(requestId)
+            var hasAccessToChat = false
+            if (request.creatorPersonId == personId) {
+                hasAccessToChat = true
+            } else {
+                val employee = employees.getEmployeeByPersonId(personId) ?: kotlin.run {
+                    call.respond(HttpStatusCode.Forbidden)
+                    return@webSocket
+                }
+                hasAccessToChat = employees.checkEmployeeRole(employee, EmployeeRoles.SUPPORT_CHAT)
+            }
+            if (!hasAccessToChat) {
+                call.respond(HttpStatusCode.Forbidden)
                 return@webSocket
             }
             try {

@@ -21,6 +21,8 @@ interface EmployeesDataSource {
 
     suspend fun checkEmployeeRole(employeeId: String, roleToCheck: EmployeeRoles): Boolean
 
+    fun checkEmployeeRole(employee: EmployeeModel, roleToCheck: EmployeeRoles): Boolean
+
     suspend fun updateRoles(employeeId: String, newRolesList: List<String>): Boolean
 
     suspend fun addRating(employeeId: String, rating: Int): Boolean

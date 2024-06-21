@@ -59,6 +59,10 @@ class EmployeesDataSourceImpl(
         return employees.find(filter).singleOrNull() != null
     }
 
+    override fun checkEmployeeRole(employee: EmployeeModel, roleToCheck: EmployeeRoles): Boolean {
+        return employee.roles.contains(roleToCheck.name)
+    }
+
     override suspend fun updateRoles(employeeId: String, newRolesList: List<String>): Boolean {
         val filter = Filters.eq("_id", employeeId)
         val update = Updates.set(PersonModel::selectedNotificationsTopics.name, newRolesList)

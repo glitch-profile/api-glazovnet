@@ -16,7 +16,7 @@ fun Route.servicesRoutes(
     clients: ClientsDataSource
 ) {
 
-    authenticate("client") {
+    authenticate {
 
         get(PATH) {
             val result = services.getAllServices()
@@ -47,6 +47,9 @@ fun Route.servicesRoutes(
             )
         }
 
+    }
+
+    authenticate("client") {
 
         get("$PATH/connected-for-client") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
