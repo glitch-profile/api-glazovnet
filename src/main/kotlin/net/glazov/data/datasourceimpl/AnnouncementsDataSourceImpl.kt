@@ -63,7 +63,7 @@ class AnnouncementsDataSourceImpl(
     override suspend fun addAnnouncement(announcement: AnnouncementModel): AnnouncementModel? {
         val announcementToInsert = announcement.copy(
             id = ObjectId().toString(),
-            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE_TIME)
+            creationDate = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
         )
         val status = announcements.insertOne(announcementToInsert).wasAcknowledged()
         return if (status) announcementToInsert else null

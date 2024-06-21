@@ -14,7 +14,7 @@ data class AnnouncementModel(
     val addressFilters: List<List<String>>,
     val title: String,
     val text: String,
-    val creationDate: String = OffsetDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE_TIME)
+    val creationDate: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
 ) {
     fun isContainingAddress(
         city: String,
