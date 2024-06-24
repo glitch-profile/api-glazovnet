@@ -35,7 +35,7 @@ class TransactionsDataSourceImpl(
     }
 
     override suspend fun getTransactionsForClient(clientId: String): List<TransactionModel> {
-        val filter = Filters.eq("_id", clientId)
+        val filter = Filters.eq(TransactionModel::clientId.name, clientId)
         return transactions.find(filter).toList().sortedByDescending { it.transactionTimestamp }
     }
 
@@ -45,7 +45,7 @@ class TransactionsDataSourceImpl(
         endTimestamp: Int?
     ): List<TransactionModel> {
         val filter = Filters.and(
-            Filters.eq("_id", clientId),
+            Filters.eq(TransactionModel::clientId.name, clientId),
             if (startTimestamp != null) Filters.gte(TransactionModel::transactionTimestamp.name, startTimestamp) else Filters.empty(),
             if (endTimestamp != null) Filters.lte(TransactionModel::transactionTimestamp.name, endTimestamp) else Filters.empty()
         )
