@@ -15,8 +15,14 @@ interface TransactionsDataSource {
         transactionTimestamp: Long = OffsetDateTime.now(ZoneId.systemDefault()).toEpochSecond()
     ): TransactionModel?
 
-    suspend fun getTransactionsForClientId(
+    suspend fun getTransactionsForClient(
         clientId: String
+    ): List<TransactionModel>
+
+    suspend fun getTransactionsForClient(
+        clientId: String,
+        startTimestamp: Int?,
+        endTimestamp: Int?
     ): List<TransactionModel>
 
     suspend fun getTransactionById(id: String): TransactionModel?

@@ -158,7 +158,11 @@ fun Route.usersRoutes(
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
             }
-            val transactionsList = transactions.getTransactionsForClientId(clientId)
+            val startTimestamp = call.request.headers["start_timestamp"]?.toIntOrNull()
+            val endTimestamp = call.request.headers["end_timestamp"]?.toIntOrNull()
+            val transactionsList = if (startTimestamp == null && endTimestamp == null)
+                transactions.getTransactionsForClient(clientId)
+            else transactions.getTransactionsForClient(clientId, startTimestamp, endTimestamp)
             call.respond(
                 SimpleResponse(
                     data = transactionsList,

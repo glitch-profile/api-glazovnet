@@ -34,8 +34,21 @@ class TransactionsDataSourceImpl(
         else null
     }
 
-    override suspend fun getTransactionsForClientId(clientId: String): List<TransactionModel> {
+    override suspend fun getTransactionsForClient(clientId: String): List<TransactionModel> {
         val filter = Filters.eq("_id", clientId)
+        return transactions.find(filter).toList().sortedByDescending { it.transactionTimestamp }
+    }
+
+    override suspend fun getTransactionsForClient(
+        clientId: String,
+        startTimestamp: Int?,
+        endTimestamp: Int?
+    ): List<TransactionModel> {
+        val filter = Filters.and(
+            Filters.eq("_id", clientId),
+            if (startTimestamp != null) Filters.gte(TransactionModel::transactionTimestamp.name, startTimestamp) else Filters.empty(),
+            if (endTimestamp != null) Filters.lte(TransactionModel::transactionTimestamp.name, endTimestamp) else Filters.empty()
+        )
         return transactions.find(filter).toList().sortedByDescending { it.transactionTimestamp }
     }
 
