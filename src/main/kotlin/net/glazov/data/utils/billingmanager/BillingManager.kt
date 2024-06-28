@@ -37,7 +37,7 @@ class BillingManager(
         val nearestInitDate = if (isCanInitToday) currentDateTime.toLocalDate().atTime(12, 0, 0)
         else currentDateTime.toLocalDate().plusDays(1).atTime(12, 0, 0)
 //        val nearestInitDate = currentDateTime.toLocalDate().atTime(14, 18, 0)
-        println("$TAG: nearest simulation start date = $nearestInitDate")
+        println("$TAG: billing simulation will init at $nearestInitDate")
         val timeDifferenceInSeconds = nearestInitDate.atZone(defaultZone).toEpochSecond() - currentDateTime.atZone(defaultZone).toEpochSecond()
         val timerPeriod = (DAY_LENGTH_IN_SECONDS * 1000).toLong()  // to milliseconds
         timer.schedule(task, timeDifferenceInSeconds * 1000, timerPeriod)
@@ -53,22 +53,25 @@ class BillingManager(
                 currentDateTimestamp = currentDateTime.toEpochSecond(),
                 minLockDateTimestamp = minLockDateTimestamp
             )
+            println("$TAG: found ${clientsForPayment.size} client for billing simulation")
+            val billingScope = CoroutineScope(Dispatchers.Default)
             clientsForPayment.forEach { client ->
-                var amountToPay = 0
-                val connectedServices = services.getMultipleServicesById(client.connectedServices)
-                val connectedTariff = tariffs.getTariffById(client.tariffId)
-                if (connectedTariff != null) amountToPay += connectedTariff.costPerMonth
-                else println("$TAG: unable to find tariff with id: ${client.tariffId}")
-                connectedServices.forEach { service ->
-                    if (service.isActive) amountToPay += service.costPerMonth
+                billingScope.launch {
+                    var amountToPay = 0
+                    val connectedServices = services.getMultipleServicesById(client.connectedServices)
+                    val connectedTariff = tariffs.getTariffById(client.tariffId)
+                    if (connectedTariff != null) amountToPay += connectedTariff.costPerMonth
+                    else println("$TAG: unable to find tariff with id: ${client.tariffId} for client ${client.id}")
+                    connectedServices.forEach { service ->
+                        if (service.isActive) amountToPay += service.costPerMonth
+                    }
+                    clients.closeBillingMonth(
+                        clientId = client.id,
+                        nextBillingDate = nextBillingDateTimestamp,
+                        paymentAmount = amountToPay
+                    )
+                    if (client.pendingTariffId != null) clients.connectPendingTariff(client.id)
                 }
-                clients.closeBillingMonth(
-                    clientId = client.id,
-                    nextBillingDate = nextBillingDateTimestamp,
-                    paymentAmount = amountToPay
-                )
-                if (client.pendingTariffId != null) clients.connectPendingTariff(client.id)
-                println("$TAG: finalized working on client ${client.id}")
             }
             println("$TAG: calculation of monthly bill payments for ${currentDateTime.toLocalDate()} is over")
         }
