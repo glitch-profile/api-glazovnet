@@ -75,14 +75,14 @@ fun Route.requestsRoute(
             }
             val request = chat.getRequestById(requestId)
             var hasAccessToChat = false
-            if (request.creatorPersonId == personId) {
-                hasAccessToChat = true
+            hasAccessToChat = if (request.creatorPersonId == personId) {
+                true
             } else {
                 val employee = employees.getEmployeeByPersonId(personId) ?: kotlin.run {
                     call.respond(HttpStatusCode.Forbidden)
                     return@webSocket
                 }
-                hasAccessToChat = employees.checkEmployeeRole(employee, EmployeeRoles.SUPPORT_CHAT)
+                employees.checkEmployeeRole(employee, EmployeeRoles.SUPPORT_CHAT)
             }
             if (!hasAccessToChat) {
                 call.respond(HttpStatusCode.Forbidden)
