@@ -26,7 +26,6 @@ val dataSourcesModule = module {
             tariffs = get(),
             services = get(),
             transactions = get(),
-            transactionManager = get()
         )
     }
     single<EmployeesDataSource> {

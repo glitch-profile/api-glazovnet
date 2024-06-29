@@ -14,7 +14,9 @@ import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.AddressModel
 import net.glazov.data.model.users.ClientModel
 import net.glazov.data.model.users.PersonModel
-import net.glazov.data.utils.paymentmanager.*
+import net.glazov.data.utils.paymentmanager.ClientNotFoundException
+import net.glazov.data.utils.paymentmanager.InsufficientFundsException
+import net.glazov.data.utils.paymentmanager.TransactionNoteTextCode
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -26,8 +28,7 @@ class ClientsDataSourceImpl(
     private val addresses: AddressesDataSource,
     private val tariffs: TariffsDataSource,
     private val services: ServicesDataSource,
-    private val transactions: TransactionsDataSource,
-    private val transactionManager: TransactionManager
+    private val transactions: TransactionsDataSource
 ): ClientsDataSource {
 
     private val clients = db.getCollection<ClientModel>("Clients")
@@ -135,18 +136,15 @@ class ClientsDataSourceImpl(
         getClientById(clientId) ?: kotlin.run {
             throw ClientNotFoundException()
         }
-        val isTransactionSuccessful = transactionManager.makeTransaction()
-        if (isTransactionSuccessful) {
-            val filter = Filters.eq("_id", clientId)
-            val update = Updates.inc(ClientModel::balance.name, amount)
-            clients.updateOne(filter, update)
-            transactions.addTransaction(
-                clientId = clientId,
-                amount = amount,
-                isIncoming = true,
-                note = note
-            )
-        } else throw TransactionErrorException()
+        val filter = Filters.eq("_id", clientId)
+        val update = Updates.inc(ClientModel::balance.name, amount)
+        clients.updateOne(filter, update)
+        transactions.addTransaction(
+            clientId = clientId,
+            amount = amount,
+            isIncoming = true,
+            note = note
+        )
     }
 
     override suspend fun addSoftNegativeTransaction(clientId: String, amount: Float, note: TransactionNoteTextCode?) {

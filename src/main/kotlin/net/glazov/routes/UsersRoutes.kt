@@ -3,12 +3,14 @@ package net.glazov.routes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.glazov.data.datasource.TransactionsDataSource
 import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.EmployeesDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
+import net.glazov.data.model.IncomingTransactionData
 import net.glazov.data.model.response.SimpleResponse
 import net.glazov.data.utils.paymentmanager.TransactionNoteTextCode
 
@@ -110,15 +112,16 @@ fun Route.usersRoutes(
 
         }
 
-        put("$CLIENTS_PATH/add-funds") {
+        post("$CLIENTS_PATH/add-funds") {
             val clientId = call.request.headers["client_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
-                return@put
+                return@post
             }
-            val amount = call.request.headers["amount"]?.toFloatOrNull() ?: kotlin.run {
+            val transactionInfo = call.receiveNullable<IncomingTransactionData>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
-                return@put
+                return@post
             }
+            val amount = transactionInfo.amount
             if (amount < 0) {
                 call.respond(
                     SimpleResponse(
@@ -128,7 +131,7 @@ fun Route.usersRoutes(
                     )
                 )
             }
-            val note = call.request.headers["note"]
+            val note = transactionInfo.note?.trim()
             try {
                 clients.addPositiveTransaction(
                     clientId = clientId,
@@ -145,7 +148,7 @@ fun Route.usersRoutes(
             } catch (e: Exception) {
                 call.respond(
                     SimpleResponse(
-                        status = true,
+                        status = false,
                         message = e.message.toString(),
                         data = Unit
                     )
