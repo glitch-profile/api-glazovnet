@@ -13,7 +13,6 @@ data class SupportRequestModel(
     val id: String = ObjectId().toString(),
     val creatorPersonId: String,
     val creatorClientId: String,
-    val creatorName: String,
     val associatedSupportId: String? = null,
     val title: String,
     val description: String,

@@ -74,8 +74,7 @@ fun Route.requestsRoute(
                 return@webSocket
             }
             val request = chat.getRequestById(requestId)
-            var hasAccessToChat = false
-            hasAccessToChat = if (request.creatorPersonId == personId) {
+            val hasAccessToChat = if (request.creatorPersonId == personId) {
                 true
             } else {
                 val employee = employees.getEmployeeByPersonId(personId) ?: kotlin.run {
@@ -144,7 +143,6 @@ fun Route.requestsRoute(
             } catch (e: RequestNotFoundException) {
                 call.respond(HttpStatusCode.NotFound)
             }
-
         }
 
         get("$PATH/requests/{request_id}/messages") {
@@ -173,6 +171,50 @@ fun Route.requestsRoute(
                 call.respond(HttpStatusCode.NotFound)
             }
         }
+    }
+
+    get("$PATH/requests/{request_id}/creator-info") {
+        val personId = call.request.headers["person_id"] ?: kotlin.run {
+            call.respond(HttpStatusCode.BadRequest)
+            return@get
+        }
+        val requestId = call.parameters["request_id"] ?: kotlin.run {
+            call.respond(HttpStatusCode.BadRequest)
+            return@get
+        }
+        val request = chat.getRequestById(requestId)
+        val hasAccess = if (request.creatorPersonId == personId) {
+            true
+        } else {
+            val employee = employees.getEmployeeByPersonId(personId) ?: kotlin.run {
+                call.respond(HttpStatusCode.Forbidden)
+                return@get
+            }
+            employees.checkEmployeeRole(employee, EmployeeRoles.SUPPORT_CHAT)
+        }
+        if (hasAccess) {
+            try {
+                val creatorInfo = chat.getRequestCreatorInformation(requestId) ?: kotlin.run {
+                    call.respond(
+                        SimpleResponse(
+                            data = null,
+                            status = false,
+                            message = "unable to get creator data"
+                        )
+                    )
+                    return@get
+                }
+                call.respond(
+                    SimpleResponse(
+                        data = creatorInfo,
+                        status = true,
+                        message = "date retrieved successfully"
+                    )
+                )
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
+            }
+        } else call.respond(HttpStatusCode.Forbidden)
     }
 
     authenticate("client") {
@@ -271,42 +313,6 @@ fun Route.requestsRoute(
                     data = requestsList
                 )
             )
-        }
-
-        get("$PATH/requests/{request_id}/creator-info") {
-            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
-            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.SUPPORT_CHAT)) {
-                call.respond(HttpStatusCode.Forbidden)
-                return@get
-            }
-            val requestId = call.parameters["request_id"] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
-            try {
-                val creatorInfo = chat.getRequestCreatorInformation(requestId) ?: kotlin.run {
-                    call.respond(
-                        SimpleResponse(
-                            data = null,
-                            status = false,
-                            message = "unable to get creator data"
-                        )
-                    )
-                    return@get
-                }
-                call.respond(
-                    SimpleResponse(
-                        data = creatorInfo,
-                        status = true,
-                        message = "date retrieved successfully"
-                    )
-                )
-            } catch (e: RequestNotFoundException) {
-                call.respond(HttpStatusCode.NotFound)
-            }
         }
 
         put("$PATH/requests/{request_id}/set-helper") {

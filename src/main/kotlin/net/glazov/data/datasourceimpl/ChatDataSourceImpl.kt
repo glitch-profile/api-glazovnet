@@ -68,11 +68,9 @@ class ChatDataSourceImpl(
         isNotificationEnabled: Boolean
     ): SupportRequestModel? {
         val associatedPersonId = clients.getAssociatedPerson(clientId)?.id ?: return null
-        val creatorName = persons.getNameById(associatedPersonId, useShortForm = false)
         val requestToInsert = SupportRequestModel(
             creatorPersonId = associatedPersonId,
             creatorClientId = clientId,
-            creatorName = creatorName!!,
             title = title,
             description = text,
             isNotificationsEnabled = isNotificationEnabled
