@@ -42,7 +42,7 @@ class RequestChatRoomController(
                 personId,
                 ChatMember(
                     memberId = personId,
-                    memberName = memberName,
+                    memberName = memberName!!,
                     socket = memberSocket
                 )
             )

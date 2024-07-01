@@ -31,7 +31,7 @@ interface PersonsDataSource {
     suspend fun getNameById(
         personId: String,
         useShortForm: Boolean = false
-    ): String
+    ): String?
 
     suspend fun addFcmToken(
         personId: String,

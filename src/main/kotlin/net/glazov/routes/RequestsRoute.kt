@@ -273,6 +273,42 @@ fun Route.requestsRoute(
             )
         }
 
+        get("$PATH/requests/{request_id}/creator-info") {
+            val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            if (!employees.checkEmployeeRole(employeeId, EmployeeRoles.SUPPORT_CHAT)) {
+                call.respond(HttpStatusCode.Forbidden)
+                return@get
+            }
+            val requestId = call.parameters["request_id"] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            try {
+                val creatorInfo = chat.getRequestCreatorInformation(requestId) ?: kotlin.run {
+                    call.respond(
+                        SimpleResponse(
+                            data = null,
+                            status = false,
+                            message = "unable to get creator data"
+                        )
+                    )
+                    return@get
+                }
+                call.respond(
+                    SimpleResponse(
+                        data = creatorInfo,
+                        status = true,
+                        message = "date retrieved successfully"
+                    )
+                )
+            } catch (e: RequestNotFoundException) {
+                call.respond(HttpStatusCode.NotFound)
+            }
+        }
+
         put("$PATH/requests/{request_id}/set-helper") {
             val employeeId = call.request.headers["employee_id"] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)

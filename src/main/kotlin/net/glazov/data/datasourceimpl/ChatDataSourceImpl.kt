@@ -9,6 +9,7 @@ import net.glazov.data.datasource.ChatDataSource
 import net.glazov.data.datasource.users.ClientsDataSource
 import net.glazov.data.datasource.users.PersonsDataSource
 import net.glazov.data.model.requests.MessageModel
+import net.glazov.data.model.requests.RequestCreatorInfoModel
 import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.requests.RequestsStatus.Companion.convertToIntCode
 import net.glazov.data.model.requests.SupportRequestModel
@@ -49,6 +50,21 @@ class ChatDataSourceImpl(
         return requests.find(filter).toList().sortedByDescending { it.creationDate }
     }
 
+    override suspend fun getRequestCreatorInformation(requestId: String): RequestCreatorInfoModel? {
+        val filter = Filters.eq("_id", requestId)
+        val request = requests.find(filter).singleOrNull() ?: throw RequestNotFoundException()
+        val clientInfo = clients.getClientById(request.creatorClientId) ?: return null
+        val creatorName = persons.getNameById(request.creatorPersonId, useShortForm = false) ?: return null
+        val address = clientInfo.address
+        return RequestCreatorInfoModel(
+            accountNumber = clientInfo.accountNumber,
+            fullName = creatorName,
+            address = "${address.cityName.replaceFirstChar { it.uppercaseChar() }}, " +
+                    "${address.streetName.replaceFirstChar { it.uppercaseChar() }}, " +
+                    "${address.houseNumber}-${address.roomNumber}"
+        )
+    }
+
     override suspend fun createNewRequest(
         clientId: String,
         title: String,
@@ -60,7 +76,7 @@ class ChatDataSourceImpl(
         val requestToInsert = SupportRequestModel(
             creatorPersonId = associatedPersonId,
             creatorClientId = clientId,
-            creatorName = creatorName,
+            creatorName = creatorName!!,
             title = title,
             description = text,
             isNotificationsEnabled = isNotificationEnabled

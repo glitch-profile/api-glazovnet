@@ -54,12 +54,12 @@ class PersonsDataSourceImpl(
         return persons.find(filter).toList()
     }
 
-    override suspend fun getNameById(personId: String, useShortForm: Boolean): String {
+    override suspend fun getNameById(personId: String, useShortForm: Boolean): String? {
         val person = getPersonById(personId)
         return if (person != null) {
             if (useShortForm) "${person.firstName} ${person.middleName}"
             else "${person.lastName} ${person.firstName} ${person.middleName}"
-        } else "Mr. Unknown"
+        } else null
     }
 
     override suspend fun addFcmToken(personId: String, newToken: String): Boolean {

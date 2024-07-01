@@ -1,6 +1,7 @@
 package net.glazov.data.datasource
 
 import net.glazov.data.model.requests.MessageModel
+import net.glazov.data.model.requests.RequestCreatorInfoModel
 import net.glazov.data.model.requests.RequestsStatus
 import net.glazov.data.model.requests.SupportRequestModel
 
@@ -17,6 +18,10 @@ interface ChatDataSource {
     suspend fun getRequestById(
         requestId: String
     ): SupportRequestModel
+
+    suspend fun getRequestCreatorInformation(
+        requestId: String
+    ): RequestCreatorInfoModel?
 
     suspend fun createNewRequest(
         clientId: String,
