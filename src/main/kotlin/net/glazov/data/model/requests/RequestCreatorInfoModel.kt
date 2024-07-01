@@ -5,6 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class RequestCreatorInfoModel(
     val accountNumber: String,
-    val fullName: String,
-    val address: String
+    val fullName: String
 )

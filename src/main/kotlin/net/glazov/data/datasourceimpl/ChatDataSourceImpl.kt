@@ -55,13 +55,9 @@ class ChatDataSourceImpl(
         val request = requests.find(filter).singleOrNull() ?: throw RequestNotFoundException()
         val clientInfo = clients.getClientById(request.creatorClientId) ?: return null
         val creatorName = persons.getNameById(request.creatorPersonId, useShortForm = false) ?: return null
-        val address = clientInfo.address
         return RequestCreatorInfoModel(
             accountNumber = clientInfo.accountNumber,
-            fullName = creatorName,
-            address = "${address.cityName.replaceFirstChar { it.uppercaseChar() }}, " +
-                    "${address.streetName.replaceFirstChar { it.uppercaseChar() }}, " +
-                    "${address.houseNumber}-${address.roomNumber}"
+            fullName = creatorName
         )
     }
 
